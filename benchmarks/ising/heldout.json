@@ -1,0 +1,3825 @@
+{
+  "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "python": "3.13.5",
+  "highs": "1.15.1",
+  "seconds": 5.0,
+  "repeats": 3,
+  "records": [
+    {
+      "seconds": 5.130595167051069,
+      "energy": -762.125,
+      "lower_bound": -3339.0,
+      "numerical_gap": 2576.875,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "TIME_LIMIT",
+      "time_to_target": null,
+      "solver_stats": {
+        "solver 0": {
+          "number of vertices": 1288,
+          "number of edges": 9358,
+          "mip solver": "SCIP 10.0.2",
+          "lp solver": "SoPlex 8.0.2",
+          "cpu_solving_time": 4.99549,
+          "best_solution_value": 389.125,
+          "optimal_solution_found": false,
+          "timelimit_reached": true,
+          "bab_nodes": 1,
+          "final_bound_value": 1677.5625,
+          "root_bound_value": 1677.5625,
+          "scip_randomseedshift": 0,
+          "scip_timelimit": 4.995
+        },
+        "optimality proven": false,
+        "runtime [s]": 5.054,
+        "best solution value": 390.625
+      },
+      "method": "sms",
+      "seed": 1001,
+      "nodes": 1288,
+      "edges": 8262,
+      "damaged": false,
+      "repeat": 0,
+      "target_gap": 985.7750000000001
+    },
+    {
+      "seconds": 5.049210249911994,
+      "energy": -2094.625,
+      "lower_bound": null,
+      "numerical_gap": null,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "HEURISTIC",
+      "time_to_target": null,
+      "method": "heuristic",
+      "seed": 1001,
+      "nodes": 1288,
+      "edges": 8262,
+      "damaged": false,
+      "repeat": 0,
+      "target_gap": 985.7750000000001
+    },
+    {
+      "seconds": 5.194941416033544,
+      "energy": -2097.375,
+      "lower_bound": -2786.625,
+      "numerical_gap": 689.25,
+      "verified_bound": -2786.625,
+      "verified_gap": 689.25,
+      "status": "TIME_LIMIT",
+      "cuts": 31243,
+      "subgraph_cuts": 5,
+      "rounds": 1,
+      "time_to_target": 0.920096707995981,
+      "progress": [
+        {
+          "time": 0.920096707995981,
+          "lower_bound": -2786.625,
+          "energy": -2097.375,
+          "cuts": 30726,
+          "round": 0
+        },
+        {
+          "time": 1.5425344160757959,
+          "lower_bound": -2786.625,
+          "energy": -2097.375,
+          "cuts": 31243,
+          "round": 0
+        },
+        {
+          "time": 3.628032875014469,
+          "lower_bound": -2786.625,
+          "energy": -2097.375,
+          "cuts": 31243,
+          "round": 1
+        },
+        {
+          "time": 5.092386958072893,
+          "lower_bound": -2786.625,
+          "energy": -2097.375,
+          "cuts": 31243,
+          "round": 1
+        }
+      ],
+      "method": "learned",
+      "seed": 1001,
+      "nodes": 1288,
+      "edges": 8262,
+      "damaged": false,
+      "repeat": 0,
+      "target_gap": 985.7750000000001
+    },
+    {
+      "seconds": 5.206821416970342,
+      "energy": -2097.375,
+      "lower_bound": -2759.875,
+      "numerical_gap": 662.5,
+      "verified_bound": -2759.875,
+      "verified_gap": 662.5,
+      "status": "TIME_LIMIT",
+      "cuts": 31246,
+      "subgraph_cuts": 8,
+      "rounds": 1,
+      "time_to_target": 0.9344955410342664,
+      "progress": [
+        {
+          "time": 0.9344955410342664,
+          "lower_bound": -2786.625,
+          "energy": -2097.375,
+          "cuts": 30726,
+          "round": 0
+        },
+        {
+          "time": 1.5530424159951508,
+          "lower_bound": -2759.875,
+          "energy": -2097.375,
+          "cuts": 31246,
+          "round": 0
+        },
+        {
+          "time": 3.6254296250408515,
+          "lower_bound": -2759.875,
+          "energy": -2097.375,
+          "cuts": 31246,
+          "round": 1
+        },
+        {
+          "time": 5.098134291009046,
+          "lower_bound": -2759.875,
+          "energy": -2097.375,
+          "cuts": 31246,
+          "round": 1
+        }
+      ],
+      "method": "deterministic",
+      "seed": 1001,
+      "nodes": 1288,
+      "edges": 8262,
+      "damaged": false,
+      "repeat": 0,
+      "target_gap": 985.7750000000001
+    },
+    {
+      "seconds": 5.080377083038911,
+      "energy": -1874.875,
+      "lower_bound": -3499.875,
+      "numerical_gap": 1625.0,
+      "verified_bound": -3499.875,
+      "verified_gap": 1625.0,
+      "status": "TIME_LIMIT",
+      "cuts": 61720,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.036568167037331,
+          "lower_bound": -3499.875,
+          "energy": -1874.875,
+          "cuts": 61720,
+          "round": 0
+        }
+      ],
+      "method": "static",
+      "seed": 1001,
+      "nodes": 1288,
+      "edges": 8262,
+      "damaged": false,
+      "repeat": 0,
+      "target_gap": 985.7750000000001
+    },
+    {
+      "seconds": 5.060926500009373,
+      "energy": -105.125,
+      "lower_bound": -4553.375,
+      "numerical_gap": 4448.25,
+      "verified_bound": -4928.875,
+      "verified_gap": 4823.75,
+      "status": "TIME_LIMIT",
+      "cuts": 0,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.024253583978862,
+          "lower_bound": -4928.875,
+          "energy": -105.125,
+          "cuts": 0,
+          "round": 0
+        }
+      ],
+      "method": "native",
+      "seed": 1001,
+      "nodes": 1288,
+      "edges": 8262,
+      "damaged": false,
+      "repeat": 0,
+      "target_gap": 985.7750000000001
+    },
+    {
+      "seconds": 5.0808749590069056,
+      "energy": -748.375,
+      "lower_bound": -3337.125,
+      "numerical_gap": 2588.75,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "TIME_LIMIT",
+      "time_to_target": null,
+      "solver_stats": {
+        "solver 0": {
+          "number of vertices": 1288,
+          "number of edges": 9358,
+          "mip solver": "SCIP 10.0.2",
+          "lp solver": "SoPlex 8.0.2",
+          "cpu_solving_time": 4.997636,
+          "best_solution_value": 382.25,
+          "optimal_solution_found": false,
+          "timelimit_reached": true,
+          "bab_nodes": 1,
+          "final_bound_value": 1676.625,
+          "root_bound_value": 1676.625,
+          "scip_randomseedshift": 1,
+          "scip_timelimit": 4.997
+        },
+        "optimality proven": false,
+        "runtime [s]": 5.024,
+        "best solution value": 383.75
+      },
+      "method": "sms",
+      "seed": 1001,
+      "nodes": 1288,
+      "edges": 8262,
+      "damaged": false,
+      "repeat": 1,
+      "target_gap": 985.7750000000001
+    },
+    {
+      "seconds": 5.2923750000773,
+      "energy": 19.125,
+      "lower_bound": -4581.625,
+      "numerical_gap": 4600.75,
+      "verified_bound": -4928.875,
+      "verified_gap": 4948.0,
+      "status": "TIME_LIMIT",
+      "cuts": 0,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.258898833068088,
+          "lower_bound": -4928.875,
+          "energy": 19.125,
+          "cuts": 0,
+          "round": 0
+        }
+      ],
+      "method": "native",
+      "seed": 1001,
+      "nodes": 1288,
+      "edges": 8262,
+      "damaged": false,
+      "repeat": 1,
+      "target_gap": 985.7750000000001
+    },
+    {
+      "seconds": 5.0780325420200825,
+      "energy": -1881.625,
+      "lower_bound": -3488.625,
+      "numerical_gap": 1607.0,
+      "verified_bound": -3488.625,
+      "verified_gap": 1607.0,
+      "status": "TIME_LIMIT",
+      "cuts": 62051,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.035405750037171,
+          "lower_bound": -3488.625,
+          "energy": -1881.625,
+          "cuts": 62051,
+          "round": 0
+        }
+      ],
+      "method": "static",
+      "seed": 1001,
+      "nodes": 1288,
+      "edges": 8262,
+      "damaged": false,
+      "repeat": 1,
+      "target_gap": 985.7750000000001
+    },
+    {
+      "seconds": 5.196483916952275,
+      "energy": -2100.625,
+      "lower_bound": -2787.125,
+      "numerical_gap": 686.5,
+      "verified_bound": -2787.125,
+      "verified_gap": 686.5,
+      "status": "TIME_LIMIT",
+      "cuts": 31246,
+      "subgraph_cuts": 8,
+      "rounds": 1,
+      "time_to_target": 0.9421160829951987,
+      "progress": [
+        {
+          "time": 0.9421160829951987,
+          "lower_bound": -2787.125,
+          "energy": -2100.625,
+          "cuts": 30726,
+          "round": 0
+        },
+        {
+          "time": 1.5628159580519423,
+          "lower_bound": -2787.125,
+          "energy": -2100.625,
+          "cuts": 31246,
+          "round": 0
+        },
+        {
+          "time": 3.618005875032395,
+          "lower_bound": -2787.125,
+          "energy": -2100.625,
+          "cuts": 31246,
+          "round": 1
+        },
+        {
+          "time": 5.092695583007298,
+          "lower_bound": -2787.125,
+          "energy": -2100.625,
+          "cuts": 31246,
+          "round": 1
+        }
+      ],
+      "method": "deterministic",
+      "seed": 1001,
+      "nodes": 1288,
+      "edges": 8262,
+      "damaged": false,
+      "repeat": 1,
+      "target_gap": 985.7750000000001
+    },
+    {
+      "seconds": 5.197051124996506,
+      "energy": -2100.625,
+      "lower_bound": -2787.125,
+      "numerical_gap": 686.5,
+      "verified_bound": -2787.125,
+      "verified_gap": 686.5,
+      "status": "TIME_LIMIT",
+      "cuts": 31238,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.962255125050433,
+      "progress": [
+        {
+          "time": 0.962255125050433,
+          "lower_bound": -2787.125,
+          "energy": -2100.625,
+          "cuts": 30726,
+          "round": 0
+        },
+        {
+          "time": 1.5958038750104606,
+          "lower_bound": -2787.125,
+          "energy": -2100.625,
+          "cuts": 31238,
+          "round": 0
+        },
+        {
+          "time": 3.615630083018914,
+          "lower_bound": -2787.125,
+          "energy": -2100.625,
+          "cuts": 31238,
+          "round": 1
+        },
+        {
+          "time": 5.094923208002001,
+          "lower_bound": -2787.125,
+          "energy": -2100.625,
+          "cuts": 31238,
+          "round": 1
+        }
+      ],
+      "method": "learned",
+      "seed": 1001,
+      "nodes": 1288,
+      "edges": 8262,
+      "damaged": false,
+      "repeat": 1,
+      "target_gap": 985.7750000000001
+    },
+    {
+      "seconds": 5.049649583059363,
+      "energy": -2121.375,
+      "lower_bound": null,
+      "numerical_gap": null,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "HEURISTIC",
+      "time_to_target": null,
+      "method": "heuristic",
+      "seed": 1001,
+      "nodes": 1288,
+      "edges": 8262,
+      "damaged": false,
+      "repeat": 1,
+      "target_gap": 985.7750000000001
+    },
+    {
+      "seconds": 5.211271125008352,
+      "energy": -2105.375,
+      "lower_bound": -2764.875,
+      "numerical_gap": 659.5,
+      "verified_bound": -2764.875,
+      "verified_gap": 659.5,
+      "status": "TIME_LIMIT",
+      "cuts": 31246,
+      "subgraph_cuts": 8,
+      "rounds": 1,
+      "time_to_target": 0.9415087919915095,
+      "progress": [
+        {
+          "time": 0.9415087919915095,
+          "lower_bound": -2785.375,
+          "energy": -2105.375,
+          "cuts": 30726,
+          "round": 0
+        },
+        {
+          "time": 1.5648146249586716,
+          "lower_bound": -2764.875,
+          "energy": -2105.375,
+          "cuts": 31246,
+          "round": 0
+        },
+        {
+          "time": 3.622922374983318,
+          "lower_bound": -2764.875,
+          "energy": -2105.375,
+          "cuts": 31246,
+          "round": 1
+        },
+        {
+          "time": 5.101744125015102,
+          "lower_bound": -2764.875,
+          "energy": -2105.375,
+          "cuts": 31246,
+          "round": 1
+        }
+      ],
+      "method": "learned",
+      "seed": 1001,
+      "nodes": 1288,
+      "edges": 8262,
+      "damaged": false,
+      "repeat": 2,
+      "target_gap": 985.7750000000001
+    },
+    {
+      "seconds": 5.211045333999209,
+      "energy": -2105.375,
+      "lower_bound": -2760.875,
+      "numerical_gap": 655.5,
+      "verified_bound": -2760.875,
+      "verified_gap": 655.5,
+      "status": "TIME_LIMIT",
+      "cuts": 31246,
+      "subgraph_cuts": 8,
+      "rounds": 1,
+      "time_to_target": 0.957404916989617,
+      "progress": [
+        {
+          "time": 0.957404916989617,
+          "lower_bound": -2785.375,
+          "energy": -2105.375,
+          "cuts": 30726,
+          "round": 0
+        },
+        {
+          "time": 1.5802608750527725,
+          "lower_bound": -2760.875,
+          "energy": -2105.375,
+          "cuts": 31246,
+          "round": 0
+        },
+        {
+          "time": 3.6252412090543658,
+          "lower_bound": -2760.875,
+          "energy": -2105.375,
+          "cuts": 31246,
+          "round": 1
+        },
+        {
+          "time": 5.100199084030464,
+          "lower_bound": -2760.875,
+          "energy": -2105.375,
+          "cuts": 31246,
+          "round": 1
+        }
+      ],
+      "method": "deterministic",
+      "seed": 1001,
+      "nodes": 1288,
+      "edges": 8262,
+      "damaged": false,
+      "repeat": 2,
+      "target_gap": 985.7750000000001
+    },
+    {
+      "seconds": 5.078134874929674,
+      "energy": -1882.375,
+      "lower_bound": -3498.125,
+      "numerical_gap": 1615.75,
+      "verified_bound": -3498.125,
+      "verified_gap": 1615.75,
+      "status": "TIME_LIMIT",
+      "cuts": 61783,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.034644832951017,
+          "lower_bound": -3498.125,
+          "energy": -1882.375,
+          "cuts": 61783,
+          "round": 0
+        }
+      ],
+      "method": "static",
+      "seed": 1001,
+      "nodes": 1288,
+      "edges": 8262,
+      "damaged": false,
+      "repeat": 2,
+      "target_gap": 985.7750000000001
+    },
+    {
+      "seconds": 5.066899165976793,
+      "energy": 19.125,
+      "lower_bound": -4555.375,
+      "numerical_gap": 4574.5,
+      "verified_bound": -4928.875,
+      "verified_gap": 4948.0,
+      "status": "TIME_LIMIT",
+      "cuts": 0,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.032495375024155,
+          "lower_bound": -4928.875,
+          "energy": 19.125,
+          "cuts": 0,
+          "round": 0
+        }
+      ],
+      "method": "native",
+      "seed": 1001,
+      "nodes": 1288,
+      "edges": 8262,
+      "damaged": false,
+      "repeat": 2,
+      "target_gap": 985.7750000000001
+    },
+    {
+      "seconds": 5.084359375061467,
+      "energy": -674.875,
+      "lower_bound": -3338.875,
+      "numerical_gap": 2664.0,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "TIME_LIMIT",
+      "time_to_target": null,
+      "solver_stats": {
+        "solver 0": {
+          "number of vertices": 1288,
+          "number of edges": 9358,
+          "mip solver": "SCIP 10.0.2",
+          "lp solver": "SoPlex 8.0.2",
+          "cpu_solving_time": 4.995914,
+          "best_solution_value": 345.5,
+          "optimal_solution_found": false,
+          "timelimit_reached": true,
+          "bab_nodes": 1,
+          "final_bound_value": 1677.5,
+          "root_bound_value": 1677.5,
+          "scip_randomseedshift": 2,
+          "scip_timelimit": 4.995
+        },
+        "optimality proven": false,
+        "runtime [s]": 5.023,
+        "best solution value": 347.0
+      },
+      "method": "sms",
+      "seed": 1001,
+      "nodes": 1288,
+      "edges": 8262,
+      "damaged": false,
+      "repeat": 2,
+      "target_gap": 985.7750000000001
+    },
+    {
+      "seconds": 5.053403874975629,
+      "energy": -2111.875,
+      "lower_bound": null,
+      "numerical_gap": null,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "HEURISTIC",
+      "time_to_target": null,
+      "method": "heuristic",
+      "seed": 1001,
+      "nodes": 1288,
+      "edges": 8262,
+      "damaged": false,
+      "repeat": 2,
+      "target_gap": 985.7750000000001
+    },
+    {
+      "seconds": 5.641413416014984,
+      "energy": -46.5,
+      "lower_bound": -4575.5,
+      "numerical_gap": 4529.0,
+      "verified_bound": -4922.5,
+      "verified_gap": 4876.0,
+      "status": "TIME_LIMIT",
+      "cuts": 0,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.608066625078209,
+          "lower_bound": -4922.5,
+          "energy": -46.5,
+          "cuts": 0,
+          "round": 0
+        }
+      ],
+      "method": "native",
+      "seed": 1002,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 0,
+      "target_gap": 984.5
+    },
+    {
+      "seconds": 5.077094417065382,
+      "energy": -1874.75,
+      "lower_bound": -3514.5,
+      "numerical_gap": 1639.75,
+      "verified_bound": -3514.5,
+      "verified_gap": 1639.75,
+      "status": "TIME_LIMIT",
+      "cuts": 61428,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.034369374974631,
+          "lower_bound": -3514.5,
+          "energy": -1874.75,
+          "cuts": 61428,
+          "round": 0
+        }
+      ],
+      "method": "static",
+      "seed": 1002,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 0,
+      "target_gap": 984.5
+    },
+    {
+      "seconds": 5.198150375043042,
+      "energy": -2117.75,
+      "lower_bound": -2792.5,
+      "numerical_gap": 674.75,
+      "verified_bound": -2792.5,
+      "verified_gap": 674.75,
+      "status": "TIME_LIMIT",
+      "cuts": 31404,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.9490343329962343,
+      "progress": [
+        {
+          "time": 0.9490343329962343,
+          "lower_bound": -2792.5,
+          "energy": -2117.75,
+          "cuts": 30892,
+          "round": 0
+        },
+        {
+          "time": 1.5843267500167713,
+          "lower_bound": -2792.5,
+          "energy": -2117.75,
+          "cuts": 31404,
+          "round": 0
+        },
+        {
+          "time": 3.615735166007653,
+          "lower_bound": -2792.5,
+          "energy": -2117.75,
+          "cuts": 31404,
+          "round": 1
+        },
+        {
+          "time": 5.094052999978885,
+          "lower_bound": -2792.5,
+          "energy": -2117.75,
+          "cuts": 31404,
+          "round": 1
+        }
+      ],
+      "method": "deterministic",
+      "seed": 1002,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 0,
+      "target_gap": 984.5
+    },
+    {
+      "seconds": 5.199997625080869,
+      "energy": -2117.75,
+      "lower_bound": -2792.5,
+      "numerical_gap": 674.75,
+      "verified_bound": -2792.5,
+      "verified_gap": 674.75,
+      "status": "TIME_LIMIT",
+      "cuts": 31404,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.9414948750054464,
+      "progress": [
+        {
+          "time": 0.9414948750054464,
+          "lower_bound": -2792.5,
+          "energy": -2117.75,
+          "cuts": 30892,
+          "round": 0
+        },
+        {
+          "time": 1.577796124969609,
+          "lower_bound": -2792.5,
+          "energy": -2117.75,
+          "cuts": 31404,
+          "round": 0
+        },
+        {
+          "time": 3.6189596250187606,
+          "lower_bound": -2792.5,
+          "energy": -2117.75,
+          "cuts": 31404,
+          "round": 1
+        },
+        {
+          "time": 5.096376458066516,
+          "lower_bound": -2792.5,
+          "energy": -2117.75,
+          "cuts": 31404,
+          "round": 1
+        }
+      ],
+      "method": "learned",
+      "seed": 1002,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 0,
+      "target_gap": 984.5
+    },
+    {
+      "seconds": 5.049616708070971,
+      "energy": -2123.0,
+      "lower_bound": null,
+      "numerical_gap": null,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "HEURISTIC",
+      "time_to_target": null,
+      "method": "heuristic",
+      "seed": 1002,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 0,
+      "target_gap": 984.5
+    },
+    {
+      "seconds": 5.081734500010498,
+      "energy": -726.5,
+      "lower_bound": -3364.625,
+      "numerical_gap": 2638.125,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "TIME_LIMIT",
+      "time_to_target": null,
+      "solver_stats": {
+        "solver 0": {
+          "number of vertices": 1289,
+          "number of edges": 9353,
+          "mip solver": "SCIP 10.0.2",
+          "lp solver": "SoPlex 8.0.2",
+          "cpu_solving_time": 4.996853,
+          "best_solution_value": 351.875,
+          "optimal_solution_found": false,
+          "timelimit_reached": true,
+          "bab_nodes": 1,
+          "final_bound_value": 1670.9375,
+          "root_bound_value": 1670.9375,
+          "scip_randomseedshift": 0,
+          "scip_timelimit": 4.996
+        },
+        "optimality proven": false,
+        "runtime [s]": 5.022,
+        "best solution value": 351.875
+      },
+      "method": "sms",
+      "seed": 1002,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 0,
+      "target_gap": 984.5
+    },
+    {
+      "seconds": 5.050700416089967,
+      "energy": -2115.25,
+      "lower_bound": null,
+      "numerical_gap": null,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "HEURISTIC",
+      "time_to_target": null,
+      "method": "heuristic",
+      "seed": 1002,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 1,
+      "target_gap": 984.5
+    },
+    {
+      "seconds": 5.1990359999472275,
+      "energy": -2101.25,
+      "lower_bound": -2793.0,
+      "numerical_gap": 691.75,
+      "verified_bound": -2793.0,
+      "verified_gap": 691.75,
+      "status": "TIME_LIMIT",
+      "cuts": 31404,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.9582595420069993,
+      "progress": [
+        {
+          "time": 0.9582595420069993,
+          "lower_bound": -2793.0,
+          "energy": -2101.25,
+          "cuts": 30892,
+          "round": 0
+        },
+        {
+          "time": 1.6088842500466853,
+          "lower_bound": -2793.0,
+          "energy": -2101.25,
+          "cuts": 31404,
+          "round": 0
+        },
+        {
+          "time": 3.619576125056483,
+          "lower_bound": -2793.0,
+          "energy": -2101.25,
+          "cuts": 31404,
+          "round": 1
+        },
+        {
+          "time": 5.094150291988626,
+          "lower_bound": -2793.0,
+          "energy": -2101.25,
+          "cuts": 31404,
+          "round": 1
+        }
+      ],
+      "method": "learned",
+      "seed": 1002,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 1,
+      "target_gap": 984.5
+    },
+    {
+      "seconds": 5.201794167049229,
+      "energy": -2101.25,
+      "lower_bound": -2793.0,
+      "numerical_gap": 691.75,
+      "verified_bound": -2793.0,
+      "verified_gap": 691.75,
+      "status": "TIME_LIMIT",
+      "cuts": 31404,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.9513200419023633,
+      "progress": [
+        {
+          "time": 0.9513200419023633,
+          "lower_bound": -2793.0,
+          "energy": -2101.25,
+          "cuts": 30892,
+          "round": 0
+        },
+        {
+          "time": 1.5941407498903573,
+          "lower_bound": -2793.0,
+          "energy": -2101.25,
+          "cuts": 31404,
+          "round": 0
+        },
+        {
+          "time": 3.6182645419612527,
+          "lower_bound": -2793.0,
+          "energy": -2101.25,
+          "cuts": 31404,
+          "round": 1
+        },
+        {
+          "time": 5.09629666688852,
+          "lower_bound": -2793.0,
+          "energy": -2101.25,
+          "cuts": 31404,
+          "round": 1
+        }
+      ],
+      "method": "deterministic",
+      "seed": 1002,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 1,
+      "target_gap": 984.5
+    },
+    {
+      "seconds": 5.0778299580561,
+      "energy": -1870.0,
+      "lower_bound": -3529.25,
+      "numerical_gap": 1659.25,
+      "verified_bound": -3529.25,
+      "verified_gap": 1659.25,
+      "status": "TIME_LIMIT",
+      "cuts": 61153,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.0350580830127,
+          "lower_bound": -3529.25,
+          "energy": -1870.0,
+          "cuts": 61153,
+          "round": 0
+        }
+      ],
+      "method": "static",
+      "seed": 1002,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 1,
+      "target_gap": 984.5
+    },
+    {
+      "seconds": 5.276231124997139,
+      "energy": -46.5,
+      "lower_bound": -4584.25,
+      "numerical_gap": 4537.75,
+      "verified_bound": -4922.5,
+      "verified_gap": 4876.0,
+      "status": "TIME_LIMIT",
+      "cuts": 0,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.241883707931265,
+          "lower_bound": -4922.5,
+          "energy": -46.5,
+          "cuts": 0,
+          "round": 0
+        }
+      ],
+      "method": "native",
+      "seed": 1002,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 1,
+      "target_gap": 984.5
+    },
+    {
+      "seconds": 5.082099457969889,
+      "energy": -800.0,
+      "lower_bound": -3362.125,
+      "numerical_gap": 2562.125,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "TIME_LIMIT",
+      "time_to_target": null,
+      "solver_stats": {
+        "solver 0": {
+          "number of vertices": 1289,
+          "number of edges": 9353,
+          "mip solver": "SCIP 10.0.2",
+          "lp solver": "SoPlex 8.0.2",
+          "cpu_solving_time": 4.997758,
+          "best_solution_value": 388.625,
+          "optimal_solution_found": false,
+          "timelimit_reached": true,
+          "bab_nodes": 1,
+          "final_bound_value": 1669.6875,
+          "root_bound_value": 1669.6875,
+          "scip_randomseedshift": 1,
+          "scip_timelimit": 4.997
+        },
+        "optimality proven": false,
+        "runtime [s]": 5.025,
+        "best solution value": 388.625
+      },
+      "method": "sms",
+      "seed": 1002,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 1,
+      "target_gap": 984.5
+    },
+    {
+      "seconds": 5.05206575000193,
+      "energy": -2120.5,
+      "lower_bound": null,
+      "numerical_gap": null,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "HEURISTIC",
+      "time_to_target": null,
+      "method": "heuristic",
+      "seed": 1002,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 2,
+      "target_gap": 984.5
+    },
+    {
+      "seconds": 5.082867917022668,
+      "energy": -768.5,
+      "lower_bound": -3362.375,
+      "numerical_gap": 2593.875,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "TIME_LIMIT",
+      "time_to_target": null,
+      "solver_stats": {
+        "solver 0": {
+          "number of vertices": 1289,
+          "number of edges": 9353,
+          "mip solver": "SCIP 10.0.2",
+          "lp solver": "SoPlex 8.0.2",
+          "cpu_solving_time": 4.995664,
+          "best_solution_value": 372.875,
+          "optimal_solution_found": false,
+          "timelimit_reached": true,
+          "bab_nodes": 1,
+          "final_bound_value": 1669.8125,
+          "root_bound_value": 1669.8125,
+          "scip_randomseedshift": 2,
+          "scip_timelimit": 4.995
+        },
+        "optimality proven": false,
+        "runtime [s]": 5.022,
+        "best solution value": 372.875
+      },
+      "method": "sms",
+      "seed": 1002,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 2,
+      "target_gap": 984.5
+    },
+    {
+      "seconds": 5.130432625068352,
+      "energy": -46.5,
+      "lower_bound": -4586.25,
+      "numerical_gap": 4539.75,
+      "verified_bound": -4922.5,
+      "verified_gap": 4876.0,
+      "status": "TIME_LIMIT",
+      "cuts": 0,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.096442125039175,
+          "lower_bound": -4922.5,
+          "energy": -46.5,
+          "cuts": 0,
+          "round": 0
+        }
+      ],
+      "method": "native",
+      "seed": 1002,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 2,
+      "target_gap": 984.5
+    },
+    {
+      "seconds": 5.080251624924131,
+      "energy": -1870.5,
+      "lower_bound": -3526.5,
+      "numerical_gap": 1656.0,
+      "verified_bound": -3526.5,
+      "verified_gap": 1656.0,
+      "status": "TIME_LIMIT",
+      "cuts": 61209,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.037536417017691,
+          "lower_bound": -3526.5,
+          "energy": -1870.5,
+          "cuts": 61209,
+          "round": 0
+        }
+      ],
+      "method": "static",
+      "seed": 1002,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 2,
+      "target_gap": 984.5
+    },
+    {
+      "seconds": 5.197351459064521,
+      "energy": -2100.5,
+      "lower_bound": -2793.0,
+      "numerical_gap": 692.5,
+      "verified_bound": -2793.0,
+      "verified_gap": 692.5,
+      "status": "TIME_LIMIT",
+      "cuts": 31404,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.9446970829740167,
+      "progress": [
+        {
+          "time": 0.9446970829740167,
+          "lower_bound": -2793.0,
+          "energy": -2100.5,
+          "cuts": 30892,
+          "round": 0
+        },
+        {
+          "time": 1.5801173329818994,
+          "lower_bound": -2793.0,
+          "energy": -2100.5,
+          "cuts": 31404,
+          "round": 0
+        },
+        {
+          "time": 3.6159815409919247,
+          "lower_bound": -2793.0,
+          "energy": -2100.5,
+          "cuts": 31404,
+          "round": 1
+        },
+        {
+          "time": 5.092967832926661,
+          "lower_bound": -2793.0,
+          "energy": -2100.5,
+          "cuts": 31404,
+          "round": 1
+        }
+      ],
+      "method": "deterministic",
+      "seed": 1002,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 2,
+      "target_gap": 984.5
+    },
+    {
+      "seconds": 5.200263291946612,
+      "energy": -2100.5,
+      "lower_bound": -2793.0,
+      "numerical_gap": 692.5,
+      "verified_bound": -2793.0,
+      "verified_gap": 692.5,
+      "status": "TIME_LIMIT",
+      "cuts": 31404,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.9456616250099614,
+      "progress": [
+        {
+          "time": 0.9456616250099614,
+          "lower_bound": -2793.0,
+          "energy": -2100.5,
+          "cuts": 30892,
+          "round": 0
+        },
+        {
+          "time": 1.5762032920029014,
+          "lower_bound": -2793.0,
+          "energy": -2100.5,
+          "cuts": 31404,
+          "round": 0
+        },
+        {
+          "time": 3.6164510420057923,
+          "lower_bound": -2793.0,
+          "energy": -2100.5,
+          "cuts": 31404,
+          "round": 1
+        },
+        {
+          "time": 5.095051583950408,
+          "lower_bound": -2793.0,
+          "energy": -2100.5,
+          "cuts": 31404,
+          "round": 1
+        }
+      ],
+      "method": "learned",
+      "seed": 1002,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 2,
+      "target_gap": 984.5
+    },
+    {
+      "seconds": 5.082655792008154,
+      "energy": -667.375,
+      "lower_bound": -3385.375,
+      "numerical_gap": 2718.0,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "TIME_LIMIT",
+      "time_to_target": null,
+      "solver_stats": {
+        "solver 0": {
+          "number of vertices": 1289,
+          "number of edges": 9374,
+          "mip solver": "SCIP 10.0.2",
+          "lp solver": "SoPlex 8.0.2",
+          "cpu_solving_time": 4.996013,
+          "best_solution_value": 336.75,
+          "optimal_solution_found": false,
+          "timelimit_reached": true,
+          "bab_nodes": 1,
+          "final_bound_value": 1695.75,
+          "root_bound_value": 1695.75,
+          "scip_randomseedshift": 0,
+          "scip_timelimit": 4.995
+        },
+        "optimality proven": false,
+        "runtime [s]": 5.022,
+        "best solution value": 336.75
+      },
+      "method": "sms",
+      "seed": 1003,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 0,
+      "target_gap": 987.375
+    },
+    {
+      "seconds": 5.052977416897193,
+      "energy": -2100.375,
+      "lower_bound": null,
+      "numerical_gap": null,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "HEURISTIC",
+      "time_to_target": null,
+      "method": "heuristic",
+      "seed": 1003,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 0,
+      "target_gap": 987.375
+    },
+    {
+      "seconds": 5.201479582930915,
+      "energy": -2078.375,
+      "lower_bound": -2790.625,
+      "numerical_gap": 712.25,
+      "verified_bound": -2790.625,
+      "verified_gap": 712.25,
+      "status": "TIME_LIMIT",
+      "cuts": 31508,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.9699300000211224,
+      "progress": [
+        {
+          "time": 0.9699300000211224,
+          "lower_bound": -2790.625,
+          "energy": -2078.375,
+          "cuts": 30996,
+          "round": 0
+        },
+        {
+          "time": 1.6089929590234533,
+          "lower_bound": -2790.625,
+          "energy": -2078.375,
+          "cuts": 31508,
+          "round": 0
+        },
+        {
+          "time": 3.6180276250233874,
+          "lower_bound": -2790.625,
+          "energy": -2078.375,
+          "cuts": 31508,
+          "round": 1
+        },
+        {
+          "time": 5.095739625045098,
+          "lower_bound": -2790.625,
+          "energy": -2078.375,
+          "cuts": 31508,
+          "round": 1
+        }
+      ],
+      "method": "learned",
+      "seed": 1003,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 0,
+      "target_gap": 987.375
+    },
+    {
+      "seconds": 5.198208999936469,
+      "energy": -2078.375,
+      "lower_bound": -2790.625,
+      "numerical_gap": 712.25,
+      "verified_bound": -2790.625,
+      "verified_gap": 712.25,
+      "status": "TIME_LIMIT",
+      "cuts": 31508,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.9537803339771926,
+      "progress": [
+        {
+          "time": 0.9537803339771926,
+          "lower_bound": -2790.625,
+          "energy": -2078.375,
+          "cuts": 30996,
+          "round": 0
+        },
+        {
+          "time": 1.5867384589510038,
+          "lower_bound": -2790.625,
+          "energy": -2078.375,
+          "cuts": 31508,
+          "round": 0
+        },
+        {
+          "time": 3.6177394170081243,
+          "lower_bound": -2790.625,
+          "energy": -2078.375,
+          "cuts": 31508,
+          "round": 1
+        },
+        {
+          "time": 5.09319325000979,
+          "lower_bound": -2790.625,
+          "energy": -2078.375,
+          "cuts": 31508,
+          "round": 1
+        }
+      ],
+      "method": "deterministic",
+      "seed": 1003,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 0,
+      "target_gap": 987.375
+    },
+    {
+      "seconds": 5.078613874968141,
+      "energy": -1880.625,
+      "lower_bound": -3515.875,
+      "numerical_gap": 1635.25,
+      "verified_bound": -3515.875,
+      "verified_gap": 1635.25,
+      "status": "TIME_LIMIT",
+      "cuts": 61885,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.035601291921921,
+          "lower_bound": -3515.875,
+          "energy": -1880.625,
+          "cuts": 61885,
+          "round": 0
+        }
+      ],
+      "method": "static",
+      "seed": 1003,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 0,
+      "target_gap": 987.375
+    },
+    {
+      "seconds": 6.341232708073221,
+      "energy": -9.125,
+      "lower_bound": -4590.875,
+      "numerical_gap": 4581.75,
+      "verified_bound": -4936.875,
+      "verified_gap": 4927.75,
+      "status": "TIME_LIMIT",
+      "cuts": 0,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 6.307937416015193,
+          "lower_bound": -4936.875,
+          "energy": -9.125,
+          "cuts": 0,
+          "round": 0
+        }
+      ],
+      "method": "native",
+      "seed": 1003,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 0,
+      "target_gap": 987.375
+    },
+    {
+      "seconds": 5.082713333074935,
+      "energy": -844.875,
+      "lower_bound": -3388.5,
+      "numerical_gap": 2543.625,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "TIME_LIMIT",
+      "time_to_target": null,
+      "solver_stats": {
+        "solver 0": {
+          "number of vertices": 1289,
+          "number of edges": 9374,
+          "mip solver": "SCIP 10.0.2",
+          "lp solver": "SoPlex 8.0.2",
+          "cpu_solving_time": 4.99757,
+          "best_solution_value": 425.5,
+          "optimal_solution_found": false,
+          "timelimit_reached": true,
+          "bab_nodes": 1,
+          "final_bound_value": 1697.3125,
+          "root_bound_value": 1697.3125,
+          "scip_randomseedshift": 1,
+          "scip_timelimit": 4.997
+        },
+        "optimality proven": false,
+        "runtime [s]": 5.024,
+        "best solution value": 425.5
+      },
+      "method": "sms",
+      "seed": 1003,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 1,
+      "target_gap": 987.375
+    },
+    {
+      "seconds": 5.049917875090614,
+      "energy": -9.125,
+      "lower_bound": -4564.875,
+      "numerical_gap": 4555.75,
+      "verified_bound": -4936.875,
+      "verified_gap": 4927.75,
+      "status": "TIME_LIMIT",
+      "cuts": 0,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.016113750054501,
+          "lower_bound": -4936.875,
+          "energy": -9.125,
+          "cuts": 0,
+          "round": 0
+        }
+      ],
+      "method": "native",
+      "seed": 1003,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 1,
+      "target_gap": 987.375
+    },
+    {
+      "seconds": 5.0783525839215145,
+      "energy": -1862.125,
+      "lower_bound": -3529.375,
+      "numerical_gap": 1667.25,
+      "verified_bound": -3529.375,
+      "verified_gap": 1667.25,
+      "status": "TIME_LIMIT",
+      "cuts": 61491,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.034957583062351,
+          "lower_bound": -3529.375,
+          "energy": -1862.125,
+          "cuts": 61491,
+          "round": 0
+        }
+      ],
+      "method": "static",
+      "seed": 1003,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 1,
+      "target_gap": 987.375
+    },
+    {
+      "seconds": 5.199472832959145,
+      "energy": -2071.875,
+      "lower_bound": -2790.625,
+      "numerical_gap": 718.75,
+      "verified_bound": -2790.625,
+      "verified_gap": 718.75,
+      "status": "TIME_LIMIT",
+      "cuts": 31508,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.9534752910258248,
+      "progress": [
+        {
+          "time": 0.9534752910258248,
+          "lower_bound": -2790.625,
+          "energy": -2071.875,
+          "cuts": 30996,
+          "round": 0
+        },
+        {
+          "time": 1.5916543329367414,
+          "lower_bound": -2790.625,
+          "energy": -2071.875,
+          "cuts": 31508,
+          "round": 0
+        },
+        {
+          "time": 3.6168262499850243,
+          "lower_bound": -2790.625,
+          "energy": -2071.875,
+          "cuts": 31508,
+          "round": 1
+        },
+        {
+          "time": 5.096321500022896,
+          "lower_bound": -2790.625,
+          "energy": -2071.875,
+          "cuts": 31508,
+          "round": 1
+        }
+      ],
+      "method": "deterministic",
+      "seed": 1003,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 1,
+      "target_gap": 987.375
+    },
+    {
+      "seconds": 5.20014395902399,
+      "energy": -2071.875,
+      "lower_bound": -2790.625,
+      "numerical_gap": 718.75,
+      "verified_bound": -2790.625,
+      "verified_gap": 718.75,
+      "status": "TIME_LIMIT",
+      "cuts": 31508,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.9489943750668317,
+      "progress": [
+        {
+          "time": 0.9489943750668317,
+          "lower_bound": -2790.625,
+          "energy": -2071.875,
+          "cuts": 30996,
+          "round": 0
+        },
+        {
+          "time": 1.5965880840085447,
+          "lower_bound": -2790.625,
+          "energy": -2071.875,
+          "cuts": 31508,
+          "round": 0
+        },
+        {
+          "time": 3.616779459058307,
+          "lower_bound": -2790.625,
+          "energy": -2071.875,
+          "cuts": 31508,
+          "round": 1
+        },
+        {
+          "time": 5.095606500050053,
+          "lower_bound": -2790.625,
+          "energy": -2071.875,
+          "cuts": 31508,
+          "round": 1
+        }
+      ],
+      "method": "learned",
+      "seed": 1003,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 1,
+      "target_gap": 987.375
+    },
+    {
+      "seconds": 5.0554243749938905,
+      "energy": -2104.625,
+      "lower_bound": null,
+      "numerical_gap": null,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "HEURISTIC",
+      "time_to_target": null,
+      "method": "heuristic",
+      "seed": 1003,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 1,
+      "target_gap": 987.375
+    },
+    {
+      "seconds": 5.202320583048277,
+      "energy": -2084.375,
+      "lower_bound": -2790.375,
+      "numerical_gap": 706.0,
+      "verified_bound": -2790.375,
+      "verified_gap": 706.0,
+      "status": "TIME_LIMIT",
+      "cuts": 31508,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.9929368750890717,
+      "progress": [
+        {
+          "time": 0.9929368750890717,
+          "lower_bound": -2790.375,
+          "energy": -2084.375,
+          "cuts": 30996,
+          "round": 0
+        },
+        {
+          "time": 1.6414830830181018,
+          "lower_bound": -2790.375,
+          "energy": -2084.375,
+          "cuts": 31508,
+          "round": 0
+        },
+        {
+          "time": 3.6169774159789085,
+          "lower_bound": -2790.375,
+          "energy": -2084.375,
+          "cuts": 31508,
+          "round": 1
+        },
+        {
+          "time": 5.095713958027773,
+          "lower_bound": -2790.375,
+          "energy": -2084.375,
+          "cuts": 31508,
+          "round": 1
+        }
+      ],
+      "method": "learned",
+      "seed": 1003,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 2,
+      "target_gap": 987.375
+    },
+    {
+      "seconds": 5.197598792030476,
+      "energy": -2084.375,
+      "lower_bound": -2790.375,
+      "numerical_gap": 706.0,
+      "verified_bound": -2790.375,
+      "verified_gap": 706.0,
+      "status": "TIME_LIMIT",
+      "cuts": 31508,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.9510749999899417,
+      "progress": [
+        {
+          "time": 0.9510749999899417,
+          "lower_bound": -2790.375,
+          "energy": -2084.375,
+          "cuts": 30996,
+          "round": 0
+        },
+        {
+          "time": 1.5818800840061158,
+          "lower_bound": -2790.375,
+          "energy": -2084.375,
+          "cuts": 31508,
+          "round": 0
+        },
+        {
+          "time": 3.616120917024091,
+          "lower_bound": -2790.375,
+          "energy": -2084.375,
+          "cuts": 31508,
+          "round": 1
+        },
+        {
+          "time": 5.093614542041905,
+          "lower_bound": -2790.375,
+          "energy": -2084.375,
+          "cuts": 31508,
+          "round": 1
+        }
+      ],
+      "method": "deterministic",
+      "seed": 1003,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 2,
+      "target_gap": 987.375
+    },
+    {
+      "seconds": 5.078415250056423,
+      "energy": -1861.625,
+      "lower_bound": -3503.625,
+      "numerical_gap": 1642.0,
+      "verified_bound": -3503.625,
+      "verified_gap": 1642.0,
+      "status": "TIME_LIMIT",
+      "cuts": 62183,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.03515625,
+          "lower_bound": -3503.625,
+          "energy": -1861.625,
+          "cuts": 62183,
+          "round": 0
+        }
+      ],
+      "method": "static",
+      "seed": 1003,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 2,
+      "target_gap": 987.375
+    },
+    {
+      "seconds": 5.087699041003361,
+      "energy": -57.375,
+      "lower_bound": -4566.625,
+      "numerical_gap": 4509.25,
+      "verified_bound": -4936.875,
+      "verified_gap": 4879.5,
+      "status": "TIME_LIMIT",
+      "cuts": 0,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.0529943340225145,
+          "lower_bound": -4936.875,
+          "energy": -57.375,
+          "cuts": 0,
+          "round": 0
+        }
+      ],
+      "method": "native",
+      "seed": 1003,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 2,
+      "target_gap": 987.375
+    },
+    {
+      "seconds": 5.085198833025061,
+      "energy": -795.875,
+      "lower_bound": -3381.5,
+      "numerical_gap": 2585.625,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "TIME_LIMIT",
+      "time_to_target": null,
+      "solver_stats": {
+        "solver 0": {
+          "number of vertices": 1289,
+          "number of edges": 9374,
+          "mip solver": "SCIP 10.0.2",
+          "lp solver": "SoPlex 8.0.2",
+          "cpu_solving_time": 4.995529,
+          "best_solution_value": 401.0,
+          "optimal_solution_found": false,
+          "timelimit_reached": true,
+          "bab_nodes": 1,
+          "final_bound_value": 1693.8125,
+          "root_bound_value": 1693.8125,
+          "scip_randomseedshift": 2,
+          "scip_timelimit": 4.995
+        },
+        "optimality proven": false,
+        "runtime [s]": 5.022,
+        "best solution value": 401.0
+      },
+      "method": "sms",
+      "seed": 1003,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 2,
+      "target_gap": 987.375
+    },
+    {
+      "seconds": 5.058328208047897,
+      "energy": -2097.625,
+      "lower_bound": null,
+      "numerical_gap": null,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "HEURISTIC",
+      "time_to_target": null,
+      "method": "heuristic",
+      "seed": 1003,
+      "nodes": 1288,
+      "edges": 8267,
+      "damaged": false,
+      "repeat": 2,
+      "target_gap": 987.375
+    },
+    {
+      "seconds": 5.0719631660031155,
+      "energy": -736.625,
+      "lower_bound": -2651.0416666666665,
+      "numerical_gap": 1914.4166666666665,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "TIME_LIMIT",
+      "time_to_target": null,
+      "solver_stats": {
+        "solver 0": {
+          "number of vertices": 1225,
+          "number of edges": 7806,
+          "mip solver": "SCIP 10.0.2",
+          "lp solver": "SoPlex 8.0.2",
+          "cpu_solving_time": 4.99694,
+          "best_solution_value": 378.875,
+          "optimal_solution_found": false,
+          "timelimit_reached": true,
+          "bab_nodes": 1,
+          "final_bound_value": 1336.0833333333333,
+          "root_bound_value": 1336.0833333333333,
+          "scip_randomseedshift": 0,
+          "scip_timelimit": 4.996
+        },
+        "optimality proven": false,
+        "runtime [s]": 5.018,
+        "best solution value": 382.0
+      },
+      "method": "sms",
+      "seed": 1001,
+      "nodes": 1227,
+      "edges": 6766,
+      "damaged": true,
+      "repeat": 0,
+      "target_gap": 815.5250000000001
+    },
+    {
+      "seconds": 5.043655832996592,
+      "energy": -1864.125,
+      "lower_bound": null,
+      "numerical_gap": null,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "HEURISTIC",
+      "time_to_target": null,
+      "method": "heuristic",
+      "seed": 1001,
+      "nodes": 1227,
+      "edges": 6766,
+      "damaged": true,
+      "repeat": 0,
+      "target_gap": 815.5250000000001
+    },
+    {
+      "seconds": 5.081853082985617,
+      "energy": -1864.125,
+      "lower_bound": -2336.875,
+      "numerical_gap": 472.75,
+      "verified_bound": -2336.875,
+      "verified_gap": 472.75,
+      "status": "TIME_LIMIT",
+      "cuts": 20010,
+      "subgraph_cuts": 3,
+      "rounds": 1,
+      "time_to_target": 0.7472254999447614,
+      "progress": [
+        {
+          "time": 0.7472254999447614,
+          "lower_bound": -2382.125,
+          "energy": -1864.125,
+          "cuts": 19495,
+          "round": 0
+        },
+        {
+          "time": 1.332229874911718,
+          "lower_bound": -2382.125,
+          "energy": -1864.125,
+          "cuts": 20010,
+          "round": 0
+        },
+        {
+          "time": 3.5399272919166833,
+          "lower_bound": -2336.875,
+          "energy": -1864.125,
+          "cuts": 20010,
+          "round": 1
+        },
+        {
+          "time": 5.037780708982609,
+          "lower_bound": -2336.875,
+          "energy": -1864.125,
+          "cuts": 20010,
+          "round": 1
+        }
+      ],
+      "method": "learned",
+      "seed": 1001,
+      "nodes": 1227,
+      "edges": 6766,
+      "damaged": true,
+      "repeat": 0,
+      "target_gap": 815.5250000000001
+    },
+    {
+      "seconds": 5.079973625019193,
+      "energy": -1864.125,
+      "lower_bound": -2339.875,
+      "numerical_gap": 475.75,
+      "verified_bound": -2339.875,
+      "verified_gap": 475.75,
+      "status": "TIME_LIMIT",
+      "cuts": 20015,
+      "subgraph_cuts": 8,
+      "rounds": 1,
+      "time_to_target": 0.741135917021893,
+      "progress": [
+        {
+          "time": 0.741135917021893,
+          "lower_bound": -2382.125,
+          "energy": -1864.125,
+          "cuts": 19495,
+          "round": 0
+        },
+        {
+          "time": 1.3226542079355568,
+          "lower_bound": -2348.625,
+          "energy": -1864.125,
+          "cuts": 20015,
+          "round": 0
+        },
+        {
+          "time": 3.5387558329384774,
+          "lower_bound": -2339.875,
+          "energy": -1864.125,
+          "cuts": 20015,
+          "round": 1
+        },
+        {
+          "time": 5.0352315419586375,
+          "lower_bound": -2339.875,
+          "energy": -1864.125,
+          "cuts": 20015,
+          "round": 1
+        }
+      ],
+      "method": "deterministic",
+      "seed": 1001,
+      "nodes": 1227,
+      "edges": 6766,
+      "damaged": true,
+      "repeat": 0,
+      "target_gap": 815.5250000000001
+    },
+    {
+      "seconds": 5.079320291988552,
+      "energy": -1626.375,
+      "lower_bound": -2683.375,
+      "numerical_gap": 1057.0,
+      "verified_bound": -2683.375,
+      "verified_gap": 1057.0,
+      "status": "TIME_LIMIT",
+      "cuts": 49000,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.030512082972564,
+          "lower_bound": -2683.375,
+          "energy": -1626.375,
+          "cuts": 49000,
+          "round": 0
+        }
+      ],
+      "method": "static",
+      "seed": 1001,
+      "nodes": 1227,
+      "edges": 6766,
+      "damaged": true,
+      "repeat": 0,
+      "target_gap": 815.5250000000001
+    },
+    {
+      "seconds": 5.0588943749899045,
+      "energy": 27.375,
+      "lower_bound": -3716.125,
+      "numerical_gap": 3743.5,
+      "verified_bound": -4077.625,
+      "verified_gap": 4105.0,
+      "status": "TIME_LIMIT",
+      "cuts": 0,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.030522499931976,
+          "lower_bound": -4077.625,
+          "energy": 27.375,
+          "cuts": 0,
+          "round": 0
+        }
+      ],
+      "method": "native",
+      "seed": 1001,
+      "nodes": 1227,
+      "edges": 6766,
+      "damaged": true,
+      "repeat": 0,
+      "target_gap": 815.5250000000001
+    },
+    {
+      "seconds": 5.072805249947123,
+      "energy": -697.125,
+      "lower_bound": -2651.6666666666665,
+      "numerical_gap": 1954.5416666666665,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "TIME_LIMIT",
+      "time_to_target": null,
+      "solver_stats": {
+        "solver 0": {
+          "number of vertices": 1225,
+          "number of edges": 7806,
+          "mip solver": "SCIP 10.0.2",
+          "lp solver": "SoPlex 8.0.2",
+          "cpu_solving_time": 4.995709,
+          "best_solution_value": 359.125,
+          "optimal_solution_found": false,
+          "timelimit_reached": true,
+          "bab_nodes": 1,
+          "final_bound_value": 1336.3958333333333,
+          "root_bound_value": 1336.3958333333333,
+          "scip_randomseedshift": 1,
+          "scip_timelimit": 4.995
+        },
+        "optimality proven": false,
+        "runtime [s]": 5.018,
+        "best solution value": 362.25
+      },
+      "method": "sms",
+      "seed": 1001,
+      "nodes": 1227,
+      "edges": 6766,
+      "damaged": true,
+      "repeat": 1,
+      "target_gap": 815.5250000000001
+    },
+    {
+      "seconds": 5.111619750037789,
+      "energy": 27.375,
+      "lower_bound": -3714.375,
+      "numerical_gap": 3741.75,
+      "verified_bound": -4077.625,
+      "verified_gap": 4105.0,
+      "status": "TIME_LIMIT",
+      "cuts": 0,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.0839712909655645,
+          "lower_bound": -4077.625,
+          "energy": 27.375,
+          "cuts": 0,
+          "round": 0
+        }
+      ],
+      "method": "native",
+      "seed": 1001,
+      "nodes": 1227,
+      "edges": 6766,
+      "damaged": true,
+      "repeat": 1,
+      "target_gap": 815.5250000000001
+    },
+    {
+      "seconds": 5.070231833960861,
+      "energy": -1628.125,
+      "lower_bound": -2756.125,
+      "numerical_gap": 1128.0,
+      "verified_bound": -2756.125,
+      "verified_gap": 1128.0,
+      "status": "TIME_LIMIT",
+      "cuts": 47435,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.030887459055521,
+          "lower_bound": -2756.125,
+          "energy": -1628.125,
+          "cuts": 47435,
+          "round": 0
+        }
+      ],
+      "method": "static",
+      "seed": 1001,
+      "nodes": 1227,
+      "edges": 6766,
+      "damaged": true,
+      "repeat": 1,
+      "target_gap": 815.5250000000001
+    },
+    {
+      "seconds": 5.080946415895596,
+      "energy": -1846.875,
+      "lower_bound": -2349.875,
+      "numerical_gap": 503.0,
+      "verified_bound": -2349.875,
+      "verified_gap": 503.0,
+      "status": "TIME_LIMIT",
+      "cuts": 20007,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.7339606669265777,
+      "progress": [
+        {
+          "time": 0.7339606669265777,
+          "lower_bound": -2382.375,
+          "energy": -1846.875,
+          "cuts": 19495,
+          "round": 0
+        },
+        {
+          "time": 1.3328302919398993,
+          "lower_bound": -2382.375,
+          "energy": -1846.875,
+          "cuts": 20007,
+          "round": 0
+        },
+        {
+          "time": 3.5413339169463143,
+          "lower_bound": -2349.875,
+          "energy": -1846.875,
+          "cuts": 20007,
+          "round": 1
+        },
+        {
+          "time": 5.036258124979213,
+          "lower_bound": -2349.875,
+          "energy": -1846.875,
+          "cuts": 20007,
+          "round": 1
+        }
+      ],
+      "method": "deterministic",
+      "seed": 1001,
+      "nodes": 1227,
+      "edges": 6766,
+      "damaged": true,
+      "repeat": 1,
+      "target_gap": 815.5250000000001
+    },
+    {
+      "seconds": 5.079862500075251,
+      "energy": -1846.875,
+      "lower_bound": -2349.375,
+      "numerical_gap": 502.5,
+      "verified_bound": -2349.375,
+      "verified_gap": 502.5,
+      "status": "TIME_LIMIT",
+      "cuts": 20007,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.7333749589743093,
+      "progress": [
+        {
+          "time": 0.7333749589743093,
+          "lower_bound": -2382.375,
+          "energy": -1846.875,
+          "cuts": 19495,
+          "round": 0
+        },
+        {
+          "time": 1.318253666977398,
+          "lower_bound": -2382.375,
+          "energy": -1846.875,
+          "cuts": 20007,
+          "round": 0
+        },
+        {
+          "time": 3.5400071250041947,
+          "lower_bound": -2349.375,
+          "energy": -1846.875,
+          "cuts": 20007,
+          "round": 1
+        },
+        {
+          "time": 5.035109292017296,
+          "lower_bound": -2349.375,
+          "energy": -1846.875,
+          "cuts": 20007,
+          "round": 1
+        }
+      ],
+      "method": "learned",
+      "seed": 1001,
+      "nodes": 1227,
+      "edges": 6766,
+      "damaged": true,
+      "repeat": 1,
+      "target_gap": 815.5250000000001
+    },
+    {
+      "seconds": 5.043799833976664,
+      "energy": -1862.375,
+      "lower_bound": null,
+      "numerical_gap": null,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "HEURISTIC",
+      "time_to_target": null,
+      "method": "heuristic",
+      "seed": 1001,
+      "nodes": 1227,
+      "edges": 6766,
+      "damaged": true,
+      "repeat": 1,
+      "target_gap": 815.5250000000001
+    },
+    {
+      "seconds": 5.1373145000543445,
+      "energy": -1846.875,
+      "lower_bound": -2382.625,
+      "numerical_gap": 535.75,
+      "verified_bound": -2382.625,
+      "verified_gap": 535.75,
+      "status": "TIME_LIMIT",
+      "cuts": 20009,
+      "subgraph_cuts": 2,
+      "rounds": 1,
+      "time_to_target": 0.7389394589699805,
+      "progress": [
+        {
+          "time": 0.7389394589699805,
+          "lower_bound": -2382.625,
+          "energy": -1846.875,
+          "cuts": 19495,
+          "round": 0
+        },
+        {
+          "time": 1.32293291692622,
+          "lower_bound": -2382.625,
+          "energy": -1846.875,
+          "cuts": 20009,
+          "round": 0
+        },
+        {
+          "time": 3.567437749938108,
+          "lower_bound": -2382.625,
+          "energy": -1846.875,
+          "cuts": 20009,
+          "round": 1
+        },
+        {
+          "time": 5.0653619999065995,
+          "lower_bound": -2382.625,
+          "energy": -1846.875,
+          "cuts": 20009,
+          "round": 1
+        }
+      ],
+      "method": "learned",
+      "seed": 1001,
+      "nodes": 1227,
+      "edges": 6766,
+      "damaged": true,
+      "repeat": 2,
+      "target_gap": 815.5250000000001
+    },
+    {
+      "seconds": 5.079259541933425,
+      "energy": -1846.875,
+      "lower_bound": -2346.125,
+      "numerical_gap": 499.25,
+      "verified_bound": -2346.125,
+      "verified_gap": 499.25,
+      "status": "TIME_LIMIT",
+      "cuts": 20007,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.7666876250877976,
+      "progress": [
+        {
+          "time": 0.7666876250877976,
+          "lower_bound": -2382.625,
+          "energy": -1846.875,
+          "cuts": 19495,
+          "round": 0
+        },
+        {
+          "time": 1.3541064170422032,
+          "lower_bound": -2382.625,
+          "energy": -1846.875,
+          "cuts": 20007,
+          "round": 0
+        },
+        {
+          "time": 3.538786542019807,
+          "lower_bound": -2346.125,
+          "energy": -1846.875,
+          "cuts": 20007,
+          "round": 1
+        },
+        {
+          "time": 5.034675625036471,
+          "lower_bound": -2346.125,
+          "energy": -1846.875,
+          "cuts": 20007,
+          "round": 1
+        }
+      ],
+      "method": "deterministic",
+      "seed": 1001,
+      "nodes": 1227,
+      "edges": 6766,
+      "damaged": true,
+      "repeat": 2,
+      "target_gap": 815.5250000000001
+    },
+    {
+      "seconds": 5.069343209033832,
+      "energy": -1631.625,
+      "lower_bound": -2695.375,
+      "numerical_gap": 1063.75,
+      "verified_bound": -2695.375,
+      "verified_gap": 1063.75,
+      "status": "TIME_LIMIT",
+      "cuts": 48686,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.03132499998901,
+          "lower_bound": -2695.375,
+          "energy": -1631.625,
+          "cuts": 48686,
+          "round": 0
+        }
+      ],
+      "method": "static",
+      "seed": 1001,
+      "nodes": 1227,
+      "edges": 6766,
+      "damaged": true,
+      "repeat": 2,
+      "target_gap": 815.5250000000001
+    },
+    {
+      "seconds": 5.0832495000213385,
+      "energy": 27.375,
+      "lower_bound": -3683.625,
+      "numerical_gap": 3711.0,
+      "verified_bound": -4077.625,
+      "verified_gap": 4105.0,
+      "status": "TIME_LIMIT",
+      "cuts": 0,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.0554825839353725,
+          "lower_bound": -4077.625,
+          "energy": 27.375,
+          "cuts": 0,
+          "round": 0
+        }
+      ],
+      "method": "native",
+      "seed": 1001,
+      "nodes": 1227,
+      "edges": 6766,
+      "damaged": true,
+      "repeat": 2,
+      "target_gap": 815.5250000000001
+    },
+    {
+      "seconds": 5.071127583971247,
+      "energy": -726.625,
+      "lower_bound": -2654.0833333333335,
+      "numerical_gap": 1927.4583333333335,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "TIME_LIMIT",
+      "time_to_target": null,
+      "solver_stats": {
+        "solver 0": {
+          "number of vertices": 1225,
+          "number of edges": 7806,
+          "mip solver": "SCIP 10.0.2",
+          "lp solver": "SoPlex 8.0.2",
+          "cpu_solving_time": 4.995515,
+          "best_solution_value": 373.875,
+          "optimal_solution_found": false,
+          "timelimit_reached": true,
+          "bab_nodes": 1,
+          "final_bound_value": 1337.6041666666667,
+          "root_bound_value": 1337.6041666666667,
+          "scip_randomseedshift": 2,
+          "scip_timelimit": 4.995
+        },
+        "optimality proven": false,
+        "runtime [s]": 5.018,
+        "best solution value": 377.0
+      },
+      "method": "sms",
+      "seed": 1001,
+      "nodes": 1227,
+      "edges": 6766,
+      "damaged": true,
+      "repeat": 2,
+      "target_gap": 815.5250000000001
+    },
+    {
+      "seconds": 5.04317787499167,
+      "energy": -1868.125,
+      "lower_bound": null,
+      "numerical_gap": null,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "HEURISTIC",
+      "time_to_target": null,
+      "method": "heuristic",
+      "seed": 1001,
+      "nodes": 1227,
+      "edges": 6766,
+      "damaged": true,
+      "repeat": 2,
+      "target_gap": 815.5250000000001
+    },
+    {
+      "seconds": 5.041109916986898,
+      "energy": -35.625,
+      "lower_bound": -3542.625,
+      "numerical_gap": 3507.0,
+      "verified_bound": -3899.375,
+      "verified_gap": 3863.75,
+      "status": "TIME_LIMIT",
+      "cuts": 0,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.014277374953963,
+          "lower_bound": -3899.375,
+          "energy": -35.625,
+          "cuts": 0,
+          "round": 0
+        }
+      ],
+      "method": "native",
+      "seed": 1002,
+      "nodes": 1206,
+      "edges": 6476,
+      "damaged": true,
+      "repeat": 0,
+      "target_gap": 779.875
+    },
+    {
+      "seconds": 5.065092957927845,
+      "energy": -1562.625,
+      "lower_bound": -2549.875,
+      "numerical_gap": 987.25,
+      "verified_bound": -2549.875,
+      "verified_gap": 987.25,
+      "status": "TIME_LIMIT",
+      "cuts": 46449,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.028962749987841,
+          "lower_bound": -2549.875,
+          "energy": -1562.625,
+          "cuts": 46449,
+          "round": 0
+        }
+      ],
+      "method": "static",
+      "seed": 1002,
+      "nodes": 1206,
+      "edges": 6476,
+      "damaged": true,
+      "repeat": 0,
+      "target_gap": 779.875
+    },
+    {
+      "seconds": 5.075490750023164,
+      "energy": -1790.125,
+      "lower_bound": -2251.375,
+      "numerical_gap": 461.25,
+      "verified_bound": -2251.375,
+      "verified_gap": 461.25,
+      "status": "TIME_LIMIT",
+      "cuts": 18180,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.7008288749493659,
+      "progress": [
+        {
+          "time": 0.7008288749493659,
+          "lower_bound": -2307.125,
+          "energy": -1790.125,
+          "cuts": 17668,
+          "round": 0
+        },
+        {
+          "time": 1.2762934169732034,
+          "lower_bound": -2307.125,
+          "energy": -1790.125,
+          "cuts": 18180,
+          "round": 0
+        },
+        {
+          "time": 3.536788749974221,
+          "lower_bound": -2251.375,
+          "energy": -1790.125,
+          "cuts": 18180,
+          "round": 1
+        },
+        {
+          "time": 5.033917208900675,
+          "lower_bound": -2251.375,
+          "energy": -1790.125,
+          "cuts": 18180,
+          "round": 1
+        }
+      ],
+      "method": "deterministic",
+      "seed": 1002,
+      "nodes": 1206,
+      "edges": 6476,
+      "damaged": true,
+      "repeat": 0,
+      "target_gap": 779.875
+    },
+    {
+      "seconds": 5.075856709037907,
+      "energy": -1790.125,
+      "lower_bound": -2252.625,
+      "numerical_gap": 462.5,
+      "verified_bound": -2252.625,
+      "verified_gap": 462.5,
+      "status": "TIME_LIMIT",
+      "cuts": 18180,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.7012933340156451,
+      "progress": [
+        {
+          "time": 0.7012933340156451,
+          "lower_bound": -2307.125,
+          "energy": -1790.125,
+          "cuts": 17668,
+          "round": 0
+        },
+        {
+          "time": 1.282205209019594,
+          "lower_bound": -2307.125,
+          "energy": -1790.125,
+          "cuts": 18180,
+          "round": 0
+        },
+        {
+          "time": 3.5361597089795396,
+          "lower_bound": -2252.625,
+          "energy": -1790.125,
+          "cuts": 18180,
+          "round": 1
+        },
+        {
+          "time": 5.033508541993797,
+          "lower_bound": -2252.625,
+          "energy": -1790.125,
+          "cuts": 18180,
+          "round": 1
+        }
+      ],
+      "method": "learned",
+      "seed": 1002,
+      "nodes": 1206,
+      "edges": 6476,
+      "damaged": true,
+      "repeat": 0,
+      "target_gap": 779.875
+    },
+    {
+      "seconds": 5.044550040969625,
+      "energy": -1798.875,
+      "lower_bound": null,
+      "numerical_gap": null,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "HEURISTIC",
+      "time_to_target": null,
+      "method": "heuristic",
+      "seed": 1002,
+      "nodes": 1206,
+      "edges": 6476,
+      "damaged": true,
+      "repeat": 0,
+      "target_gap": 779.875
+    },
+    {
+      "seconds": 5.067882417002693,
+      "energy": -642.875,
+      "lower_bound": -2547.34375,
+      "numerical_gap": 1904.46875,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "TIME_LIMIT",
+      "time_to_target": null,
+      "solver_stats": {
+        "solver 0": {
+          "number of vertices": 1207,
+          "number of edges": 7493,
+          "mip solver": "SCIP 10.0.2",
+          "lp solver": "SoPlex 8.0.2",
+          "cpu_solving_time": 4.996524,
+          "best_solution_value": 316.375,
+          "optimal_solution_found": false,
+          "timelimit_reached": true,
+          "bab_nodes": 1,
+          "final_bound_value": 1268.609375,
+          "root_bound_value": 1268.609375,
+          "scip_randomseedshift": 0,
+          "scip_timelimit": 4.996
+        },
+        "optimality proven": false,
+        "runtime [s]": 5.017,
+        "best solution value": 316.375
+      },
+      "method": "sms",
+      "seed": 1002,
+      "nodes": 1206,
+      "edges": 6476,
+      "damaged": true,
+      "repeat": 0,
+      "target_gap": 779.875
+    },
+    {
+      "seconds": 5.042157917050645,
+      "energy": -1802.625,
+      "lower_bound": null,
+      "numerical_gap": null,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "HEURISTIC",
+      "time_to_target": null,
+      "method": "heuristic",
+      "seed": 1002,
+      "nodes": 1206,
+      "edges": 6476,
+      "damaged": true,
+      "repeat": 1,
+      "target_gap": 779.875
+    },
+    {
+      "seconds": 5.07613879092969,
+      "energy": -1787.125,
+      "lower_bound": -2248.625,
+      "numerical_gap": 461.5,
+      "verified_bound": -2248.625,
+      "verified_gap": 461.5,
+      "status": "TIME_LIMIT",
+      "cuts": 18180,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.7166419579880312,
+      "progress": [
+        {
+          "time": 0.7166419579880312,
+          "lower_bound": -2305.875,
+          "energy": -1787.125,
+          "cuts": 17668,
+          "round": 0
+        },
+        {
+          "time": 1.3011271660216153,
+          "lower_bound": -2305.875,
+          "energy": -1787.125,
+          "cuts": 18180,
+          "round": 0
+        },
+        {
+          "time": 3.5370423749554902,
+          "lower_bound": -2248.625,
+          "energy": -1787.125,
+          "cuts": 18180,
+          "round": 1
+        },
+        {
+          "time": 5.033853790955618,
+          "lower_bound": -2248.625,
+          "energy": -1787.125,
+          "cuts": 18180,
+          "round": 1
+        }
+      ],
+      "method": "learned",
+      "seed": 1002,
+      "nodes": 1206,
+      "edges": 6476,
+      "damaged": true,
+      "repeat": 1,
+      "target_gap": 779.875
+    },
+    {
+      "seconds": 5.077478958060965,
+      "energy": -1787.125,
+      "lower_bound": -2248.125,
+      "numerical_gap": 461.0,
+      "verified_bound": -2248.125,
+      "verified_gap": 461.0,
+      "status": "TIME_LIMIT",
+      "cuts": 18180,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.7047818329883739,
+      "progress": [
+        {
+          "time": 0.7047818329883739,
+          "lower_bound": -2305.875,
+          "energy": -1787.125,
+          "cuts": 17668,
+          "round": 0
+        },
+        {
+          "time": 1.2849715419579297,
+          "lower_bound": -2305.875,
+          "energy": -1787.125,
+          "cuts": 18180,
+          "round": 0
+        },
+        {
+          "time": 3.5367277920013294,
+          "lower_bound": -2248.125,
+          "energy": -1787.125,
+          "cuts": 18180,
+          "round": 1
+        },
+        {
+          "time": 5.034620207967237,
+          "lower_bound": -2248.125,
+          "energy": -1787.125,
+          "cuts": 18180,
+          "round": 1
+        }
+      ],
+      "method": "deterministic",
+      "seed": 1002,
+      "nodes": 1206,
+      "edges": 6476,
+      "damaged": true,
+      "repeat": 1,
+      "target_gap": 779.875
+    },
+    {
+      "seconds": 5.06551154202316,
+      "energy": -1611.875,
+      "lower_bound": -2549.875,
+      "numerical_gap": 938.0,
+      "verified_bound": -2549.875,
+      "verified_gap": 938.0,
+      "status": "TIME_LIMIT",
+      "cuts": 46449,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.029578124987893,
+          "lower_bound": -2549.875,
+          "energy": -1611.875,
+          "cuts": 46449,
+          "round": 0
+        }
+      ],
+      "method": "static",
+      "seed": 1002,
+      "nodes": 1206,
+      "edges": 6476,
+      "damaged": true,
+      "repeat": 1,
+      "target_gap": 779.875
+    },
+    {
+      "seconds": 5.097371334093623,
+      "energy": -78.625,
+      "lower_bound": -3550.375,
+      "numerical_gap": 3471.75,
+      "verified_bound": -3899.375,
+      "verified_gap": 3820.75,
+      "status": "TIME_LIMIT",
+      "cuts": 0,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.070749792037532,
+          "lower_bound": -3899.375,
+          "energy": -78.625,
+          "cuts": 0,
+          "round": 0
+        }
+      ],
+      "method": "native",
+      "seed": 1002,
+      "nodes": 1206,
+      "edges": 6476,
+      "damaged": true,
+      "repeat": 1,
+      "target_gap": 779.875
+    },
+    {
+      "seconds": 5.069151625037193,
+      "energy": -719.375,
+      "lower_bound": -2544.65625,
+      "numerical_gap": 1825.28125,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "TIME_LIMIT",
+      "time_to_target": null,
+      "solver_stats": {
+        "solver 0": {
+          "number of vertices": 1207,
+          "number of edges": 7493,
+          "mip solver": "SCIP 10.0.2",
+          "lp solver": "SoPlex 8.0.2",
+          "cpu_solving_time": 4.996585,
+          "best_solution_value": 354.625,
+          "optimal_solution_found": false,
+          "timelimit_reached": true,
+          "bab_nodes": 1,
+          "final_bound_value": 1267.265625,
+          "root_bound_value": 1267.265625,
+          "scip_randomseedshift": 1,
+          "scip_timelimit": 4.996
+        },
+        "optimality proven": false,
+        "runtime [s]": 5.017,
+        "best solution value": 354.625
+      },
+      "method": "sms",
+      "seed": 1002,
+      "nodes": 1206,
+      "edges": 6476,
+      "damaged": true,
+      "repeat": 1,
+      "target_gap": 779.875
+    },
+    {
+      "seconds": 5.042990042013116,
+      "energy": -1804.875,
+      "lower_bound": null,
+      "numerical_gap": null,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "HEURISTIC",
+      "time_to_target": null,
+      "method": "heuristic",
+      "seed": 1002,
+      "nodes": 1206,
+      "edges": 6476,
+      "damaged": true,
+      "repeat": 2,
+      "target_gap": 779.875
+    },
+    {
+      "seconds": 5.069576374953613,
+      "energy": -728.375,
+      "lower_bound": -2544.03125,
+      "numerical_gap": 1815.65625,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "TIME_LIMIT",
+      "time_to_target": null,
+      "solver_stats": {
+        "solver 0": {
+          "number of vertices": 1207,
+          "number of edges": 7493,
+          "mip solver": "SCIP 10.0.2",
+          "lp solver": "SoPlex 8.0.2",
+          "cpu_solving_time": 4.998065,
+          "best_solution_value": 359.125,
+          "optimal_solution_found": false,
+          "timelimit_reached": true,
+          "bab_nodes": 1,
+          "final_bound_value": 1266.953125,
+          "root_bound_value": 1266.953125,
+          "scip_randomseedshift": 2,
+          "scip_timelimit": 4.997
+        },
+        "optimality proven": false,
+        "runtime [s]": 5.019,
+        "best solution value": 359.125
+      },
+      "method": "sms",
+      "seed": 1002,
+      "nodes": 1206,
+      "edges": 6476,
+      "damaged": true,
+      "repeat": 2,
+      "target_gap": 779.875
+    },
+    {
+      "seconds": 5.054274040972814,
+      "energy": -35.625,
+      "lower_bound": -3517.875,
+      "numerical_gap": 3482.25,
+      "verified_bound": -3899.375,
+      "verified_gap": 3863.75,
+      "status": "TIME_LIMIT",
+      "cuts": 0,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.025835207896307,
+          "lower_bound": -3899.375,
+          "energy": -35.625,
+          "cuts": 0,
+          "round": 0
+        }
+      ],
+      "method": "native",
+      "seed": 1002,
+      "nodes": 1206,
+      "edges": 6476,
+      "damaged": true,
+      "repeat": 2,
+      "target_gap": 779.875
+    },
+    {
+      "seconds": 5.066000333055854,
+      "energy": -1597.125,
+      "lower_bound": -2552.125,
+      "numerical_gap": 955.0,
+      "verified_bound": -2552.125,
+      "verified_gap": 955.0,
+      "status": "TIME_LIMIT",
+      "cuts": 45937,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.0302105830051005,
+          "lower_bound": -2552.125,
+          "energy": -1597.125,
+          "cuts": 45937,
+          "round": 0
+        }
+      ],
+      "method": "static",
+      "seed": 1002,
+      "nodes": 1206,
+      "edges": 6476,
+      "damaged": true,
+      "repeat": 2,
+      "target_gap": 779.875
+    },
+    {
+      "seconds": 5.075919417082332,
+      "energy": -1780.375,
+      "lower_bound": -2252.875,
+      "numerical_gap": 472.5,
+      "verified_bound": -2252.875,
+      "verified_gap": 472.5,
+      "status": "TIME_LIMIT",
+      "cuts": 18180,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.7012897919630632,
+      "progress": [
+        {
+          "time": 0.7012897919630632,
+          "lower_bound": -2306.375,
+          "energy": -1780.375,
+          "cuts": 17668,
+          "round": 0
+        },
+        {
+          "time": 1.297396249952726,
+          "lower_bound": -2306.375,
+          "energy": -1780.375,
+          "cuts": 18180,
+          "round": 0
+        },
+        {
+          "time": 3.537003875011578,
+          "lower_bound": -2252.875,
+          "energy": -1780.375,
+          "cuts": 18180,
+          "round": 1
+        },
+        {
+          "time": 5.033874291926622,
+          "lower_bound": -2252.875,
+          "energy": -1780.375,
+          "cuts": 18180,
+          "round": 1
+        }
+      ],
+      "method": "deterministic",
+      "seed": 1002,
+      "nodes": 1206,
+      "edges": 6476,
+      "damaged": true,
+      "repeat": 2,
+      "target_gap": 779.875
+    },
+    {
+      "seconds": 5.076113124960102,
+      "energy": -1780.375,
+      "lower_bound": -2251.875,
+      "numerical_gap": 471.5,
+      "verified_bound": -2251.875,
+      "verified_gap": 471.5,
+      "status": "TIME_LIMIT",
+      "cuts": 18180,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.7187282500090078,
+      "progress": [
+        {
+          "time": 0.7187282500090078,
+          "lower_bound": -2306.375,
+          "energy": -1780.375,
+          "cuts": 17668,
+          "round": 0
+        },
+        {
+          "time": 1.2989406660199165,
+          "lower_bound": -2306.375,
+          "energy": -1780.375,
+          "cuts": 18180,
+          "round": 0
+        },
+        {
+          "time": 3.5368556660832837,
+          "lower_bound": -2251.875,
+          "energy": -1780.375,
+          "cuts": 18180,
+          "round": 1
+        },
+        {
+          "time": 5.033217791002244,
+          "lower_bound": -2251.875,
+          "energy": -1780.375,
+          "cuts": 18180,
+          "round": 1
+        }
+      ],
+      "method": "learned",
+      "seed": 1002,
+      "nodes": 1206,
+      "edges": 6476,
+      "damaged": true,
+      "repeat": 2,
+      "target_gap": 779.875
+    },
+    {
+      "seconds": 5.067886958015151,
+      "energy": -712.5,
+      "lower_bound": -2621.9375,
+      "numerical_gap": 1909.4375,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "TIME_LIMIT",
+      "time_to_target": null,
+      "solver_stats": {
+        "solver 0": {
+          "number of vertices": 1217,
+          "number of edges": 7631,
+          "mip solver": "SCIP 10.0.2",
+          "lp solver": "SoPlex 8.0.2",
+          "cpu_solving_time": 4.9966919999999995,
+          "best_solution_value": 356.875,
+          "optimal_solution_found": false,
+          "timelimit_reached": true,
+          "bab_nodes": 1,
+          "final_bound_value": 1311.59375,
+          "root_bound_value": 1311.59375,
+          "scip_randomseedshift": 0,
+          "scip_timelimit": 4.996
+        },
+        "optimality proven": false,
+        "runtime [s]": 5.016,
+        "best solution value": 356.875
+      },
+      "method": "sms",
+      "seed": 1003,
+      "nodes": 1217,
+      "edges": 6590,
+      "damaged": true,
+      "repeat": 0,
+      "target_gap": 795.8000000000001
+    },
+    {
+      "seconds": 5.050464000087231,
+      "energy": -1819.25,
+      "lower_bound": null,
+      "numerical_gap": null,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "HEURISTIC",
+      "time_to_target": null,
+      "method": "heuristic",
+      "seed": 1003,
+      "nodes": 1217,
+      "edges": 6590,
+      "damaged": true,
+      "repeat": 0,
+      "target_gap": 795.8000000000001
+    },
+    {
+      "seconds": 5.095138250035234,
+      "energy": -1804.75,
+      "lower_bound": -2306.5,
+      "numerical_gap": 501.75,
+      "verified_bound": -2306.5,
+      "verified_gap": 501.75,
+      "status": "TIME_LIMIT",
+      "cuts": 19011,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.7159680420299992,
+      "progress": [
+        {
+          "time": 0.7159680420299992,
+          "lower_bound": -2334.0,
+          "energy": -1804.75,
+          "cuts": 18499,
+          "round": 0
+        },
+        {
+          "time": 1.3014367090072483,
+          "lower_bound": -2334.0,
+          "energy": -1804.75,
+          "cuts": 19011,
+          "round": 0
+        },
+        {
+          "time": 3.537542875041254,
+          "lower_bound": -2306.5,
+          "energy": -1804.75,
+          "cuts": 19011,
+          "round": 1
+        },
+        {
+          "time": 5.052290625055321,
+          "lower_bound": -2306.5,
+          "energy": -1804.75,
+          "cuts": 19011,
+          "round": 1
+        }
+      ],
+      "method": "learned",
+      "seed": 1003,
+      "nodes": 1217,
+      "edges": 6590,
+      "damaged": true,
+      "repeat": 0,
+      "target_gap": 795.8000000000001
+    },
+    {
+      "seconds": 5.085499749984592,
+      "energy": -1804.75,
+      "lower_bound": -2306.75,
+      "numerical_gap": 502.0,
+      "verified_bound": -2306.75,
+      "verified_gap": 502.0,
+      "status": "TIME_LIMIT",
+      "cuts": 19011,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.7265179170062765,
+      "progress": [
+        {
+          "time": 0.7265179170062765,
+          "lower_bound": -2334.0,
+          "energy": -1804.75,
+          "cuts": 18499,
+          "round": 0
+        },
+        {
+          "time": 1.3066767500713468,
+          "lower_bound": -2334.0,
+          "energy": -1804.75,
+          "cuts": 19011,
+          "round": 0
+        },
+        {
+          "time": 3.5380926249781623,
+          "lower_bound": -2306.75,
+          "energy": -1804.75,
+          "cuts": 19011,
+          "round": 1
+        },
+        {
+          "time": 5.042380042024888,
+          "lower_bound": -2306.75,
+          "energy": -1804.75,
+          "cuts": 19011,
+          "round": 1
+        }
+      ],
+      "method": "deterministic",
+      "seed": 1003,
+      "nodes": 1217,
+      "edges": 6590,
+      "damaged": true,
+      "repeat": 0,
+      "target_gap": 795.8000000000001
+    },
+    {
+      "seconds": 5.066375166992657,
+      "energy": -1603.25,
+      "lower_bound": -2661.0,
+      "numerical_gap": 1057.75,
+      "verified_bound": -2661.0,
+      "verified_gap": 1057.75,
+      "status": "TIME_LIMIT",
+      "cuts": 46058,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.029385750065558,
+          "lower_bound": -2661.0,
+          "energy": -1603.25,
+          "cuts": 46058,
+          "round": 0
+        }
+      ],
+      "method": "static",
+      "seed": 1003,
+      "nodes": 1217,
+      "edges": 6590,
+      "damaged": true,
+      "repeat": 0,
+      "target_gap": 795.8000000000001
+    },
+    {
+      "seconds": 5.041247208951972,
+      "energy": -70.25,
+      "lower_bound": -3620.25,
+      "numerical_gap": 3550.0,
+      "verified_bound": -3979.0,
+      "verified_gap": 3908.75,
+      "status": "TIME_LIMIT",
+      "cuts": 0,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.014152624993585,
+          "lower_bound": -3979.0,
+          "energy": -70.25,
+          "cuts": 0,
+          "round": 0
+        }
+      ],
+      "method": "native",
+      "seed": 1003,
+      "nodes": 1217,
+      "edges": 6590,
+      "damaged": true,
+      "repeat": 0,
+      "target_gap": 795.8000000000001
+    },
+    {
+      "seconds": 5.074481332907453,
+      "energy": -694.5,
+      "lower_bound": -2624.0,
+      "numerical_gap": 1929.5,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "TIME_LIMIT",
+      "time_to_target": null,
+      "solver_stats": {
+        "solver 0": {
+          "number of vertices": 1217,
+          "number of edges": 7631,
+          "mip solver": "SCIP 10.0.2",
+          "lp solver": "SoPlex 8.0.2",
+          "cpu_solving_time": 4.99786,
+          "best_solution_value": 347.875,
+          "optimal_solution_found": false,
+          "timelimit_reached": true,
+          "bab_nodes": 1,
+          "final_bound_value": 1312.625,
+          "root_bound_value": 1312.625,
+          "scip_randomseedshift": 1,
+          "scip_timelimit": 4.997
+        },
+        "optimality proven": false,
+        "runtime [s]": 5.02,
+        "best solution value": 347.875
+      },
+      "method": "sms",
+      "seed": 1003,
+      "nodes": 1217,
+      "edges": 6590,
+      "damaged": true,
+      "repeat": 1,
+      "target_gap": 795.8000000000001
+    },
+    {
+      "seconds": 5.952574374969117,
+      "energy": -64.0,
+      "lower_bound": -3613.5,
+      "numerical_gap": 3549.5,
+      "verified_bound": -3979.0,
+      "verified_gap": 3915.0,
+      "status": "TIME_LIMIT",
+      "cuts": 0,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.925180583959445,
+          "lower_bound": -3979.0,
+          "energy": -64.0,
+          "cuts": 0,
+          "round": 0
+        }
+      ],
+      "method": "native",
+      "seed": 1003,
+      "nodes": 1217,
+      "edges": 6590,
+      "damaged": true,
+      "repeat": 1,
+      "target_gap": 795.8000000000001
+    },
+    {
+      "seconds": 5.066917125019245,
+      "energy": -1605.0,
+      "lower_bound": -2652.25,
+      "numerical_gap": 1047.25,
+      "verified_bound": -2652.25,
+      "verified_gap": 1047.25,
+      "status": "TIME_LIMIT",
+      "cuts": 46250,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.03032754198648,
+          "lower_bound": -2652.25,
+          "energy": -1605.0,
+          "cuts": 46250,
+          "round": 0
+        }
+      ],
+      "method": "static",
+      "seed": 1003,
+      "nodes": 1217,
+      "edges": 6590,
+      "damaged": true,
+      "repeat": 1,
+      "target_gap": 795.8000000000001
+    },
+    {
+      "seconds": 5.078679582918994,
+      "energy": -1798.25,
+      "lower_bound": -2288.75,
+      "numerical_gap": 490.5,
+      "verified_bound": -2288.75,
+      "verified_gap": 490.5,
+      "status": "TIME_LIMIT",
+      "cuts": 19016,
+      "subgraph_cuts": 5,
+      "rounds": 1,
+      "time_to_target": 0.7262020000489429,
+      "progress": [
+        {
+          "time": 0.7262020000489429,
+          "lower_bound": -2332.25,
+          "energy": -1798.25,
+          "cuts": 18499,
+          "round": 0
+        },
+        {
+          "time": 1.305752458050847,
+          "lower_bound": -2332.25,
+          "energy": -1798.25,
+          "cuts": 19016,
+          "round": 0
+        },
+        {
+          "time": 3.5381794170243666,
+          "lower_bound": -2288.75,
+          "energy": -1798.25,
+          "cuts": 19016,
+          "round": 1
+        },
+        {
+          "time": 5.035553375026211,
+          "lower_bound": -2288.75,
+          "energy": -1798.25,
+          "cuts": 19016,
+          "round": 1
+        }
+      ],
+      "method": "deterministic",
+      "seed": 1003,
+      "nodes": 1217,
+      "edges": 6590,
+      "damaged": true,
+      "repeat": 1,
+      "target_gap": 795.8000000000001
+    },
+    {
+      "seconds": 5.077883834019303,
+      "energy": -1798.25,
+      "lower_bound": -2294.25,
+      "numerical_gap": 496.0,
+      "verified_bound": -2294.25,
+      "verified_gap": 496.0,
+      "status": "TIME_LIMIT",
+      "cuts": 19011,
+      "subgraph_cuts": 0,
+      "rounds": 1,
+      "time_to_target": 0.7197632919996977,
+      "progress": [
+        {
+          "time": 0.7197632919996977,
+          "lower_bound": -2332.25,
+          "energy": -1798.25,
+          "cuts": 18499,
+          "round": 0
+        },
+        {
+          "time": 1.2996039170539007,
+          "lower_bound": -2332.25,
+          "energy": -1798.25,
+          "cuts": 19011,
+          "round": 0
+        },
+        {
+          "time": 3.53754895797465,
+          "lower_bound": -2294.25,
+          "energy": -1798.25,
+          "cuts": 19011,
+          "round": 1
+        },
+        {
+          "time": 5.033511042012833,
+          "lower_bound": -2294.25,
+          "energy": -1798.25,
+          "cuts": 19011,
+          "round": 1
+        }
+      ],
+      "method": "learned",
+      "seed": 1003,
+      "nodes": 1217,
+      "edges": 6590,
+      "damaged": true,
+      "repeat": 1,
+      "target_gap": 795.8000000000001
+    },
+    {
+      "seconds": 5.050743541913107,
+      "energy": -1806.25,
+      "lower_bound": null,
+      "numerical_gap": null,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "HEURISTIC",
+      "time_to_target": null,
+      "method": "heuristic",
+      "seed": 1003,
+      "nodes": 1217,
+      "edges": 6590,
+      "damaged": true,
+      "repeat": 1,
+      "target_gap": 795.8000000000001
+    },
+    {
+      "seconds": 5.08052299998235,
+      "energy": -1801.75,
+      "lower_bound": -2292.0,
+      "numerical_gap": 490.25,
+      "verified_bound": -2292.0,
+      "verified_gap": 490.25,
+      "status": "TIME_LIMIT",
+      "cuts": 19018,
+      "subgraph_cuts": 7,
+      "rounds": 1,
+      "time_to_target": 0.7148753750370815,
+      "progress": [
+        {
+          "time": 0.7148753750370815,
+          "lower_bound": -2332.5,
+          "energy": -1801.75,
+          "cuts": 18499,
+          "round": 0
+        },
+        {
+          "time": 1.2954420410096645,
+          "lower_bound": -2332.5,
+          "energy": -1801.75,
+          "cuts": 19018,
+          "round": 0
+        },
+        {
+          "time": 3.538178625050932,
+          "lower_bound": -2292.0,
+          "energy": -1801.75,
+          "cuts": 19018,
+          "round": 1
+        },
+        {
+          "time": 5.036972583038732,
+          "lower_bound": -2292.0,
+          "energy": -1801.75,
+          "cuts": 19018,
+          "round": 1
+        }
+      ],
+      "method": "learned",
+      "seed": 1003,
+      "nodes": 1217,
+      "edges": 6590,
+      "damaged": true,
+      "repeat": 2,
+      "target_gap": 795.8000000000001
+    },
+    {
+      "seconds": 5.080001708003692,
+      "energy": -1801.75,
+      "lower_bound": -2292.75,
+      "numerical_gap": 491.0,
+      "verified_bound": -2292.75,
+      "verified_gap": 491.0,
+      "status": "TIME_LIMIT",
+      "cuts": 19019,
+      "subgraph_cuts": 8,
+      "rounds": 1,
+      "time_to_target": 0.7590939160436392,
+      "progress": [
+        {
+          "time": 0.7590939160436392,
+          "lower_bound": -2332.5,
+          "energy": -1801.75,
+          "cuts": 18499,
+          "round": 0
+        },
+        {
+          "time": 1.3376619160408154,
+          "lower_bound": -2308.0,
+          "energy": -1801.75,
+          "cuts": 19019,
+          "round": 0
+        },
+        {
+          "time": 3.5379296659957618,
+          "lower_bound": -2292.75,
+          "energy": -1801.75,
+          "cuts": 19019,
+          "round": 1
+        },
+        {
+          "time": 5.035076666041277,
+          "lower_bound": -2292.75,
+          "energy": -1801.75,
+          "cuts": 19019,
+          "round": 1
+        }
+      ],
+      "method": "deterministic",
+      "seed": 1003,
+      "nodes": 1217,
+      "edges": 6590,
+      "damaged": true,
+      "repeat": 2,
+      "target_gap": 795.8000000000001
+    },
+    {
+      "seconds": 5.066795624908991,
+      "energy": -1603.25,
+      "lower_bound": -2637.0,
+      "numerical_gap": 1033.75,
+      "verified_bound": -2637.0,
+      "verified_gap": 1033.75,
+      "status": "TIME_LIMIT",
+      "cuts": 46520,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.029622874921188,
+          "lower_bound": -2637.0,
+          "energy": -1603.25,
+          "cuts": 46520,
+          "round": 0
+        }
+      ],
+      "method": "static",
+      "seed": 1003,
+      "nodes": 1217,
+      "edges": 6590,
+      "damaged": true,
+      "repeat": 2,
+      "target_gap": 795.8000000000001
+    },
+    {
+      "seconds": 5.768966458970681,
+      "energy": -16.75,
+      "lower_bound": -3622.25,
+      "numerical_gap": 3605.5,
+      "verified_bound": -3979.0,
+      "verified_gap": 3962.25,
+      "status": "TIME_LIMIT",
+      "cuts": 0,
+      "subgraph_cuts": 0,
+      "rounds": 0,
+      "time_to_target": null,
+      "progress": [
+        {
+          "time": 5.741945874993689,
+          "lower_bound": -3979.0,
+          "energy": -16.75,
+          "cuts": 0,
+          "round": 0
+        }
+      ],
+      "method": "native",
+      "seed": 1003,
+      "nodes": 1217,
+      "edges": 6590,
+      "damaged": true,
+      "repeat": 2,
+      "target_gap": 795.8000000000001
+    },
+    {
+      "seconds": 5.071319000096992,
+      "energy": -645.25,
+      "lower_bound": -2622.7083333333335,
+      "numerical_gap": 1977.4583333333335,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "TIME_LIMIT",
+      "time_to_target": null,
+      "solver_stats": {
+        "solver 0": {
+          "number of vertices": 1217,
+          "number of edges": 7631,
+          "mip solver": "SCIP 10.0.2",
+          "lp solver": "SoPlex 8.0.2",
+          "cpu_solving_time": 4.99633,
+          "best_solution_value": 323.25,
+          "optimal_solution_found": false,
+          "timelimit_reached": true,
+          "bab_nodes": 1,
+          "final_bound_value": 1311.9791666666667,
+          "root_bound_value": 1311.9791666666667,
+          "scip_randomseedshift": 2,
+          "scip_timelimit": 4.995
+        },
+        "optimality proven": false,
+        "runtime [s]": 5.018,
+        "best solution value": 323.25
+      },
+      "method": "sms",
+      "seed": 1003,
+      "nodes": 1217,
+      "edges": 6590,
+      "damaged": true,
+      "repeat": 2,
+      "target_gap": 795.8000000000001
+    },
+    {
+      "seconds": 5.041346915997565,
+      "energy": -1808.5,
+      "lower_bound": null,
+      "numerical_gap": null,
+      "verified_bound": null,
+      "verified_gap": null,
+      "status": "HEURISTIC",
+      "time_to_target": null,
+      "method": "heuristic",
+      "seed": 1003,
+      "nodes": 1217,
+      "edges": 6590,
+      "damaged": true,
+      "repeat": 2,
+      "target_gap": 795.8000000000001
+    }
+  ]
+}

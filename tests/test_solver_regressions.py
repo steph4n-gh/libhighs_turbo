@@ -194,7 +194,6 @@ def test_original_status_and_explicit_budget_are_preserved(kind):
 @pytest.mark.parametrize("mode", ["direct", "portfolio", "primary_error"])
 def test_sparse_native_solve_preserves_primal_dual_and_joins_workers(mode, monkeypatch):
     import threading
-    import time
     import highspy
 
     rng = np.random.default_rng(53)
@@ -220,7 +219,6 @@ def test_sparse_native_solve_preserves_primal_dual_and_joins_workers(mode, monke
 
         def fail_simplex(session):
             if session.getOptionValue("solver")[1] == "simplex":
-                time.sleep(0.01)  # Allow the independent method to start.
                 raise RuntimeError("Injected simplex failure")
             return original_run(session)
 

@@ -1,0 +1,52 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 72b34da..63da92f 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -15,7 +15,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "") # Enable/Disable output
+ 
+ # New linker is broken on apple with gcc
+ if (APPLE)
+-    add_link_options("-Wl,-ld_classic")
++    # Use the platform linker with clang.
+ endif ()
+ 
+ # find GUROBI is desired
+@@ -29,11 +29,7 @@ endif ()
+ 
+ # BLAS
+ if (APPLE)
+-    #set(BLA_VENDOR "OpenBLAS") <- this should? be the way, but does not work
+-    # we hardcode homebrew
+-    find_package(OpenBLAS REQUIRED PATHS "/opt/homebrew/opt/openblas")
+-    set(BLAS_LIBRARIES "${OpenBLAS_LIBRARIES}")
+-    include_directories("${OpenBLAS_INCLUDE_DIRS}")
++    set(BLAS_LIBRARIES "-framework Accelerate")
+ else ()
+     find_package(BLAS REQUIRED)
+ endif ()
+diff --git a/include/sms/auxiliary/math.hpp b/include/sms/auxiliary/math.hpp
+index 00d3c54..6d10fd7 100644
+--- a/include/sms/auxiliary/math.hpp
++++ b/include/sms/auxiliary/math.hpp
+@@ -1,7 +1,12 @@
++#include <numbers>
+ #ifndef SMS_MATH_HPP
+ #define SMS_MATH_HPP
+ 
++#ifdef __APPLE__
++#include <vecLib/cblas.h>
++#else
+ #include "cblas.h"
++#endif
+ #include <array>
+ #include <climits>
+ #include <cmath>
+diff --git a/include/sms/pheur/burer_heurisitic.hpp b/include/sms/pheur/burer_heurisitic.hpp
+index 1259b81..9f2d3e8 100644
+--- a/include/sms/pheur/burer_heurisitic.hpp
++++ b/include/sms/pheur/burer_heurisitic.hpp
+@@ -1,3 +1,4 @@
++#include <numbers>
+ #ifndef SMS_BURER_HEURISITIC_HPP
+ #define SMS_BURER_HEURISITIC_HPP
+ 

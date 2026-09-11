@@ -1,0 +1,30 @@
+diff --git a/include/mqlib/problem/qubo_heuristic.h b/include/mqlib/problem/qubo_heuristic.h
+index 8a6fd16..92264f2 100644
+--- a/include/mqlib/problem/qubo_heuristic.h
++++ b/include/mqlib/problem/qubo_heuristic.h
+@@ -45,9 +45,7 @@ namespace mqlib {
+         bool IsHistoryValid();
+ 
+         // Returns const reference to the best solution encountered
+-        const QUBOSimpleSolution &get_best_solution() const {
+-            return past_solutions_[past_solutions_.size() - 1];
+-        }
++        const QUBOSimpleSolution &get_best_solution() const;
+ 
+     protected:
+         // Determine if the passed solution is a new best solution; if so, store it
+diff --git a/src/problem/qubo_heuristic.cpp b/src/problem/qubo_heuristic.cpp
+index cd46bc6..4e2e9e7 100644
+--- a/src/problem/qubo_heuristic.cpp
++++ b/src/problem/qubo_heuristic.cpp
+@@ -5,6 +5,10 @@
+ #include "mqlib/heuristics/qubo/qubo_solution.h"
+ 
+ namespace mqlib {
++    const QUBOSimpleSolution &QUBOHeuristic::get_best_solution() const {
++        return past_solutions_[past_solutions_.size() - 1];
++    }
++
+ 
+     QUBOHeuristic::QUBOHeuristic(const QUBOInstance &qi, double runtime_limit,
+                                  bool validation, QUBOCallback *qc) :

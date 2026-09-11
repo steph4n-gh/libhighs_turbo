@@ -1,0 +1,1060 @@
+{
+  "target_fraction": 0.075,
+  "cases": [
+    [
+      3001,
+      false
+    ],
+    [
+      3002,
+      false
+    ],
+    [
+      3003,
+      false
+    ],
+    [
+      3001,
+      true
+    ],
+    [
+      3002,
+      true
+    ],
+    [
+      3003,
+      true
+    ]
+  ],
+  "records": [
+    {
+      "method": "cuts",
+      "seed": 3001,
+      "damaged": false,
+      "nodes": 1288,
+      "budget": 5.0,
+      "target": null,
+      "seconds": 5.203583916067146,
+      "energy": -2068.75,
+      "bound": -2770.75,
+      "gap": 702.0,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.9643059170339257,
+          "lower_bound": -2770.75,
+          "energy": -2068.75,
+          "cuts": 31304,
+          "round": 0
+        },
+        {
+          "time": 1.6061182080302387,
+          "lower_bound": -2770.75,
+          "energy": -2068.75,
+          "cuts": 31816,
+          "round": 0
+        },
+        {
+          "time": 3.6174396669957787,
+          "lower_bound": -2770.75,
+          "energy": -2068.75,
+          "cuts": 31816,
+          "round": 1
+        },
+        {
+          "time": 5.097431291942485,
+          "lower_bound": -2770.75,
+          "energy": -2068.75,
+          "cuts": 31816,
+          "round": 1
+        }
+      ],
+      "gram_vertices": 0
+    },
+    {
+      "method": "sdp",
+      "seed": 3001,
+      "damaged": false,
+      "nodes": 1288,
+      "budget": 5.0,
+      "target": null,
+      "seconds": 5.284930958994664,
+      "energy": -2068.75,
+      "bound": -2453.0,
+      "gap": 384.25,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.7439295420190319,
+          "lower_bound": -2453.0,
+          "energy": -2068.75,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 5.192364917020313,
+          "lower_bound": -2453.0,
+          "energy": -2068.75,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "gram_vertices": 1289
+    },
+    {
+      "method": "hybrid",
+      "seed": 3001,
+      "damaged": false,
+      "nodes": 1288,
+      "budget": 5.0,
+      "target": null,
+      "seconds": 5.217518375022337,
+      "energy": -2068.75,
+      "bound": -2314.75,
+      "gap": 246.0,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.9419857079628855,
+          "lower_bound": -2770.75,
+          "energy": -2068.75,
+          "cuts": 31304,
+          "round": 0
+        },
+        {
+          "time": 1.5795864160172641,
+          "lower_bound": -2770.75,
+          "energy": -2068.75,
+          "cuts": 31816,
+          "round": 0
+        },
+        {
+          "time": 3.3558230409398675,
+          "lower_bound": -2314.75,
+          "energy": -2068.75,
+          "cuts": 31816,
+          "round": 0
+        },
+        {
+          "time": 3.608786665950902,
+          "lower_bound": -2314.75,
+          "energy": -2068.75,
+          "cuts": 31816,
+          "round": 1
+        },
+        {
+          "time": 5.105282249976881,
+          "lower_bound": -2314.75,
+          "energy": -2068.75,
+          "cuts": 31816,
+          "round": 1
+        }
+      ],
+      "gram_vertices": 1289
+    },
+    {
+      "method": "hybrid",
+      "seed": 3002,
+      "damaged": false,
+      "nodes": 1288,
+      "budget": 5.0,
+      "target": null,
+      "seconds": 5.211143582942896,
+      "energy": -2082.5,
+      "bound": -2325.5,
+      "gap": 243.0,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.945905250031501,
+          "lower_bound": -2780.25,
+          "energy": -2082.5,
+          "cuts": 31127,
+          "round": 0
+        },
+        {
+          "time": 1.5762118339771405,
+          "lower_bound": -2780.25,
+          "energy": -2082.5,
+          "cuts": 31639,
+          "round": 0
+        },
+        {
+          "time": 3.451118874945678,
+          "lower_bound": -2325.5,
+          "energy": -2082.5,
+          "cuts": 31639,
+          "round": 0
+        },
+        {
+          "time": 3.6057347919559106,
+          "lower_bound": -2325.5,
+          "energy": -2082.5,
+          "cuts": 31639,
+          "round": 1
+        },
+        {
+          "time": 5.101963624940254,
+          "lower_bound": -2325.5,
+          "energy": -2082.5,
+          "cuts": 31639,
+          "round": 1
+        }
+      ],
+      "gram_vertices": 1289
+    },
+    {
+      "method": "sdp",
+      "seed": 3002,
+      "damaged": false,
+      "nodes": 1288,
+      "budget": 5.0,
+      "target": null,
+      "seconds": 5.351012457977049,
+      "energy": -2090.0,
+      "bound": -2459.75,
+      "gap": 369.75,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.7458575420314446,
+          "lower_bound": -2459.75,
+          "energy": -2090.0,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 5.256387916975655,
+          "lower_bound": -2459.75,
+          "energy": -2090.0,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "gram_vertices": 1289
+    },
+    {
+      "method": "cuts",
+      "seed": 3002,
+      "damaged": false,
+      "nodes": 1288,
+      "budget": 5.0,
+      "target": null,
+      "seconds": 5.199883625027724,
+      "energy": -2082.5,
+      "bound": -2780.25,
+      "gap": 697.75,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.940691625000909,
+          "lower_bound": -2780.25,
+          "energy": -2082.5,
+          "cuts": 31127,
+          "round": 0
+        },
+        {
+          "time": 1.576355625060387,
+          "lower_bound": -2780.25,
+          "energy": -2082.5,
+          "cuts": 31639,
+          "round": 0
+        },
+        {
+          "time": 3.618749041110277,
+          "lower_bound": -2780.25,
+          "energy": -2082.5,
+          "cuts": 31639,
+          "round": 1
+        },
+        {
+          "time": 5.095847541000694,
+          "lower_bound": -2780.25,
+          "energy": -2082.5,
+          "cuts": 31639,
+          "round": 1
+        }
+      ],
+      "gram_vertices": 0
+    },
+    {
+      "method": "cuts",
+      "seed": 3003,
+      "damaged": false,
+      "nodes": 1288,
+      "budget": 5.0,
+      "target": null,
+      "seconds": 5.2217105409363285,
+      "energy": -2085.0,
+      "bound": -2738.25,
+      "gap": 653.25,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.9453126250300556,
+          "lower_bound": -2765.75,
+          "energy": -2085.0,
+          "cuts": 31594,
+          "round": 0
+        },
+        {
+          "time": 1.5729493329999968,
+          "lower_bound": -2738.25,
+          "energy": -2085.0,
+          "cuts": 32114,
+          "round": 0
+        },
+        {
+          "time": 3.626658875029534,
+          "lower_bound": -2738.25,
+          "energy": -2085.0,
+          "cuts": 32114,
+          "round": 1
+        },
+        {
+          "time": 5.105528041021898,
+          "lower_bound": -2738.25,
+          "energy": -2085.0,
+          "cuts": 32114,
+          "round": 1
+        }
+      ],
+      "gram_vertices": 0
+    },
+    {
+      "method": "sdp",
+      "seed": 3003,
+      "damaged": false,
+      "nodes": 1288,
+      "budget": 5.0,
+      "target": null,
+      "seconds": 5.2292014580452815,
+      "energy": -2085.0,
+      "bound": -2456.25,
+      "gap": 371.25,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.739048458985053,
+          "lower_bound": -2456.25,
+          "energy": -2085.0,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 5.135070291929878,
+          "lower_bound": -2456.25,
+          "energy": -2085.0,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "gram_vertices": 1289
+    },
+    {
+      "method": "hybrid",
+      "seed": 3003,
+      "damaged": false,
+      "nodes": 1288,
+      "budget": 5.0,
+      "target": null,
+      "seconds": 5.22055787499994,
+      "energy": -2085.0,
+      "bound": -2316.75,
+      "gap": 231.75,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.9494688749546185,
+          "lower_bound": -2765.75,
+          "energy": -2085.0,
+          "cuts": 31594,
+          "round": 0
+        },
+        {
+          "time": 1.5818180839996785,
+          "lower_bound": -2765.75,
+          "energy": -2085.0,
+          "cuts": 32111,
+          "round": 0
+        },
+        {
+          "time": 3.5063469170127064,
+          "lower_bound": -2316.75,
+          "energy": -2085.0,
+          "cuts": 32111,
+          "round": 0
+        },
+        {
+          "time": 5.1066259999061,
+          "lower_bound": -2316.75,
+          "energy": -2085.0,
+          "cuts": 32111,
+          "round": 0
+        }
+      ],
+      "gram_vertices": 1289
+    },
+    {
+      "method": "hybrid",
+      "seed": 3001,
+      "damaged": true,
+      "nodes": 1225,
+      "budget": 5.0,
+      "target": null,
+      "seconds": 5.1985011249780655,
+      "energy": -1851.875,
+      "bound": -2031.875,
+      "gap": 180.0,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.7269591250224039,
+          "lower_bound": -2368.875,
+          "energy": -1851.875,
+          "cuts": 19500,
+          "round": 0
+        },
+        {
+          "time": 1.3247227079700679,
+          "lower_bound": -2368.875,
+          "energy": -1851.875,
+          "cuts": 20012,
+          "round": 0
+        },
+        {
+          "time": 2.8722373750060797,
+          "lower_bound": -2031.875,
+          "energy": -1851.875,
+          "cuts": 20012,
+          "round": 0
+        },
+        {
+          "time": 3.5903328330023214,
+          "lower_bound": -2031.875,
+          "energy": -1851.875,
+          "cuts": 20012,
+          "round": 1
+        },
+        {
+          "time": 5.0908820000477135,
+          "lower_bound": -2031.875,
+          "energy": -1851.875,
+          "cuts": 20012,
+          "round": 1
+        }
+      ],
+      "gram_vertices": 1226
+    },
+    {
+      "method": "sdp",
+      "seed": 3001,
+      "damaged": true,
+      "nodes": 1225,
+      "budget": 5.0,
+      "target": null,
+      "seconds": 5.3046683750581,
+      "energy": -1851.875,
+      "bound": -2156.375,
+      "gap": 304.5,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.67575591604691,
+          "lower_bound": -2156.375,
+          "energy": -1851.875,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 5.214639916084707,
+          "lower_bound": -2156.375,
+          "energy": -1851.875,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "gram_vertices": 1226
+    },
+    {
+      "method": "cuts",
+      "seed": 3001,
+      "damaged": true,
+      "nodes": 1225,
+      "budget": 5.0,
+      "target": null,
+      "seconds": 5.080890791956335,
+      "energy": -1851.875,
+      "bound": -2336.625,
+      "gap": 484.75,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.7285611249972135,
+          "lower_bound": -2368.875,
+          "energy": -1851.875,
+          "cuts": 19500,
+          "round": 0
+        },
+        {
+          "time": 1.3288969580316916,
+          "lower_bound": -2368.875,
+          "energy": -1851.875,
+          "cuts": 20012,
+          "round": 0
+        },
+        {
+          "time": 3.538883875007741,
+          "lower_bound": -2336.625,
+          "energy": -1851.875,
+          "cuts": 20012,
+          "round": 1
+        },
+        {
+          "time": 5.036926666041836,
+          "lower_bound": -2336.625,
+          "energy": -1851.875,
+          "cuts": 20012,
+          "round": 1
+        }
+      ],
+      "gram_vertices": 0
+    },
+    {
+      "method": "cuts",
+      "seed": 3002,
+      "damaged": true,
+      "nodes": 1220,
+      "budget": 5.0,
+      "target": null,
+      "seconds": 5.081184790935367,
+      "energy": -1838.375,
+      "bound": -2325.625,
+      "gap": 487.25,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.725060333032161,
+          "lower_bound": -2368.625,
+          "energy": -1838.375,
+          "cuts": 19241,
+          "round": 0
+        },
+        {
+          "time": 1.3092461250489578,
+          "lower_bound": -2368.625,
+          "energy": -1838.375,
+          "cuts": 19753,
+          "round": 0
+        },
+        {
+          "time": 3.5382017079973593,
+          "lower_bound": -2325.625,
+          "energy": -1838.375,
+          "cuts": 19753,
+          "round": 1
+        },
+        {
+          "time": 5.036069666035473,
+          "lower_bound": -2325.625,
+          "energy": -1838.375,
+          "cuts": 19753,
+          "round": 1
+        }
+      ],
+      "gram_vertices": 0
+    },
+    {
+      "method": "sdp",
+      "seed": 3002,
+      "damaged": true,
+      "nodes": 1220,
+      "budget": 5.0,
+      "target": null,
+      "seconds": 5.226591333048418,
+      "energy": -1838.375,
+      "bound": -2147.625,
+      "gap": 309.25,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.6705529999453574,
+          "lower_bound": -2147.625,
+          "energy": -1838.375,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 5.136332124937326,
+          "lower_bound": -2147.625,
+          "energy": -1838.375,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "gram_vertices": 1221
+    },
+    {
+      "method": "hybrid",
+      "seed": 3002,
+      "damaged": true,
+      "nodes": 1220,
+      "budget": 5.0,
+      "target": null,
+      "seconds": 5.1924800829729065,
+      "energy": -1838.375,
+      "bound": -2023.625,
+      "gap": 185.25,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.724710083915852,
+          "lower_bound": -2368.625,
+          "energy": -1838.375,
+          "cuts": 19241,
+          "round": 0
+        },
+        {
+          "time": 1.3040404169587418,
+          "lower_bound": -2368.625,
+          "energy": -1838.375,
+          "cuts": 19761,
+          "round": 0
+        },
+        {
+          "time": 3.0730266669997945,
+          "lower_bound": -2023.625,
+          "energy": -1838.375,
+          "cuts": 19761,
+          "round": 0
+        },
+        {
+          "time": 3.5870274589397013,
+          "lower_bound": -2023.625,
+          "energy": -1838.375,
+          "cuts": 19761,
+          "round": 1
+        },
+        {
+          "time": 5.087851124932058,
+          "lower_bound": -2023.625,
+          "energy": -1838.375,
+          "cuts": 19761,
+          "round": 1
+        }
+      ],
+      "gram_vertices": 1221
+    },
+    {
+      "method": "hybrid",
+      "seed": 3003,
+      "damaged": true,
+      "nodes": 1216,
+      "budget": 5.0,
+      "target": null,
+      "seconds": 5.195711374981329,
+      "energy": -1807.5,
+      "bound": -1993.75,
+      "gap": 186.25,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.7335221249377355,
+          "lower_bound": -2329.0,
+          "energy": -1807.5,
+          "cuts": 19337,
+          "round": 0
+        },
+        {
+          "time": 1.3154856659239158,
+          "lower_bound": -2301.25,
+          "energy": -1807.5,
+          "cuts": 19857,
+          "round": 0
+        },
+        {
+          "time": 2.9696579999290407,
+          "lower_bound": -1993.75,
+          "energy": -1807.5,
+          "cuts": 19857,
+          "round": 0
+        },
+        {
+          "time": 3.5896137499948964,
+          "lower_bound": -1993.75,
+          "energy": -1807.5,
+          "cuts": 19857,
+          "round": 1
+        },
+        {
+          "time": 5.088074374943972,
+          "lower_bound": -1993.75,
+          "energy": -1807.5,
+          "cuts": 19857,
+          "round": 1
+        }
+      ],
+      "gram_vertices": 1217
+    },
+    {
+      "method": "sdp",
+      "seed": 3003,
+      "damaged": true,
+      "nodes": 1216,
+      "budget": 5.0,
+      "target": null,
+      "seconds": 5.201858791988343,
+      "energy": -1807.5,
+      "bound": -2125.75,
+      "gap": 318.25,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.6649058749899268,
+          "lower_bound": -2125.75,
+          "energy": -1807.5,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 5.1134499160107225,
+          "lower_bound": -2125.75,
+          "energy": -1807.5,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "gram_vertices": 1217
+    },
+    {
+      "method": "cuts",
+      "seed": 3003,
+      "damaged": true,
+      "nodes": 1216,
+      "budget": 5.0,
+      "target": null,
+      "seconds": 5.079616375034675,
+      "energy": -1807.5,
+      "bound": -2281.25,
+      "gap": 473.75,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.7260052079800516,
+          "lower_bound": -2329.0,
+          "energy": -1807.5,
+          "cuts": 19337,
+          "round": 0
+        },
+        {
+          "time": 1.304620916955173,
+          "lower_bound": -2314.5,
+          "energy": -1807.5,
+          "cuts": 19857,
+          "round": 0
+        },
+        {
+          "time": 3.5385465000290424,
+          "lower_bound": -2281.25,
+          "energy": -1807.5,
+          "cuts": 19857,
+          "round": 1
+        },
+        {
+          "time": 5.035085750045255,
+          "lower_bound": -2281.25,
+          "energy": -1807.5,
+          "cuts": 19857,
+          "round": 1
+        }
+      ],
+      "gram_vertices": 0
+    },
+    {
+      "method": "hybrid",
+      "seed": 3001,
+      "damaged": false,
+      "nodes": 1288,
+      "budget": 5.0,
+      "target": 369.76875,
+      "seconds": 3.582208125037141,
+      "energy": -2068.75,
+      "bound": -2314.75,
+      "gap": 246.0,
+      "status": "GAP_LIMIT",
+      "progress": [
+        {
+          "time": 0.9467976250452921,
+          "lower_bound": -2770.75,
+          "energy": -2068.75,
+          "cuts": 31304,
+          "round": 0
+        },
+        {
+          "time": 1.581666959100403,
+          "lower_bound": -2770.75,
+          "energy": -2068.75,
+          "cuts": 31816,
+          "round": 0
+        },
+        {
+          "time": 3.372416542028077,
+          "lower_bound": -2314.75,
+          "energy": -2068.75,
+          "cuts": 31816,
+          "round": 0
+        },
+        {
+          "time": 3.4687358340015635,
+          "lower_bound": -2314.75,
+          "energy": -2068.75,
+          "cuts": 31816,
+          "round": 0
+        }
+      ],
+      "gram_vertices": 1289
+    },
+    {
+      "method": "cuts",
+      "seed": 3001,
+      "damaged": false,
+      "nodes": 1288,
+      "budget": 45.0,
+      "target": 369.76875,
+      "seconds": 45.17168466700241,
+      "energy": -2068.75,
+      "bound": -2607.0,
+      "gap": 538.25,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.9661605409346521,
+          "lower_bound": -2770.75,
+          "energy": -2068.75,
+          "cuts": 31304,
+          "round": 0
+        },
+        {
+          "time": 1.614464332931675,
+          "lower_bound": -2770.75,
+          "energy": -2068.75,
+          "cuts": 31816,
+          "round": 0
+        },
+        {
+          "time": 45.07135095796548,
+          "lower_bound": -2607.0,
+          "energy": -2068.75,
+          "cuts": 31816,
+          "round": 1
+        },
+        {
+          "time": 45.112192790955305,
+          "lower_bound": -2607.0,
+          "energy": -2068.75,
+          "cuts": 31816,
+          "round": 1
+        }
+      ],
+      "gram_vertices": 0
+    },
+    {
+      "method": "hybrid",
+      "seed": 3003,
+      "damaged": false,
+      "nodes": 1288,
+      "budget": 5.0,
+      "target": 366.91875,
+      "seconds": 3.7058918749680743,
+      "energy": -2085.0,
+      "bound": -2317.75,
+      "gap": 232.75,
+      "status": "GAP_LIMIT",
+      "progress": [
+        {
+          "time": 0.9563560000387952,
+          "lower_bound": -2765.75,
+          "energy": -2085.0,
+          "cuts": 31594,
+          "round": 0
+        },
+        {
+          "time": 1.583346875035204,
+          "lower_bound": -2742.75,
+          "energy": -2085.0,
+          "cuts": 32114,
+          "round": 0
+        },
+        {
+          "time": 3.500869416981004,
+          "lower_bound": -2317.75,
+          "energy": -2085.0,
+          "cuts": 32114,
+          "round": 0
+        },
+        {
+          "time": 3.5946644590003416,
+          "lower_bound": -2317.75,
+          "energy": -2085.0,
+          "cuts": 32114,
+          "round": 0
+        }
+      ],
+      "gram_vertices": 1289
+    },
+    {
+      "method": "cuts",
+      "seed": 3003,
+      "damaged": false,
+      "nodes": 1288,
+      "budget": 45.0,
+      "target": 366.91875,
+      "seconds": 45.172187709016725,
+      "energy": -2085.0,
+      "bound": -2599.75,
+      "gap": 514.75,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.9558299171039835,
+          "lower_bound": -2765.75,
+          "energy": -2085.0,
+          "cuts": 31594,
+          "round": 0
+        },
+        {
+          "time": 1.579701125039719,
+          "lower_bound": -2755.0,
+          "energy": -2085.0,
+          "cuts": 32114,
+          "round": 0
+        },
+        {
+          "time": 45.07297750003636,
+          "lower_bound": -2599.75,
+          "energy": -2085.0,
+          "cuts": 32114,
+          "round": 1
+        },
+        {
+          "time": 45.114314000005834,
+          "lower_bound": -2599.75,
+          "energy": -2085.0,
+          "cuts": 32114,
+          "round": 1
+        }
+      ],
+      "gram_vertices": 0
+    },
+    {
+      "method": "hybrid",
+      "seed": 3002,
+      "damaged": true,
+      "nodes": 1220,
+      "budget": 5.0,
+      "target": 305.390625,
+      "seconds": 3.2451115410076454,
+      "energy": -1838.375,
+      "bound": -2023.125,
+      "gap": 184.75,
+      "status": "GAP_LIMIT",
+      "progress": [
+        {
+          "time": 0.7305926250992343,
+          "lower_bound": -2368.625,
+          "energy": -1838.375,
+          "cuts": 19241,
+          "round": 0
+        },
+        {
+          "time": 1.318946041050367,
+          "lower_bound": -2368.625,
+          "energy": -1838.375,
+          "cuts": 19753,
+          "round": 0
+        },
+        {
+          "time": 3.0699793330859393,
+          "lower_bound": -2023.125,
+          "energy": -1838.375,
+          "cuts": 19753,
+          "round": 0
+        },
+        {
+          "time": 3.148497833055444,
+          "lower_bound": -2023.125,
+          "energy": -1838.375,
+          "cuts": 19753,
+          "round": 0
+        }
+      ],
+      "gram_vertices": 1221
+    },
+    {
+      "method": "cuts",
+      "seed": 3002,
+      "damaged": true,
+      "nodes": 1220,
+      "budget": 45.0,
+      "target": 305.390625,
+      "seconds": 45.08861591597088,
+      "energy": -1838.375,
+      "bound": -2191.375,
+      "gap": 353.0,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.7320986670674756,
+          "lower_bound": -2368.625,
+          "energy": -1838.375,
+          "cuts": 19241,
+          "round": 0
+        },
+        {
+          "time": 1.3155741670634598,
+          "lower_bound": -2368.625,
+          "energy": -1838.375,
+          "cuts": 19755,
+          "round": 0
+        },
+        {
+          "time": 19.15414670901373,
+          "lower_bound": -2235.875,
+          "energy": -1838.375,
+          "cuts": 19755,
+          "round": 1
+        },
+        {
+          "time": 27.24536924995482,
+          "lower_bound": -2191.375,
+          "energy": -1838.375,
+          "cuts": 21809,
+          "round": 2
+        },
+        {
+          "time": 45.04032420902513,
+          "lower_bound": -2191.375,
+          "energy": -1838.375,
+          "cuts": 21809,
+          "round": 2
+        }
+      ],
+      "gram_vertices": 0
+    }
+  ],
+  "source_sha256": "bec5fcacf6948ee2a8167136004b785bd901778b321a595f20f868bf82012aac",
+  "source_files": [
+    "highs_turbo/ising.py",
+    "highs_turbo/ising_cuts.py",
+    "highs_turbo/ising_sdp.py",
+    "examples/benchmark_sdp_ising.py"
+  ],
+  "hardware": "Apple M4 Pro, 24 GiB, macOS 26.6",
+  "versions": {
+    "python": "3.13.5",
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "highspy": "1.15.1",
+    "dwave-samplers": "1.8.0"
+  }
+}
