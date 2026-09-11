@@ -147,9 +147,10 @@ including both off-diagonal entries `Q[i, j] + Q[j, i]`.
 from highs_turbo import solve_ising
 
 # E(s) = sum(h[i] * s[i]) + sum(J[i, j] * s[i] * s[j]), s[i] in {-1, +1}
+h = {"a": 0.25, "b": -0.5}
+J = {("a", "b"): 1.0}
 result = solve_ising(
-    {"a": 0.25, "b": -0.5},
-    {("a", "b"): 1.0},
+    h, J,
     time_limit=10,
 )
 print(result.spins, result.energy, result.lower_bound, result.gap, result.status)
@@ -185,7 +186,8 @@ extension; a slower Python implementation is available on other platforms.
 `TIME_LIMIT`, `INTERRUPTED`, and `GAP_LIMIT` return the best available spins and
 the remaining absolute `gap` and `relative_gap`. A positive requested
 `relative_gap` may terminate before proof of optimality. `time_limit` covers
-preparation and search; mandatory input processing can exceed very small limits.
+preparation and search; bounded preprocessing and verification can exceed very
+small limits, and native solver limits are cooperative.
 `SOLVER_ERROR` retains a feasible candidate and conservative cut bound when the
 solver cannot finish. `lower_bound` may use a numerical HiGHS bound;
 `exact_cut_lower_bound` and `exact_energy` are rational values.
@@ -209,6 +211,8 @@ bound/energy checkpoints with elapsed times; `root_rounds` counts LP solves.
 The older `cut_certificate` field is retained only for the static policy.
 `threads=0` leaves HiGHS' thread count automatic; use a consistent thread setting
 within a process because HiGHS shares its native scheduler across instances.
+If search stops for another reason, inspect `exact_gap` to determine whether the
+requested certificate target was met, even if HiGHS reports numerical optimality.
 
 Pegasus generation now uses D-Wave's maintained `dwave-graphs` package. The
 default fabric has 264 spins / 1,604 couplers for P_4 and 1,288 / 8,804 for P_8.

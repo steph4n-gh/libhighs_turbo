@@ -4,8 +4,11 @@ The implementation adds iterative separation, bounded subgraph inequalities,
 a fast multiplier search, annealing/tabu incumbents, a learned candidate ranker,
 and a serializable exact bound witness to `solve_ising`. The research target is
 10x less total time to the same independently verified gap on previously unseen
-weighted and damaged Pegasus graphs with more than 1,000 spins. Results below
-will distinguish verified bounds from ordinary numerical solver bounds.
+weighted and damaged Pegasus graphs with more than 1,000 spins. The experiment completed 108 runs across six methods. Deterministic adaptive
+separation reduced the per-instance median verified gap by 51.7–59.0% versus
+the static implementation (median reduction 54.9%). No full instance was
+proved optimal, no learned advantage was established, and the 10x research
+target remains unproven.
 
 ## What is implemented
 
@@ -47,7 +50,8 @@ new subgraph cut proves the correct optimum -3.
 A remaining-budget MIP keeps the original sparse XOR formulation and every
 retained verified cut. Its reported numerical branch-and-bound bound is separate
 from the exact certificate. Numerical optimality is not promoted to rational
-optimality. Specifying `certified_gap` stops only against the exact witness.
+optimality. The `certified_gap` early-stop test uses only the exact witness; inspect
+`exact_gap` if search stops for another reason, including numerical MIP optimality.
 The fast native multiplier loop is currently available with the macOS extension;
 the portable Python implementation follows the same coordinate rule and checks
 its time budget within each sweep.
@@ -68,7 +72,9 @@ an optimal marginal LP measurement are excluded. The label is
 `log1p(gain / max(separator_seconds, 0.001))`. Training explores candidates in
 random order, independently of the current learned policy.
 
-The saved model used 1,559 measured candidates. Seeds 106, 112, 118, and 124 were
+The collection recorded 3,441 candidate attempts; 1,559 supplied usable labels,
+including 316 positive gains. The other marginal LP solves lacked an optimal
+measurement within their budget. The saved model used the 1,559 measured candidates. Seeds 106, 112, 118, and 124 were
 held out from fitting. Validation mean squared error was 2.175, versus 3.508 for
 a constant predictor learned on the training split. This prediction metric is
 not evidence of faster solving or generalization to full fabrics. Many candidates
@@ -88,6 +94,10 @@ model parameters and training metadata are in `highs_turbo/ising_policy.json`.
 Time-based labels and bounded sampling can vary across machines and runs.
 
 ## Evaluation protocol
+
+Measured on an Apple M4 Pro with 24 GiB RAM, macOS 26.6 arm64, Python 3.13.5,
+NumPy 2.5.3, SciPy 1.18.1, HiGHS 1.15.1, dwave-graphs 1.0.0,
+dwave-samplers 1.8.0, and dimod 0.12.22. Training used PyTorch 2.14.0.
 
 The evaluation uses official full P8 fabrics (1,288 spins), random couplings in
 `{-8,...,8}/8`, and fields in `{-3,...,3}/8`. The damaged variants remove each
@@ -155,4 +165,92 @@ seed, and output paths were passed at runtime.
 
 ## Measured results
 
-The held-out run is in progress. No 10x performance claim has been established.
+All entries are medians of three runs; energy and gap medians are calculated
+independently and need not come from the same run. The raw 108 records, including
+all numerical bounds, exact gaps, timings, cut counts, and checked checkpoints,
+are in [`benchmarks/ising/heldout.json`](benchmarks/ising/heldout.json).
+
+| Input | Spins | Static verified gap | Adaptive verified gap | Learned verified gap | Reduction vs static |
+|---|---:|---:|---:|---:|---:|
+| Intact 1001 | 1288 | 1615.75 | 662.50 | 686.50 | 59.0% |
+| Intact 1002 | 1288 | 1656.00 | 691.75 | 691.75 | 58.2% |
+| Intact 1003 | 1288 | 1642.00 | 712.25 | 712.25 | 56.6% |
+| Damaged 1001 | 1227 | 1063.75 | 499.25 | 502.50 | 53.1% |
+| Damaged 1002 | 1206 | 955.00 | 461.25 | 462.50 | 51.7% |
+| Damaged 1003 | 1217 | 1047.25 | 491.00 | 496.00 | 53.1% |
+
+Energy and numerical-gap pairs (lower energy and smaller gap are better):
+
+| Input | Native E / gap | Static E / gap | Adaptive E / gap | Learned E / gap | SMS E / gap | Heuristic E |
+|---|---:|---:|---:|---:|---:|---:|
+| Intact 1001 | 19.12 / 4574.50 | -1881.62 / 1615.75 | -2100.62 / 662.50 | -2100.62 / 686.50 | -748.38 / 2588.75 | -2111.88 |
+| Intact 1002 | -46.50 / 4537.75 | -1870.50 / 1656.00 | -2101.25 / 691.75 | -2101.25 / 691.75 | -768.50 / 2593.88 | -2120.50 |
+| Intact 1003 | -9.12 / 4555.75 | -1862.12 / 1642.00 | -2078.38 / 712.25 | -2078.38 / 712.25 | -795.88 / 2585.62 | -2100.38 |
+| Damaged 1001 | 27.38 / 3741.75 | -1628.12 / 1063.75 | -1846.88 / 499.25 | -1846.88 / 502.50 | -726.62 / 1927.46 | -1864.12 |
+| Damaged 1002 | -35.62 / 3482.25 | -1597.12 / 955.00 | -1787.12 / 461.25 | -1787.12 / 462.50 | -719.38 / 1825.28 | -1802.62 |
+| Damaged 1003 | -64.00 / 3550.00 | -1603.25 / 1047.25 | -1801.75 / 491.00 | -1801.75 / 496.00 | -694.50 / 1929.50 | -1808.50 |
+
+The deterministic method reduced the verified gap in every case. The median
+per-instance reduction was **54.9%**, with a range of **51.7–59.0%**, relative to
+the static implementation. These are fixed-budget gap reductions, not solve-time
+speedup ratios. All exact gaps remain large; none of the six instances was
+proved optimal by any method within the five-second budget.
+
+Both adaptive policies met the coarse 20%-of-L1 certificate target in all 18
+runs. Deterministic checkpoint times ranged from **0.701 to 0.957 s**, median
+**0.851 s**; learned times ranged from **0.701 to 0.993 s**, median **0.834 s**.
+The static and unaccelerated paths did not meet it in five seconds. Censoring
+and the absence of independently checked SMS proofs prevent a valid 10x
+comparison with the strongest available baseline.
+
+Learning did not deliver a consistent benefit: across case medians, its verified
+gap was equal to or larger than the deterministic gap, with a median increase
+of 0.46%. Its small timing difference is insufficient evidence of a speedup.
+Deterministic selection therefore remains the default. The observed improvement
+belongs to the deterministic pipeline; it is not evidence that learning generates
+better proofs.
+
+The dedicated annealing/tabu method produced better median feasible energies
+than the adaptive solver on all six cases. It provides no lower bound. SMS's
+five-second numerical energy/gap pairs were worse in these runs, but this short
+budget, one machine, one instance family, and one default specialist configuration
+do not establish general superiority over specialist exact solvers.
+
+Measured wall-time medians were 5.093 s (native), 5.077 s (static), 5.141 s
+(deterministic), 5.166 s (learned), 5.078 s (SMS), and 5.050 s (heuristic).
+The largest overrun was a native HiGHS run at 6.341 s; adaptive runs stayed
+within 5.212 s. Actual times are retained in the raw records.
+
+The measured Ising implementation is commit `02185f5de4254fa06ecbffe3b81e20371d15a3d1`.
+A subsequent repair to the separate LP portfolio's early-error handling does not
+change the timed Ising code. No other CPU-heavy tasks ran during measurement.
+
+## Validation and remaining work
+
+The test suite includes exhaustive small Ising comparisons, all-state validity
+checks, a K6 subgraph strengthening example, long-cycle separation, perturbed
+numerical multipliers, tampered serialized witnesses, and learned-policy proof
+checks. Minimum-supported HiGHS 1.11 and the pure Python fallback pass 62
+solver/Ising tests. Packaging includes the trained NumPy policy and optional
+native multiplier kernel. CI also found and now covers an older LP portfolio
+error path: an early simplex error must still launch its independent IPM method.
+
+The next research obstacle is substantially tighter full-fabric proofs. The
+12-vertex oracle and current learned ranker do not yet establish that capability.
+A further attempt should measure larger recurring structures and train on
+full-scale marginal **verified bound gain per total second**, including the
+approximate early separation points. A common proof-checking path for specialist
+baselines is also needed before claiming the strict certified-gap target.
+
+
+## Scope of the research claim
+
+Cycle separation and specialized branch-and-cut are established methods; see
+[Rehfeldt, Koch, and Shinano (2023)](https://link.springer.com/article/10.1007/s12532-023-00236-6).
+Learned cut selection also predates this work, for example
+[Tang, Agrawal, and Faenza (2020)](https://proceedings.mlr.press/v119/tang20a.html).
+Independent integer-programming proof checking is likewise established in
+[VIPR](https://github.com/scipopt/vipr). This change implements and evaluates a
+particular combination; it does not establish a new algorithm or a general
+advantage over state-of-the-art exact solvers. SMS is one public specialist
+baseline, not an exhaustive comparison with commercial and research solvers.
