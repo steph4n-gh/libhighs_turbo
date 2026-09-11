@@ -1,8 +1,4 @@
-"""highs_turbo: High-Performance Neural-Surrogate Cutting Plane Plugin for HiGHS and SciPy.
-
-Enables 5x–10x acceleration with 99% fewer simplex pivots and zero code changes.
-Cryptographically certified with 100% exact rational verification.
-"""
+"""Graph cutting planes, rational cut verification, and SciPy-style solvers."""
 
 from __future__ import annotations
 

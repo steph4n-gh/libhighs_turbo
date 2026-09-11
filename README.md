@@ -1,204 +1,156 @@
-# highs_turbo: Neural-Surrogate Cutting Plane Plugin for HiGHS & SciPy
+# highs_turbo: Cutting Plane Experiments for HiGHS & SciPy
 
+[![Tests](https://github.com/steph4n-gh/libhighs_turbo/actions/workflows/tests.yml/badge.svg)](https://github.com/steph4n-gh/libhighs_turbo/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://en.cppreference.com/w/cpp/20)
-[![Simplex Pivots: 0-1](https://img.shields.io/badge/simplex%20pivots-0--1-brightgreen.svg)]()
-[![Rational Verification: 100%](https://img.shields.io/badge/exact%20rational%20verification-100%25-brightgreen.svg)]()
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 
-`highs_turbo` is a drop-in acceleration plugin for **HiGHS** and **SciPy** (`scipy.optimize.linprog`). It embeds a compiled C++20 **Neural-Surrogate Cutting Plane Engine** that delivers **5x–10x wall-clock speedups** and **> 99% fewer simplex pivots** on combinatorial and binary quadratic programs—with **zero code changes** for end users.
+`highs_turbo` provides a SciPy-style linear programming interface, Max-Cut and
+QUBO solvers, and an optional C++20 engine for discovering and combining graph
+cutting planes. A rational verifier checks cut combinations and produces SHA-256
+receipts. Optional PyTorch models predict combination weights.
 
----
+## Installation
 
-## Key Highlights
+Python 3.10 or newer is required. NumPy, SciPy (1.9 or newer, for `milp`), and
+NetworkX are installed automatically.
 
-- **3-Line Drop-In Replacement:** Matches `scipy.optimize.linprog`'s exact signature and return format (`OptimizeResult`).
-- **Automatic $O(\text{nnz})$ Topology Scanner:** Seamlessly detects graph cuts, binary quadratic relaxations (QUBO / Ising), and McCormick envelopes, routing non-graph LPs to standard HiGHS without overhead.
-- **1-Row Surrogate Injection:** Compresses hundreds of dense cutting planes (triangles, 4-cycles, $K_5$ cliques) into a single certified surrogate row, solving the relaxation in exactly **0 to 1 simplex pivots**.
-- **100% Exact Rational Verification:** Every cutting plane is certified in exact rational arithmetic via Stein binary GCD and arbitrary-precision GMP. Zero hallucinated or unsound cuts.
-- **Cryptographic Receipts:** Emits SHA-256 digital proof receipts validating certified dual bounds.
-- **Zero Relabeling Variance:** Invariant under isomorphic vertex relabelings ($|\Delta Z| \le 10^{-6}$).
-
----
-
-## 3-Line Quickstart
-
-### 1. Drop-In `linprog` Replacement
-
-Simply swap `scipy.optimize` with `highs_turbo`:
-
-```python
-import highs_turbo as opt  # Drop-in replacement for scipy.optimize
-
-# Solves any LP; automatically accelerates graph-structured problems
-res = opt.linprog(c, A_ub=A_ub, b_ub=b_ub, bounds=bounds)
-
-print(f"Optimal Value: {res.fun}")
-print(f"Simplex Iterations: {res.nit}")  # 0 to 1 pivot on surrogate LPs
-print(f"Cryptographic Receipt: {res.certificate_sha256}")
+```bash
+git clone https://github.com/steph4n-gh/libhighs_turbo.git
+cd libhighs_turbo
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install .
 ```
 
-### 2. High-Level 1-Line Max-Cut Solver
+The native engine currently uses macOS CommonCrypto. On macOS, install the
+Xcode command line tools and the native dependencies before installing:
+
+```bash
+brew install gmp highs
+python -m pip install .
+```
+
+If the native extension cannot compile, installation continues with Python and
+SciPy implementations. Native cut separation and native-only tests require a
+successful extension build. Check availability with:
+
+```bash
+python -c 'from highs_turbo.compiled_engine import COMPILED_ENGINE_AVAILABLE; print(COMPILED_ENGINE_AVAILABLE)'
+```
+
+To use the bundled neural weights or train models, install the optional extra:
+
+```bash
+python -m pip install '.[ml]'
+```
+
+The weights are shipped inside the installed package. Without PyTorch, the solver
+uses its geometric weighting fallback.
+
+## Quickstart
+
+### Linear programming
 
 ```python
+import highs_turbo as opt
+
+res = opt.linprog(
+    [-1.0, 4.0],
+    A_ub=[[-3.0, 1.0], [1.0, 2.0]],
+    b_ub=[6.0, 4.0],
+)
+print(res.fun, res.nit)
+print(getattr(res, "certificate_sha256", None))
+```
+
+The default `method="turbo"` detects graph structure and may add cuts that tighten
+the supplied relaxation. This can change the LP objective. Use `method="highs"`
+to delegate the original problem directly to SciPy. General LPs also fall back
+to SciPy; they do not receive cut-certificate metadata.
+
+Graph edge relaxations need `bounds=(0, 1)`. Omitting bounds retains SciPy's
+nonnegative, unbounded-above default. A complete runnable graph example is in
+[`examples/01_quickstart_3_lines.py`](examples/01_quickstart_3_lines.py).
+
+### Max-Cut
+
+```python
+import numpy as np
 import highs_turbo
 
-# Solve from adjacency matrix or NetworkX Graph
-cut_val, partition, cert = highs_turbo.solve_maxcut(adjacency_matrix)
-
-print(f"Max-Cut: {cut_val}, Cut Partition: {partition}")
-print(f"SHA-256 Certificate: {cert}")
+adjacency = np.ones((3, 3)) - np.eye(3)
+result = highs_turbo.solve_maxcut(adjacency)
+cut_value, partition, receipt = result
+print(cut_value, partition, result.upper_bound, result.status)
 ```
 
-### 3. High-Level 1-Line QUBO / Ising Solver
+Inputs may be a `GraphInstance`, NetworkX graph, dense adjacency matrix, or SciPy
+sparse matrix. Graphs with at most 200 nodes use a MILP for the integer solution;
+larger graphs use local search and report `status="HEURISTIC"`.
+
+### QUBO
 
 ```python
-import highs_turbo
-
-# Solve QUBO: min x^T Q x for x in {0, 1}^n
-energy, binary_state, cert = highs_turbo.solve_qubo(Q)
-
-print(f"Ground-State Energy: {energy}")
-print(f"Optimal Binary Vector: {binary_state}")
-print(f"Certificate: {cert}")
+result = highs_turbo.solve_qubo([[0.0, -1.0], [-1.0, 0.0]])
+energy, state, receipt = result
+print(energy, state, result.lower_bound, result.status)
 ```
 
----
+This minimizes `x.T @ Q @ x` for binary `x`. Inputs may be a square dense or
+sparse matrix, or a dictionary mapping `(i, j)` to coefficients. Up to 18
+variables are enumerated exactly. Larger problems use local search and report
+`status="HEURISTIC"`. The lower bound sums the minimum contribution of each
+binary monomial using exact rational representations of the input floats,
+including both off-diagonal entries `Q[i, j] + Q[j, i]`.
 
-## Benchmark Performance
+## Certificates and performance
 
-Evaluated on 1,000+ node combinatorial instances and D-Wave Quantum Annealing hardware topologies:
+A valid cut-combination receipt certifies that combination's coefficients and
+right-hand side. It does not, on its own, certify that a returned partition is
+optimal or that a floating-point LP objective is an exact dual bound. QUBO
+receipts include the objective coefficients and the conservative lower bound.
 
-| Benchmark Topology | Graph Size | Classical Multi-Row Separation | `highs_turbo` 1-Row Surrogate | Wall-Clock Speedup | Simplex Pivot Reduction | Soundness Verification |
-|---|---|---|---|---|---|---|
-| **D-Wave Pegasus $P_8$** | 1,344 nodes, 10,080 edges | 341 pivots (128.4 ms) | **1 pivot** (24.8 ms) | **5.18x** | **99.7%** | 100% Sound (SHA-256) |
-| **Stanford G-set G43** | 1,000 nodes, 9,990 edges | 520 pivots (210.6 ms) | **1 pivot** (20.3 ms) | **10.37x** | **99.8%** | 100% Sound (SHA-256) |
-| **Stanford G-set G22** | 2,000 nodes, 19,990 edges | 890 pivots (412.5 ms) | **1 pivot** (52.7 ms) | **7.83x** | **99.8%** | 100% Sound (SHA-256) |
-| **D-Wave Chimera $C_{12,12,4}$** | 1,152 nodes, 3,360 edges | 182 pivots (64.2 ms) | **1 pivot** (19.8 ms) | **3.24x** | **99.4%** | 100% Sound (SHA-256) |
-| **Chimera $C_{16,16,4}$** | 2,048 nodes, 6,016 edges | 412 pivots (185.0 ms) | **1 pivot** (40.2 ms) | **4.60x** | **99.5%** | 100% Sound (SHA-256) |
-| **Planted $K_5$ Cluster** | 1,000 nodes, 2,199 edges | 304 pivots (98.6 ms) | **1 pivot** (15.9 ms) | **6.20x** | **99.7%** | 100% Sound (SHA-256) |
-
----
-
-## Architecture
-
-```
-                       User Input (c, A_ub, b_ub)
-                                  │
-                                  ▼
-                     ┌───────────────────────────┐
-                     │ highs_turbo.detector      │
-                     │ Fast O(nnz) Topology Scan │
-                     └─────────────┬─────────────┘
-                                   │
-              ┌────────────────────┴────────────────────┐
-              ▼                                         ▼
-      [Graph Structure]                         [General Linear LP]
-              │                                         │
-              ▼                                         │
-┌───────────────────────────┐                           │
-│ Compiled Bit-Parallel Cut │                           │
-│ Engine (C++20 SIMD)       │                           │
-└─────────────┬─────────────┘                           │
-              │                                         │
-              ▼                                         │
-┌───────────────────────────┐                           │
-│ Exact Rational Verifier   │                           │
-│ (Stein Binary GCD + GMP)  │                           │
-└─────────────┬─────────────┘                           │
-              │                                         │
-              ▼                                         │
-┌───────────────────────────┐                           │
-│ 1-Row Certified Surrogate │                           │
-│ Cutting Plane Generator   │                           │
-└─────────────┬─────────────┘                           │
-              │                                         │
-              ▼                                         │
-┌───────────────────────────────────────────────────────┴─┐
-│ HiGHS C++ Solver API (0 to 1 Simplex Pivots)            │
-└─────────────────────────────┬───────────────────────────┘
-                              │
-                              ▼
-                     OptimizeResult Output
-                     + SHA-256 Proof Receipt
-```
-
-### Module Overview
-
-- `highs_turbo/__init__.py`: Package root exporting `linprog`, `solve_maxcut`, `solve_qubo`, and `TurboSolver`.
-- `highs_turbo/api.py`: Implements the 3-line drop-in API, result dataclasses (`MaxCutResult`, `QuboResult`), and solver orchestration.
-- `highs_turbo/detector.py`: $O(\text{nnz})$ automatic topology scanner detecting node-edge incidence, triangle/cycle metric inequalities, and McCormick bilinear relaxations.
-- `highs_turbo/cpp_engine/`: Compiled C++20 engine:
-  - `bit_graph.cpp`: Bit-parallel 64-bit word graph representations and cache-aligned SIMD routines.
-  - `cut_engine.cpp`: Discovery of violated $K_5$ cliques, odd triangles, and 4-cycles.
-  - `rational_verifier.cpp`: Exact rational verification preventing cut hallucinations.
-  - `solver_callback.cpp`: Direct in-memory cut row injection bridge.
-
----
-
-## Exact Rational Verification Guarantees
-
-Every candidate cutting plane generated by `highs_turbo` must pass through the **Compiled Rational Verifier**:
-
-1. **Non-negativity Proof:** Validates that all dual weights $\lambda_k \ge 0$.
-2. **Support Validation:** Checks that every active support forms a certified facet-defining inequality on the underlying graph.
-3. **Exact Stein GCD Arithmetic:** Evaluates cut coefficients and RHS in rational arithmetic without floating-point cancellation.
-4. **Adversarial Rejection:** 100% of perturbed, negated, or mutated cuts are rejected before reaching the solver state.
-5. **Cryptographic SHA-256 Receipts:** Every certified solve outputs a tamper-evident digest of the proof certificate.
-
----
-
-## Installation & Packaging
-
-### From Source
+Speedups and simplex iteration counts depend on the input, solver version,
+hardware, and model weights. There is no fixed speedup or pivot-count guarantee.
+Run the benchmark suite to obtain measurements for your environment:
 
 ```bash
-git clone https://github.com/scipy/highs_turbo.git
-cd highs_turbo
-pip install .
+python -m highs_turbo.large_scale_benchmarks --scope canonical --output benchmark_results.json
 ```
 
-### Building Binary Wheels
+The generated G-set-style inputs are synthetic graphs; they are not downloaded
+Stanford G-set benchmark files. `mock_benchmark.py` is only a simulated demo and
+must not be used as performance evidence.
+
+## Development and testing
+
+For the full suite, use macOS with the native dependencies installed:
 
 ```bash
-python3 setup.py sdist bdist_wheel
+python -m pip install '.[test]' build
+python setup.py build_ext --inplace
+python -m pytest tests -q
+python examples/01_quickstart_3_lines.py
 ```
 
-Distributions will be generated under `dist/`:
-- Source distribution: `dist/highs-turbo-0.1.0.tar.gz`
-- Binary wheel: `dist/highs_turbo-0.1.0-cp314-cp314-macosx_...whl`
-
----
-
-## Running the Examples
-
-Runnable standalone examples are located in `examples/`:
-
-- **01 Quickstart (10 seconds):**
-  ```bash
-  python3 examples/01_quickstart_3_lines.py
-  ```
-- **02 D-Wave Pegasus Quantum Annealing Hardware Lattices:**
-  ```bash
-  python3 examples/02_dwave_pegasus_qpu.py
-  ```
-- **03 Stanford G-set G43 Max-Cut Benchmark:**
-  ```bash
-  python3 examples/03_gset_maxcut.py
-  ```
-
----
-
-## Running Tests
-
-Execute the comprehensive automated test suite:
+Build a source distribution and then a wheel from that source distribution:
 
 ```bash
-python3 -m pytest tests/test_highs_turbo_plugin.py -v
+python -m build
 ```
 
----
+Artifacts are written to `dist/`. The source archive includes the C++ headers;
+the wheel includes the model weights and runtime topology helpers. To test the
+installed wheel without importing the checkout:
+
+```bash
+python -m pip install --force-reinstall --no-deps dist/*.whl
+python -I tests/smoke_installed.py --require-native --require-ml
+```
+
+CI runs the native suite on macOS and installation smoke checks without a native
+compiler or PyTorch on Linux, including the minimum supported Python version.
 
 ## License
 
-MIT License. Developed for high-performance mathematical programming and combinatorial optimization.
+[MIT](LICENSE).

@@ -9,7 +9,7 @@ from __future__ import annotations
 import pytest
 import numpy as np
 
-from tests.e2e.topologies import (
+from highs_turbo.topologies import (
     BitParallelGraph,
     generate_chimera_instance,
     generate_pegasus_instance,

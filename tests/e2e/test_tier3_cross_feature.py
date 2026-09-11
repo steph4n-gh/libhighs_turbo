@@ -36,7 +36,7 @@ from highs_turbo.surrogate_model import (
     EdgeEquivariantSurrogateGNN,
     extract_topological_features,
 )
-from tests.e2e.topologies import BitParallelGraph
+from highs_turbo.topologies import BitParallelGraph
 
 
 @pytest.fixture

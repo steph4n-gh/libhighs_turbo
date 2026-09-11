@@ -20,7 +20,7 @@ import pytest
 from highs_turbo.exact_solver import ExactMaxCutSolver
 from highs_turbo.graph_generator import GraphInstance, generate_k5_cluster_graph
 from highs_turbo.rational_verifier import RationalCutVerifier
-from tests.e2e.topologies import (
+from highs_turbo.topologies import (
     BitParallelGraph,
     generate_chimera_instance,
     generate_gset_instance,

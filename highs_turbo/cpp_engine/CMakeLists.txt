@@ -9,16 +9,17 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang")
     add_compile_options(-O3 -funroll-loops -Wall -Wextra -Wno-unused-parameter)
 endif()
 
-find_package(Python 3 COMPONENTS Interpreter Development.Module REQUIRED)
+find_package(Python 3.10 COMPONENTS Interpreter Development.Module REQUIRED)
 
 # GMP headers & libraries
-set(GMP_ROOT "/opt/homebrew/Cellar/gmp/6.3.0")
-find_path(GMP_INCLUDE_DIR NAMES gmp.h PATHS ${GMP_ROOT}/include /opt/homebrew/include)
-find_library(GMP_LIB NAMES gmp PATHS ${GMP_ROOT}/lib /opt/homebrew/lib)
-find_library(GMPXX_LIB NAMES gmpxx PATHS ${GMP_ROOT}/lib /opt/homebrew/lib)
+find_path(GMP_INCLUDE_DIR NAMES gmp.h HINTS /opt/homebrew/include REQUIRED)
+find_library(GMP_LIB NAMES gmp HINTS /opt/homebrew/lib REQUIRED)
+find_library(GMPXX_LIB NAMES gmpxx HINTS /opt/homebrew/lib REQUIRED)
+find_path(HIGHS_INCLUDE_DIR NAMES Highs.h HINTS /opt/homebrew/include PATH_SUFFIXES highs REQUIRED)
+find_library(HIGHS_LIB NAMES highs HINTS /opt/homebrew/lib REQUIRED)
 
 # Extension module
-python_add_library(_compiled_engine MODULE
+python_add_library(_compiled_engine MODULE WITH_SOABI
     bit_graph.cpp
     rational_verifier.cpp
     cut_engine.cpp
@@ -30,10 +31,12 @@ target_include_directories(_compiled_engine PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${GMP_INCLUDE_DIR}
+    ${HIGHS_INCLUDE_DIR}
 )
 
 target_link_libraries(_compiled_engine PRIVATE
-    ${GMP_LIB}
     ${GMPXX_LIB}
+    ${GMP_LIB}
+    ${HIGHS_LIB}
     "-framework Security"
 )

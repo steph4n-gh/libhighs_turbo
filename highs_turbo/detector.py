@@ -57,7 +57,9 @@ class TopologyDetector:
         n_vars = len(c_arr)
 
         # 1. Check for explicit graph or adjacency passed via kwargs or options
-        explicit_graph = kwargs.get("graph") or (options or {}).get("graph")
+        explicit_graph = kwargs.get("graph")
+        if explicit_graph is None:
+            explicit_graph = (options or {}).get("graph")
         if explicit_graph is not None:
             g = self._coerce_to_graph_instance(explicit_graph, c_arr)
             return TopologyScanResult(
@@ -72,7 +74,11 @@ class TopologyDetector:
                 metadata={"source": "explicit_graph"},
             )
 
-        explicit_adj = kwargs.get("adj") or kwargs.get("adjacency") or (options or {}).get("adj")
+        explicit_adj = kwargs.get("adj")
+        if explicit_adj is None:
+            explicit_adj = kwargs.get("adjacency")
+        if explicit_adj is None:
+            explicit_adj = (options or {}).get("adj")
         if explicit_adj is not None:
             g = self._graph_from_adjacency(explicit_adj)
             return TopologyScanResult(
@@ -108,15 +114,15 @@ class TopologyDetector:
         # Convert A_ub to CSR representation for fast O(nnz) row scanning
         csr_A, b_vec = self._to_csr_and_vector(A_ub, b_ub, num_rows, n_vars)
 
-        # 2. Check Pattern A: Node-Edge Incidence (Standard Max-Cut MILP/LP formulation)
-        node_edge_res = self._scan_node_edge_incidence(c_arr, csr_A, b_vec, n_vars, num_rows)
-        if node_edge_res is not None:
-            return node_edge_res
-
-        # 3. Check Pattern B: Triangle / Metric Cycle Inequalities on Edge Variables
+        # Triangle rows share the +1, -1, -1 pattern with node-edge rows.
+        # Identify complete triangle systems before trying node-edge incidence.
         triangle_res = self._scan_triangle_inequalities(c_arr, csr_A, b_vec, n_vars, num_rows)
         if triangle_res is not None:
             return triangle_res
+
+        node_edge_res = self._scan_node_edge_incidence(c_arr, csr_A, b_vec, n_vars, num_rows)
+        if node_edge_res is not None:
+            return node_edge_res
 
         # 4. Check Pattern C: McCormick Envelopes (QUBO / Quadratic Binary Linearization)
         mccormick_res = self._scan_mccormick_envelopes(c_arr, csr_A, b_vec, n_vars, num_rows)
@@ -267,7 +273,7 @@ class TopologyDetector:
         data = A_csr.data
 
         triangles: Set[Tuple[int, int, int]] = set()
-        matched_rows = 0
+        patterns: Dict[Tuple[int, int, int], Set[Tuple[int, ...]]] = {}
 
         for r in range(num_rows):
             start = indptr[r]
@@ -277,21 +283,22 @@ class TopologyDetector:
                 continue
 
             rhs = b_vec[r] if r < len(b_vec) else 0.0
-            # Triangle inequality RHS is 1.0 (odd cycle) or 2.0 (all positive)
-            if abs(rhs - 1.0) > self.tolerance and abs(rhs - 2.0) > self.tolerance:
-                continue
-
             row_idx = indices[start:end]
             row_vals = data[start:end]
 
             # All coefficients must be +/- 1.0
             if all(abs(abs(v) - 1.0) <= self.tolerance for v in row_vals):
                 tri = tuple(sorted([int(row_idx[0]), int(row_idx[1]), int(row_idx[2])]))
-                triangles.add(tri)
-                matched_rows += 1
+                positive = tuple(sorted(int(idx) for idx, val in zip(row_idx, row_vals) if val > 0))
+                if (len(positive) == 1 and abs(rhs) <= self.tolerance) or (
+                    len(positive) == 3 and abs(rhs - 2.0) <= self.tolerance
+                ):
+                    patterns.setdefault(tri, set()).add(positive)
+
+        triangles = {tri for tri, signs in patterns.items() if len(signs) == 4}
 
         # A triangle LP has multiple rows per triangle (up to 4 per triangle)
-        if len(triangles) >= 1 and matched_rows >= 3:
+        if triangles:
             graph, edge_to_var = self._reconstruct_graph_from_triangles(triangles, c, n_vars)
             if graph is not None:
                 return TopologyScanResult(

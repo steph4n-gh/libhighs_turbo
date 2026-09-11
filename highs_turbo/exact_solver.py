@@ -69,6 +69,9 @@ class ExactMaxCutSolver:
         n = graph.num_nodes
         m = graph.num_edges
 
+        if m == 0:
+            return 0.0, np.zeros(n, dtype=int)
+
         # Total variables: m (edges) + n (nodes)
         # x_0..x_{m-1}, s_0..s_{n-1}
         c = np.zeros(m + n)
@@ -172,31 +175,31 @@ class ExactMaxCutSolver:
             if e_uv in edge_to_idx and e_vw in edge_to_idx and e_uw in edge_to_idx:
                 i1, i2, i3 = edge_to_idx[e_uv], edge_to_idx[e_vw], edge_to_idx[e_uw]
 
-                # x_1 + x_2 - x_3 <= 1
+                # x_1 - x_2 - x_3 <= 0
                 r1 = np.zeros(m)
                 r1[i1] = 1.0
-                r1[i2] = 1.0
+                r1[i2] = -1.0
                 r1[i3] = -1.0
                 A_rows.append(r1)
-                b_vals.append(1.0)
+                b_vals.append(0.0)
                 row_labels.append(f"tri_{u}_{v}_{w}_1")
 
-                # x_1 - x_2 + x_3 <= 1
+                # -x_1 + x_2 - x_3 <= 0
                 r2 = np.zeros(m)
-                r2[i1] = 1.0
-                r2[i2] = -1.0
-                r2[i3] = 1.0
+                r2[i1] = -1.0
+                r2[i2] = 1.0
+                r2[i3] = -1.0
                 A_rows.append(r2)
-                b_vals.append(1.0)
+                b_vals.append(0.0)
                 row_labels.append(f"tri_{u}_{v}_{w}_2")
 
-                # -x_1 + x_2 + x_3 <= 1
+                # -x_1 - x_2 + x_3 <= 0
                 r3 = np.zeros(m)
                 r3[i1] = -1.0
-                r3[i2] = 1.0
+                r3[i2] = -1.0
                 r3[i3] = 1.0
                 A_rows.append(r3)
-                b_vals.append(1.0)
+                b_vals.append(0.0)
                 row_labels.append(f"tri_{u}_{v}_{w}_3")
 
                 # x_1 + x_2 + x_3 <= 2

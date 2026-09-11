@@ -36,7 +36,7 @@ def run_quickstart():
     c, A_ub, b_ub, _, _ = solver.build_relaxation_matrices(g, include_k5=False)
 
     # EXACT 3-LINE DROP-IN:
-    res = opt.linprog(c, A_ub=A_ub, b_ub=b_ub, graph=g)
+    res = opt.linprog(c, A_ub=A_ub, b_ub=b_ub, bounds=(0, 1), graph=g)
 
     print(f"  Optimal Relaxation Bound: {res.fun:.4f}")
     print(f"  Simplex Pivots Required:  {res.nit}")
