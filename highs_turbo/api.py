@@ -27,28 +27,29 @@ except ImportError:
 from scipy.optimize import Bounds, LinearConstraint, OptimizeResult, linprog as scipy_linprog, milp as scipy_milp
 
 # Import compiled engine components with graceful fallback
+from neural_surrogate.compiled_engine import (
+    CompiledBitGraph,
+    CompiledCutEngine,
+    CompiledRationalVerifier,
+    CompiledSolverCallbackBridge,
+)
+
 try:
     from highs_turbo import _compiled_engine as _ce
     COMPILED_ENGINE_AVAILABLE = True
 except ImportError:
     try:
-        from highs_turbo import _compiled_engine as _ce
+        from neural_surrogate import _compiled_engine as _ce
         COMPILED_ENGINE_AVAILABLE = True
     except ImportError:
         _ce = None
         COMPILED_ENGINE_AVAILABLE = False
 
 from highs_turbo.detector import TopologyDetector, TopologyScanResult, detect_topology
-from highs_turbo.compiled_engine import (
-    CompiledBitGraph,
-    CompiledCutEngine,
-    CompiledRationalVerifier,
-    CompiledSolverCallbackBridge,
-)
-from highs_turbo.exact_solver import ExactMaxCutSolver
-from highs_turbo.graph_generator import GraphInstance
-from highs_turbo.large_scale_benchmarks import LargeScaleBenchmarkSuite
-from highs_turbo.rational_verifier import VerificationCertificate
+from neural_surrogate.exact_solver import ExactMaxCutSolver
+from neural_surrogate.graph_generator import GraphInstance
+from neural_surrogate.large_scale_benchmarks import LargeScaleBenchmarkSuite
+from neural_surrogate.rational_verifier import VerificationCertificate
 
 
 @dataclass
@@ -170,6 +171,28 @@ class TurboSolver:
         else:
             self.cut_engine = None
             self.verifier = None
+
+        self.gnn_model = None
+        try:
+            import os
+            import torch
+            from neural_surrogate.surrogate_model import EdgeEquivariantSurrogateGNN
+            weights_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "neural_surrogate", "default_weights.pt")
+            if os.path.exists(weights_path):
+                self.gnn_model = EdgeEquivariantSurrogateGNN(hidden_dim=32, num_layers=2)
+                self.gnn_model.load_state_dict(torch.load(weights_path, map_location="cpu", weights_only=True))
+                self.gnn_model.eval()
+        except Exception as e:
+            if self.verbose:
+                print(f"[highs_turbo] Could not load GNN weights: {e}")
+                
+        if self.gnn_model is None:
+            class GeometricFallback:
+                def forward(self, graph, k5_cliques=None, **kwargs):
+                    if k5_cliques is None:
+                        return {"k5_multipliers": {}}
+                    return {"k5_multipliers": {clq: 0.5 ** i for i, clq in enumerate(k5_cliques)}}
+            self.gnn_model = GeometricFallback()
 
     def linprog(
         self,
@@ -363,7 +386,7 @@ class TurboSolver:
             return res_base
 
         # Rationally certify conic combination and synthesize 1-row surrogate cutting plane
-        cert, a_surr_graph, b_surr = self.bench_suite._certify_and_build_surrogate(graph, cbg, cuts_to_aggregate)
+        cert, a_surr_graph, b_surr = self.bench_suite._certify_and_build_surrogate(graph, cbg, cuts_to_aggregate, gnn_model=self.gnn_model)
 
         if not cert.is_valid:
             raise ValueError(f"Surrogate cut rejected by rational verifier: {cert.status} ({cert.rejection_reason})")
@@ -397,7 +420,7 @@ class TurboSolver:
         # Solve accelerated LP via HiGHS
         use_native_milp = (integrality is not None and any(i > 0 for i in np.atleast_1d(integrality)) and COMPILED_ENGINE_AVAILABLE)
         if use_native_milp:
-            from highs_turbo.compiled_engine import solve_milp_with_highs, CompiledSolverCallbackBridge
+            from neural_surrogate.compiled_engine import solve_milp_with_highs, CompiledSolverCallbackBridge
             
             bridge = CompiledSolverCallbackBridge(len(graph.edges))
             for cut in cuts_to_aggregate:
@@ -549,7 +572,7 @@ class TurboSolver:
         else:
             cuts = self.bench_suite._separate_bipartite_4cycles(graph, x_base, limit=self.max_cuts)
 
-        cert, a_surr, b_surr = self.bench_suite._certify_and_build_surrogate(graph, cbg, cuts)
+        cert, a_surr, b_surr = self.bench_suite._certify_and_build_surrogate(graph, cbg, cuts, gnn_model=self.gnn_model)
 
         # Solve surrogate LP in 0-1 pivots
         if cbg is not None and COMPILED_ENGINE_AVAILABLE:
@@ -768,7 +791,7 @@ class TurboSolver:
         cbg = CompiledBitGraph.from_graph_instance(graph) if COMPILED_ENGINE_AVAILABLE else None
         cuts = self.bench_suite._separate_bipartite_4cycles(graph, np.ones(graph.num_edges) * 0.5, limit=50)
         if cuts:
-            cert, _, _ = self.bench_suite._certify_and_build_surrogate(graph, cbg, cuts)
+            cert, _, _ = self.bench_suite._certify_and_build_surrogate(graph, cbg, cuts, gnn_model=self.gnn_model)
             return cert
 
         # Fallback to certified trivial bound

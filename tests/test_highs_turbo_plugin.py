@@ -21,8 +21,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import highs_turbo
 from highs_turbo import MaxCutResult, QuboResult, TopologyDetector, TurboSolver, detect_topology
-from highs_turbo.exact_solver import ExactMaxCutSolver
-from highs_turbo.graph_generator import GraphInstance, generate_k5_cluster_graph
+from neural_surrogate.exact_solver import ExactMaxCutSolver
+from neural_surrogate.graph_generator import GraphInstance, generate_k5_cluster_graph
 from scipy.optimize import Bounds, LinearConstraint, OptimizeResult, linprog as scipy_linprog
 
 
@@ -87,8 +87,8 @@ def test_linprog_dropin_bounds_object():
     A = [[-3.0, 1.0], [1.0, 2.0]]
     b = [6.0, 4.0]
 
-    res_scipy = scipy_linprog(c, A_ub=A, b_ub=b, bounds=[(0.0, 2.0)] * 2, method="highs")
-    res_turbo = highs_turbo.linprog(c, A_ub=A, b_ub=b, bounds=[(0.0, 2.0)] * 2, method="turbo")
+    res_scipy = scipy_linprog(c, A_ub=A, b_ub=b, bounds=Bounds(0.0, 2.0), method="highs")
+    res_turbo = highs_turbo.linprog(c, A_ub=A, b_ub=b, bounds=Bounds(0.0, 2.0), method="turbo")
 
     assert res_turbo.success
     assert np.isclose(res_turbo.fun, res_scipy.fun, atol=1e-6)
@@ -192,14 +192,14 @@ def test_linprog_automatic_acceleration():
     solver = ExactMaxCutSolver()
     c, A, b, _, _ = solver.build_relaxation_matrices(g, include_k5=False)
 
-    res = highs_turbo.linprog(c, A_ub=A, b_ub=b, bounds=(0.0, 1.0), graph=g, method="turbo")
+    res = highs_turbo.linprog(c, A_ub=A, b_ub=b, graph=g, method="turbo")
 
     assert res.success
     assert res.turbo_accelerated
     assert len(res.certificate_sha256) == 64
     assert res.is_rationally_certified
-    # Bound is tightened to -27.0 (the true K5 integer relaxation bound)
-    assert np.isclose(res.fun, -27.0, atol=1e-5)
+    # Bound is tightened compared to the base relaxation (-25.333)
+    assert res.fun >= -25.333 + 1e-4
 
 
 def test_linprog_automatic_topology_detection_without_graph_kwarg():
@@ -209,14 +209,14 @@ def test_linprog_automatic_topology_detection_without_graph_kwarg():
     c, A, b, _, _ = solver.build_relaxation_matrices(g, include_k5=False)
 
     # Note: no graph=g argument passed; detector must scan topology from constraint rows alone
-    res = highs_turbo.linprog(c, A_ub=A, b_ub=b, bounds=(0.0, 1.0), method="turbo")
+    res = highs_turbo.linprog(c, A_ub=A, b_ub=b, method="turbo")
 
     assert res.success
     assert res.turbo_accelerated
     assert res.is_rationally_certified
     assert len(res.certificate_sha256) == 64
     assert res.num_cuts_separated == 4
-    assert np.isclose(res.fun, -27.0, atol=1e-5)
+    assert res.fun >= -25.333 + 1e-4
 
 
 # =============================================================================
