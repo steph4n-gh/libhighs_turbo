@@ -121,7 +121,7 @@ def test_adaptive_subgraph_cut_closes_gap_beyond_cycle_relaxation():
     # The uniform K6 cycle relaxation has x=2/3 and energy -5; the true
     # maximum cut is 9 edges, and its Ising energy is -3.
     J = {edge: 1 for edge in nx.complete_graph(6).edges}
-    result = solve_ising({}, J, certified_gap=0, time_limit=5)
+    result = solve_ising({}, J, certified_gap=0, time_limit=5, relaxation='cuts')
     assert result.exact_energy == result.exact_cut_lower_bound == -3
     assert result.subgraph_cuts >= 1
     assert verify_ising_certificate({}, J, result.certificate.to_dict())
@@ -217,6 +217,58 @@ def test_gram_bound_matches_exact_dense_arithmetic_and_all_spin_states():
     assert actual == expected
     assert all(actual <= sum(Fraction(w, 8)*s[u]*s[v] for (u,v), w in zip(edges, weights))
                for s in product([-1, 1], repeat=5))
+
+
+def test_nonlocal_certificate_checks_original_energy_and_rejects_false_edges(monkeypatch):
+    import copy
+    from dataclasses import replace
+    from highs_turbo import verify_ising_certificate
+    from highs_turbo.ising_cuts import IsingCut, make_certificate, problem_digest, _bound
+    import highs_turbo.ising_sdp as sdp
+
+    edges = [(0, 1), (0, 3), (1, 2), (2, 3)]
+    weights = dict.fromkeys(edges, Fraction(1))
+    expanded = edges+[(0, 2)]
+    extended_weights = {**weights, (0, 2): Fraction()}
+    constant = Fraction(1, 8)
+    cut = IsingCut((0, 2, 4), (1, 1, 1), 2, 'cycle')
+    source = make_certificate([cut], [-Fraction(1, 3)], expanded, extended_weights, constant)
+    factor = ((1,), (-2, 1), (1, 0, 2), (0, 1, -1, 2))
+    bound = _bound(source.cuts, source.multipliers, source.denominator,
+                   expanded, extended_weights, constant, factor, 16)
+    proof = replace(source, problem_digest=problem_digest(edges, weights, constant),
+                    lower_bound=bound, gram_factor=factor, gram_denominator=16,
+                    extra_edges=((0, 2),))
+    assert all(bound <= constant+sum(w*s[u]*s[v] for (u,v),w in weights.items())
+               for s in product([-1, 1], repeat=4))
+    for name in ['eigh', 'minimize', 'cholesky']:
+        monkeypatch.setattr(sdp, name, lambda *a, **k: pytest.fail('Checker must not optimize'))
+    h = dict.fromkeys(range(4), 0)
+    witness = proof.to_dict()
+    assert witness['version'] == 3
+    assert verify_ising_certificate(h, weights, witness, offset=.125)
+    for extra in [[[-1, 2]], [[0, 4]], [[0, 1]], [[2, 0]], [[0, 2], [0, 2]], [[0, 2.0]]]:
+        altered = copy.deepcopy(witness)
+        altered['extra_edges'] = extra
+        assert not verify_ising_certificate(h, weights, altered, offset=.125)
+    altered = copy.deepcopy(witness)
+    altered['cuts'][0]['rhs'] = 1
+    assert not verify_ising_certificate(h, weights, altered, offset=.125)
+
+
+def test_geometric_search_separates_impossible_vectors_but_not_a_spin_state():
+    from highs_turbo.ising_geometry import geometric_triangles, triangle_rows
+    from highs_turbo.ising_cuts import verify_cut
+    vectors = np.array([[1., 0.], [-.5, np.sqrt(3)/2], [-.5, -np.sqrt(3)/2]])
+    triangles, _ = geometric_triangles(vectors, [(0, 1)])
+    assert triangles
+    edges, cuts = triangle_rows(triangles, [(0, 1)])
+    assert all(verify_cut(cut, edges) for cut in cuts)
+    assert any(sum(c*x for c,x in zip(cut.coefficients,
+               [(1-vectors[edges[i][0]]@vectors[edges[i][1]])/2 for i in cut.indices])) > cut.rhs
+               for cut in cuts)
+    exact_spin = np.array([[1., 0.], [-1., 0.], [1., 0.]])
+    assert geometric_triangles(exact_spin, [(0, 1)])[0] == []
 
 
 @pytest.mark.parametrize('relaxation', ['sdp', 'hybrid'])

@@ -1,0 +1,29 @@
+{
+  "case": "regular-96",
+  "n": 96,
+  "edges": 192,
+  "seed": 4100,
+  "development_case": true,
+  "tssos": {
+    "revision": "6a01185dadaedf3d36a7b1d18e1014ac4a9c8524",
+    "formulation": "cs_tssos",
+    "order": 2,
+    "nb": 96,
+    "TS": "MD",
+    "backend": "SCS",
+    "budget": 5,
+    "solve_seconds": 0.67712675,
+    "repair_seconds": 0.1076318749692291,
+    "numerical": -181.71142488317832,
+    "verified": -180,
+    "trivial": -192
+  },
+  "auto": {
+    "method": "auto",
+    "case": "regular-96",
+    "seconds": 2.718136417097412,
+    "energy": -138.0,
+    "verified": -150.0
+  },
+  "timing_note": "The auto comparison overlapped a package build; its runtime is exploratory and is not used for a speed claim."
+}

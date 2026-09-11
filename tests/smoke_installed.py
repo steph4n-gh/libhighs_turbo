@@ -61,6 +61,19 @@ global_bound = highs_turbo.solve_ising({}, complete, relaxation="sdp", certified
 assert global_bound.exact_gap == 0 and global_bound.certificate.gram_factor
 assert highs_turbo.verify_ising_certificate({}, complete, global_bound.certificate.to_dict())
 
+# The drop-in product bridge and standalone checker must ship in the wheel.
+c = np.r_[np.ones(32), -3.]
+envelope = np.zeros((3, 33))
+envelope[0, [32, 0]] = [1, -1]
+envelope[1, [32, 1]] = [1, -1]
+envelope[2, [0, 1, 32]] = [1, 1, -1]
+product = highs_turbo.linprog(c, A_ub=envelope, b_ub=[0, 0, 1],
+                            bounds=(0, 1), integrality=np.r_[np.ones(32), 0])
+assert product.success and product.fun == -1 and product.turbo_equivalent_model
+assert highs_turbo.verify_linprog_certificate(
+    c, product.turbo_bound_certificate, A_ub=envelope, b_ub=[0, 0, 1],
+    bounds=(0, 1), integrality=np.r_[np.ones(32), 0])
+
 if "--require-native" in sys.argv:
     assert COMPILED_ENGINE_AVAILABLE
 if "--require-fallback" in sys.argv:

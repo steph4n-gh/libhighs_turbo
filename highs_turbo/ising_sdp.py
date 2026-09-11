@@ -60,7 +60,26 @@ def gram_lower_bound(edges, residual, scale, factor, denominator):
     return Fraction(numerator, common)
 
 
-def strengthen_certificate(proof, edges, weights, constant, *, deadline, seed=0, cuts=()):
+def factor_witness(matrix, vectors, magnitude=1.):
+    """Construct a dyadic Gram proposal; validity is decided by the checker."""
+    n = len(vectors)
+    slack = matrix.toarray()
+    slack.flat[::n+1] -= np.sum(vectors*(matrix @ vectors), axis=1)
+    smallest = eigh(slack, subset_by_index=[0, 0], eigvals_only=True, check_finite=False)[0]
+    slack.flat[::n+1] += max(0., -smallest)+1e-7
+    factor = np.tril(cholesky(slack, lower=True, check_finite=False))*np.sqrt(magnitude)
+    largest = float(np.max(np.abs(factor)))
+    if not np.isfinite(largest) or largest <= 0:
+        raise ValueError("Invalid numerical Gram factor")
+    bits = min(20, int(np.floor(np.log2(np.sqrt((2**52)/n)/largest))))
+    if bits < 0:
+        raise ValueError("Gram factor exceeds the exact integer range")
+    denominator = 2**bits
+    integers = np.rint(factor*denominator).astype(np.int64)
+    return tuple(tuple(map(int, integers[i, :i+1])) for i in range(n)), denominator
+
+
+def strengthen_certificate(proof, edges, weights, constant, *, deadline, seed=0, cuts=(), geometry=False):
     """Try a low-rank vector relaxation, retaining the stronger valid witness.
 
     The dense factor and eigenvalue work are limited to 2048 vertices. Larger
@@ -70,6 +89,9 @@ def strengthen_certificate(proof, edges, weights, constant, *, deadline, seed=0,
     n = max((max(e) for e in edges), default=-1)+1
     if not 1 < n <= MAX_GRAM_VERTICES or time.perf_counter() >= deadline:
         return proof
+    geometry_deadline = deadline
+    if geometry and n >= 32:
+        deadline = min(deadline, time.perf_counter()+max(.3, .4*(deadline-time.perf_counter())))
     residual = dict(weights)
     for cut, numerator in zip(proof.cuts, proof.multipliers):
         multiplier = Fraction(numerator, proof.denominator)
@@ -166,30 +188,19 @@ def strengthen_certificate(proof, edges, weights, constant, *, deadline, seed=0,
     fit(original, 150)
     vectors = latest.reshape(n, -1)
     vectors /= np.maximum(np.linalg.norm(vectors, axis=1)[:, None], 1e-100)
-    diagonal = np.sum(vectors*(matrix @ vectors), axis=1)
-    slack = matrix.toarray()
-    slack.flat[::n+1] -= diagonal
     try:
-        smallest = eigh(slack, subset_by_index=[0, 0], eigvals_only=True, check_finite=False)[0]
-        slack.flat[::n+1] += max(0., -smallest)+1e-7
-        factor = cholesky(slack, lower=True, check_finite=False)*np.sqrt(magnitude)
-        # Choose a dyadic scale that keeps integer dot products exact.
-        largest = float(np.max(np.abs(factor)))
-        if not np.isfinite(largest) or largest <= 0:
-            return proof
-        bits = min(20, int(np.floor(np.log2(np.sqrt((2**52)/n)/largest))))
-        if bits < 0:
-            return proof
-        denominator = 2**bits
-        integers = np.rint(factor*denominator).astype(np.int64)
-        packed = tuple(tuple(map(int, integers[i, :i+1])) for i in range(n))
+        packed, denominator = factor_witness(matrix, vectors, magnitude)
         lower = _bound(source.cuts, source.multipliers, source.denominator,
                        edges, weights, constant, packed, denominator)
-        if lower <= proof.lower_bound:
-            return proof
         candidate = replace(source, lower_bound=lower, gram_factor=packed, gram_denominator=denominator)
         if not check_certificate(candidate, edges, weights, constant):
             raise RuntimeError("Sum-of-squares certificate failed exact verification")
-        return candidate
+        if lower > proof.lower_bound:
+            proof = candidate
     except (ValueError, OverflowError, np.linalg.LinAlgError):
         return proof
+    if geometry and n >= 32 and time.perf_counter()+.75 < geometry_deadline:
+        from highs_turbo.ising_geometry import strengthen_geometry
+        proof = strengthen_geometry(proof, edges, weights, constant, vectors,
+                                    deadline=geometry_deadline, seed=seed)
+    return proof

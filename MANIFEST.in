@@ -1,2 +1,5 @@
-include README.md NETLIB_RESULTS.md PEGASUS_RESULTS.md ADAPTIVE_ISING_RESULTS.md SDP_ISING_RESULTS.md LICENSE
+include README.md NETLIB_RESULTS.md PEGASUS_RESULTS.md ADAPTIVE_ISING_RESULTS.md SDP_ISING_RESULTS.md GEOMETRIC_ISING_RESULTS.md LICENSE
 recursive-include highs_turbo/cpp_engine *.cpp *.hpp *.h CMakeLists.txt
+recursive-include benchmarks *.json
+recursive-include experiments *.py *.jl *.md
+include examples/benchmark_geometric_ising.py

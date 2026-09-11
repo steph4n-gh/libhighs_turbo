@@ -121,9 +121,14 @@ def test_explicit_empty_networkx_graph_is_not_ignored():
     assert scan.graph.num_nodes == 0
 
 
-def test_local_search_results_are_labelled_heuristic():
-    assert highs_turbo.solve_qubo(np.eye(19)).status == "HEURISTIC"
-    assert highs_turbo.solve_maxcut(nx.path_graph(201)).status == "HEURISTIC"
+def test_existing_entrypoints_report_optimality_only_after_solving():
+    qubo = highs_turbo.solve_qubo(np.eye(19))
+    cut = highs_turbo.solve_maxcut(nx.path_graph(201))
+    assert qubo.status == cut.status == "OPTIMAL"
+    assert qubo.exact_rational_bound == qubo.energy == 0
+    assert cut.exact_rational_bound == cut.cut_value == 200
+    unfinished = highs_turbo.solve_qubo(np.eye(19), time_limit=0)
+    assert unfinished.status == "HEURISTIC"
 
 
 @pytest.mark.parametrize("integer_coefficients", [False, True])
@@ -239,3 +244,12 @@ def test_sparse_native_solve_preserves_primal_dual_and_joins_workers(mode, monke
     if mode == "primary_error":
         assert result.turbo_strategy == "highs_portfolio"
         assert result.turbo_solver == "ipm"
+
+
+@pytest.mark.parametrize("as_sparse", [False, True])
+def test_maxcut_preserves_small_nonzero_adjacency_weights(as_sparse):
+    adjacency = np.array([[0., 1e-9], [1e-9, 0.]])
+    result = highs_turbo.solve_maxcut(sparse.csr_matrix(adjacency) if as_sparse else adjacency)
+    assert result.exact_rational_bound == Fraction(1e-9)
+    assert result.cut_value == 1e-9
+    assert result.partition[0] != result.partition[1]

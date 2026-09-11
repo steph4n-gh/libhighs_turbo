@@ -640,7 +640,7 @@ class TopologyDetector:
         for i in range(n):
             for j in range(i + 1, n):
                 val = float(arr[i, j])
-                if abs(val) > self.tolerance:
+                if val != 0:
                     edges.append((i, j))
                     weights[(i, j)] = val
 

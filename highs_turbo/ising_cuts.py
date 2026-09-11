@@ -52,30 +52,35 @@ class IsingCertificate:
     lower_bound: Fraction
     gram_factor: tuple[tuple[int, ...], ...] = ()
     gram_denominator: int = 1
+    extra_edges: tuple[tuple[int, int], ...] = ()
 
     def to_dict(self):
         data = {
-            "version": 2 if self.gram_factor else 1, "problem_digest": self.problem_digest,
+            "version": 3 if self.extra_edges else 2 if self.gram_factor else 1,
+            "problem_digest": self.problem_digest,
             "cuts": [{"indices": list(c.indices), "coefficients": list(c.coefficients),
                       "rhs": c.rhs, "kind": c.kind} for c in self.cuts],
             "multipliers": list(self.multipliers), "denominator": self.denominator,
             "lower_bound": [self.lower_bound.numerator, self.lower_bound.denominator],
         }
-        if self.gram_factor:
+        if self.gram_factor or self.extra_edges:
             data.update(gram_factor=[list(row) for row in self.gram_factor],
                         gram_denominator=self.gram_denominator)
+        if self.extra_edges:
+            data["extra_edges"] = [list(edge) for edge in self.extra_edges]
         return data
 
     @classmethod
     def from_dict(cls, data):
-        if data["version"] not in (1, 2):
+        if data["version"] not in (1, 2, 3):
             raise ValueError("Unsupported Ising certificate version")
         return cls(data["problem_digest"],
                    tuple(IsingCut(tuple(c["indices"]), tuple(c["coefficients"]), c["rhs"], c["kind"])
                          for c in data["cuts"]),
                    tuple(data["multipliers"]), data["denominator"], Fraction(*data["lower_bound"]),
-                   tuple(tuple(row) for row in data["gram_factor"]) if data["version"] == 2 else (),
-                   data["gram_denominator"] if data["version"] == 2 else 1)
+                   tuple(tuple(row) for row in data["gram_factor"]) if data["version"] >= 2 else (),
+                   data["gram_denominator"] if data["version"] >= 2 else 1,
+                   tuple(tuple(edge) for edge in data["extra_edges"]) if data["version"] == 3 else ())
 
 
 def problem_digest(edges, weights, constant):
@@ -251,10 +256,24 @@ def check_certificate(certificate, edges, weights, constant):
             or certificate.problem_digest != problem_digest(edges, weights, constant)
             or type(certificate.denominator) is not int or certificate.denominator <= 0
             or len(certificate.cuts) != len(certificate.multipliers)
-            or any(type(x) is not int or x < 0 for x in certificate.multipliers)
-            or any(not verify_cut(cut, edges) for cut in certificate.cuts)):
+            or any(type(x) is not int or x < 0 for x in certificate.multipliers)):
         return False
     try:
+        # Auxiliary correlations have zero objective coefficient. Their
+        # endpoints must be existing spins, and every new edge occurs once.
+        # The digest continues to bind only the original supplied problem.
+        n = max((max(edge) for edge in edges), default=-1)+1
+        extra = certificate.extra_edges
+        if (not isinstance(extra, tuple)
+                or any(not isinstance(edge, tuple) or len(edge) != 2
+                       or any(type(v) is not int for v in edge)
+                       or not 0 <= edge[0] < edge[1] < n for edge in extra)
+                or len(set(extra)) != len(extra) or set(extra).intersection(edges)):
+            return False
+        edges = [*edges, *extra]
+        weights = {**weights, **dict.fromkeys(extra, Fraction())}
+        if any(not verify_cut(cut, edges) for cut in certificate.cuts):
+            return False
         return certificate.lower_bound == _bound(
             certificate.cuts, certificate.multipliers, certificate.denominator, edges, weights, constant,
             certificate.gram_factor, certificate.gram_denominator)
@@ -270,26 +289,30 @@ def cycle_cut(cycle, positive, edge_index):
     return IsingCut(indices, tuple(coefficients[i] for i in indices), len(positive) - 1, "cycle")
 
 
-def triangle_indices(graph, edges):
+def triangle_indices(graph, edges, deadline=float('inf'), limit=float('inf')):
     edge_index = {e: i for i, e in enumerate(edges)}
     neighbors = [set(graph[u]) for u in range(len(graph))]
     triangles = []
     for u in range(len(graph)):
         above = {v for v in neighbors[u] if v > u}
         for v in above:
+            if time.perf_counter() >= deadline or len(triangles) >= limit:
+                return np.asarray(triangles, dtype=int).reshape((-1, 3))
             for w in above & neighbors[v]:
                 if w > v:
                     triangles.append(sorted((edge_index[u, v], edge_index[u, w], edge_index[v, w])))
     return np.asarray(triangles, dtype=int).reshape((-1, 3))
 
 
-def square_indices(graph, edges):
+def square_indices(graph, edges, deadline=float('inf'), limit=float('inf')):
     edge_index = {e: i for i, e in enumerate(edges)}
     neighbors = [set(graph[u]) for u in range(len(graph))]
     squares = []
     for u in range(len(graph)):
         above = sorted(v for v in neighbors[u] if v > u)
         for v, w in combinations(above, 2):
+            if time.perf_counter() >= deadline or len(squares) >= limit:
+                return np.asarray(squares, dtype=int).reshape((-1, 4))
             if w in neighbors[v]:
                 continue
             for t in neighbors[v] & neighbors[w]:
