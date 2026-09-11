@@ -6,15 +6,21 @@ An optimal working solution that satisfies the original model is therefore
 optimal for that model too. No graph interpretation changes the feasible set.
 """
 
+import highspy
 import numpy as np
 import scipy.sparse as sp
 from scipy.optimize import OptimizeResult
 
-from highs_turbo.compiled_engine import _ce
+
+def _check_status(status):
+    if status == highspy.HighsStatus.kError:
+        raise RuntimeError("HiGHS rejected the model or solver operation")
 
 
 def _add_rows(session, matrix, lower, upper):
-    session.add_rows(lower, upper, matrix.indptr, matrix.indices, matrix.data)
+    if matrix.shape[0]:
+        _check_status(session.addRows(matrix.shape[0], lower, upper, matrix.nnz,
+                                      matrix.indptr, matrix.indices, matrix.data))
 
 
 def _integer_surrogates(matrix, rhs):
@@ -104,7 +110,7 @@ def solve_reduced_lp(c, A_ub, b_ub, A_eq, b_eq, bounds, integrality, options):
     Calls with explicit solve budgets or unfamiliar options stay with SciPy:
     several related solves must not reset a caller's time/iteration/node limit.
     """
-    if _ce is None or not hasattr(_ce, "HighsSession") or A_ub is None:
+    if A_ub is None:
         return None
     if integrality is not None and np.any(np.asarray(integrality)):
         return None
@@ -194,8 +200,12 @@ def solve_reduced_lp(c, A_ub, b_ub, A_eq, b_eq, bounds, integrality, options):
                                    selected, tolerance)
         if certified is not None:
             return certified
-    session = _ce.HighsSession(c, lower, upper, types)
-    session.set_options(native_options)
+    session = highspy.Highs()
+    _check_status(session.setOptionValue("output_flag", False))
+    _check_status(session.setOptionValue("solver", "simplex"))
+    _check_status(session.addCols(cols, c, lower, upper, 0, [], [], []))
+    for name, value in native_options.items():
+        _check_status(session.setOptionValue(name, value))
     _add_rows(session, equality, eq_rhs, eq_rhs)
     aggregate = None if use_restrictive else _integer_surrogates(matrix, rhs)
     num_surrogates = 0
@@ -212,9 +222,11 @@ def solve_reduced_lp(c, A_ub, b_ub, A_eq, b_eq, bounds, integrality, options):
         active[selected] = True
         row_order.extend(selected.tolist())
         _add_rows(session, matrix[selected], np.full(len(selected), -np.inf), rhs[selected])
-        raw = session.solve()
-        total_iterations += raw["nit"]
-        if raw["model_status"] != 7 or raw["x"] is None:
+        _check_status(session.run())
+        info = session.getInfo()
+        solution = session.getSolution()
+        total_iterations += info.simplex_iteration_count + info.ipm_iteration_count
+        if session.getModelStatus() != highspy.HighsModelStatus.kOptimal or not solution.value_valid:
             # An unbounded relaxation does not establish an unbounded original.
             # Restore all rows before making any conclusion about the model.
             if active.all():
@@ -222,28 +234,28 @@ def solve_reduced_lp(c, A_ub, b_ub, A_eq, b_eq, bounds, integrality, options):
             selected = np.flatnonzero(~active)
             continue
 
-        x = raw["x"]
+        x = np.asarray(solution.col_value)
         residual = rhs - matrix @ x
         violated = residual < -tolerance
         if not violated.any():
-            row_dual = raw["row_dual"]
-            col_dual = raw["col_dual"]
             marginal = eq_marginal = lower_marginal = upper_marginal = None
-            if row_dual is not None and col_dual is not None:
+            if solution.dual_valid:
+                row_dual = np.asarray(solution.row_dual)
+                col_dual = np.asarray(solution.col_dual)
                 n_eq = len(eq_rhs)
                 eq_marginal = row_dual[:n_eq]
                 marginal = np.zeros(rows)
                 if aggregate is not None:
                     marginal += weights.T @ row_dual[n_eq:n_eq + num_surrogates]
                 marginal[row_order] += row_dual[n_eq + num_surrogates:]
-                column_status = np.asarray(raw["col_status"])
-                lower_marginal = np.where(column_status == 0, col_dual, 0.0)
-                upper_marginal = np.where(column_status == 2, col_dual, 0.0)
+                column_status = np.asarray(session.getBasis().col_status, dtype=int)
+                lower_marginal = np.where(column_status == int(highspy.HighsBasisStatus.kLower), col_dual, 0.0)
+                upper_marginal = np.where(column_status == int(highspy.HighsBasisStatus.kUpper), col_dual, 0.0)
             con = eq_rhs - equality @ x
             result = OptimizeResult(
                 x=x, fun=float(c @ x), success=True, status=0,
                 message="Optimization terminated successfully. (HiGHS Status 7: Optimal)",
-                nit=total_iterations, crossover_nit=raw["crossover_nit"],
+                nit=total_iterations, crossover_nit=info.crossover_iteration_count,
                 slack=residual, con=con,
                 ineqlin=OptimizeResult(residual=residual, marginals=marginal),
                 eqlin=OptimizeResult(residual=con, marginals=eq_marginal),

@@ -17,6 +17,27 @@ assert Path(highs_turbo.__file__).resolve().parent != source_package
 assert files("highs_turbo").joinpath("default_weights.pt").is_file()
 assert generate_chimera_instance(1).num_nodes == 8
 assert highs_turbo.linprog([-1.0], bounds=(0, 1)).fun == -1.0
+# Exercise both acceleration paths from the installed package, including when
+# the optional C++ cut engine is absent.
+from scipy.optimize import linprog
+from highs_turbo.exact_solver import ExactMaxCutSolver
+from highs_turbo.graph_generator import generate_k5_cluster_graph
+
+graph = generate_k5_cluster_graph(16, 15)
+c, matrix, rhs, _, _ = ExactMaxCutSolver().build_relaxation_matrices(graph)
+certified = highs_turbo.linprog(c, A_ub=matrix, b_ub=rhs, bounds=(0, 1))
+assert certified.success and certified.turbo_strategy == "conic_certificate"
+np.testing.assert_allclose(certified.fun, linprog(c, A_ub=matrix, b_ub=rhs, bounds=(0, 1)).fun)
+
+rng = np.random.default_rng(4)
+matrix = rng.random((600, 20))
+rhs = matrix.sum(axis=1) + rng.integers(0, 5, 600)
+c = -rng.random(20)
+recovered = highs_turbo.linprog(c, A_ub=matrix, b_ub=rhs, bounds=(0, 2))
+assert recovered.success and recovered.turbo_strategy == "row_recovery"
+assert np.max(matrix @ recovered.x - rhs) <= 1e-7
+np.testing.assert_allclose(recovered.fun, linprog(c, A_ub=matrix, b_ub=rhs, bounds=(0, 2)).fun)
+
 assert highs_turbo.solve_maxcut(np.ones((3, 3)) - np.eye(3)).cut_value == 2.0
 qubo = highs_turbo.solve_qubo([[0.0, -1.0], [-1.0, 0.0]])
 assert qubo.energy == qubo.lower_bound == -2.0

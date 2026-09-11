@@ -12,8 +12,10 @@ engine with rational verification.
 
 ## Installation
 
-Python 3.10 or newer is required. NumPy, SciPy (1.9 or newer, for `milp`), and
-NetworkX are installed automatically.
+Python 3.10 or newer is required. NumPy, SciPy (1.9 or newer, for `milp`),
+NetworkX, and the official HiGHS Python package (`highspy`) are installed
+automatically. LP acceleration runs on Linux, macOS, and Windows without
+compiling this project's C++ extension.
 
 ```bash
 git clone https://github.com/steph4n-gh/libhighs_turbo.git
@@ -23,17 +25,18 @@ source .venv/bin/activate
 python -m pip install .
 ```
 
-The native engine currently uses macOS CommonCrypto. On macOS, install the
-Xcode command line tools and the native dependencies before installing:
+The optional C++ cut engine uses macOS CommonCrypto. For its additional graph
+cut operations, install the Xcode command line tools and native dependencies:
 
 ```bash
 brew install gmp highs
 python -m pip install .
 ```
 
-If the native extension cannot compile, installation continues with Python and
-SciPy implementations. Native cut separation and native-only tests require a
-successful extension build. Check availability with:
+If the optional extension cannot compile, LP acceleration still works through
+`highspy`; graph operations use their Python implementations. Native cut
+separation and native-only tests require a successful extension build.
+Check the optional extension with:
 
 ```bash
 python -c 'from highs_turbo.compiled_engine import COMPILED_ENGINE_AVAILABLE; print(COMPILED_ENGINE_AVAILABLE)'
@@ -145,8 +148,8 @@ python examples/benchmark_linprog.py --repeats 5
 python examples/benchmark_linprog.py --mps /path/to/afiro.mps /path/to/25fv47.mps
 ```
 
-The built-in timing cases are synthetic; optional local MPS files use SciPy's
-bundled model reader (SciPy 1.15+). The full-native control uses the same HiGHS
+The built-in timing cases are synthetic; optional local MPS files use HiGHS'
+public model reader. The full-native control uses the same HiGHS
 library as turbo, so library-version differences cannot explain that comparison.
 
 The generated G-set-style inputs are synthetic graphs; they are not downloaded
@@ -179,8 +182,9 @@ python -m pip install --force-reinstall --no-deps dist/*.whl
 python -I tests/smoke_installed.py --require-native --require-ml
 ```
 
-CI runs the native suite on macOS and installation smoke checks without a native
-compiler or PyTorch on Linux, including the minimum supported Python version.
+CI runs the native suite on macOS and checks installed-package acceleration
+without the optional extension or PyTorch on Linux and Windows, including the
+minimum supported Python version.
 
 ## License
 

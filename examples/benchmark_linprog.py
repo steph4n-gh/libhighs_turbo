@@ -6,7 +6,7 @@ python examples/benchmark_linprog.py --mps /path/to/model.mps
 The native baseline uses the same HiGHS library as turbo, separating the
 algorithm's contribution from differences in SciPy's bundled HiGHS version.
 Generated cases are labelled synthetic. Optional MPS files are read using
-SciPy's bundled model reader (SciPy >= 1.15); no files are downloaded.
+HiGHS' public model reader; no files are downloaded.
 """
 
 import argparse
@@ -16,13 +16,13 @@ from time import perf_counter
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import highspy
 import numpy as np
 import scipy
 import scipy.sparse as sp
 from scipy.optimize import linprog
 
 import highs_turbo
-from highs_turbo.compiled_engine import _ce
 from highs_turbo.exact_solver import ExactMaxCutSolver
 from highs_turbo.graph_generator import generate_k5_cluster_graph
 
@@ -30,16 +30,21 @@ from highs_turbo.graph_generator import generate_k5_cluster_graph
 def native_full(c, A_ub=None, b_ub=None, A_eq=None, b_eq=None, bounds=(0, 1), integrality=None):
     limits = np.broadcast_to(np.asarray(bounds, dtype=float), (len(c), 2))
     types = np.broadcast_to(0 if integrality is None else integrality, (len(c),))
-    session = _ce.HighsSession(c, limits[:, 0], limits[:, 1], types)
+    session = highspy.Highs()
+    session.setOptionValue("output_flag", False)
+    session.setOptionValue("solver", "choose" if np.any(types) else "simplex")
+    session.addCols(len(c), c, limits[:, 0], limits[:, 1], 0, [], [], [])
+    if np.any(types):
+        session.changeColsIntegrality(len(c), np.arange(len(c)), types)
     for matrix, rhs, is_equality in [(A_ub, b_ub, False), (A_eq, b_eq, True)]:
         if matrix is not None:
             matrix = sp.csr_matrix(matrix)
-            session.add_rows(rhs if is_equality else np.full(len(rhs), -np.inf), rhs,
-                             matrix.indptr, matrix.indices, matrix.data)
-    result = session.solve()
-    if result["model_status"] != 7:
-        raise RuntimeError(result["message"])
-    return result
+            session.addRows(len(rhs), rhs if is_equality else np.full(len(rhs), -np.inf), rhs,
+                            matrix.nnz, matrix.indptr, matrix.indices, matrix.data)
+    session.run()
+    if session.getModelStatus() != highspy.HighsModelStatus.kOptimal:
+        raise RuntimeError(session.modelStatusToString(session.getModelStatus()))
+    return dict(x=np.asarray(session.getSolution().col_value), fun=session.getObjectiveValue())
 
 
 def generated_cases():
@@ -63,9 +68,7 @@ def generated_cases():
 
 
 def read_mps(path):
-    from scipy.optimize._highspy._core import _Highs
-
-    reader = _Highs()
+    reader = highspy.Highs()
     reader.setOptionValue("output_flag", False)
     if int(reader.readModel(str(path))) < 0:
         raise ValueError(f"Cannot read {path}")
@@ -94,11 +97,9 @@ def main():
     args = parser.parse_args()
     if args.repeats < 1:
         parser.error("--repeats must be positive")
-    if _ce is None or not hasattr(_ce, "HighsSession"):
-        parser.error("Build the native extension before comparing native solves")
     linprog([-1.0], bounds=(0, 1))
     native_full(np.array([-1.0]))
-    version = _ce.HighsSession(np.array([0.0]), np.array([0.0]), np.array([1.0]), np.array([0])).version()
+    version = highspy.Highs().version()
     print(f"SciPy {scipy.__version__}; native HiGHS {version}; "
           f"median of {args.repeats} complete solves; milliseconds")
     print("case | rows x cols | scipy | native full | turbo | vs scipy | vs native | rows used")

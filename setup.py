@@ -58,12 +58,12 @@ ext_modules = [
         language="c++",
         optional=True,
     ),
-]
+] if sys.platform == "darwin" else []
 
 setup(
     name="highs-turbo",
     version="0.1.0",
-    description="High-performance Neural-Surrogate Cutting Plane Plugin for HiGHS and SciPy",
+    description="Transparent linear programming acceleration for SciPy and HiGHS",
     long_description=open(os.path.join(BASE_DIR, "README.md"), encoding="utf-8").read() if os.path.exists(os.path.join(BASE_DIR, "README.md")) else "",
     long_description_content_type="text/markdown",
     author="Neural-Surrogate Team",
@@ -71,6 +71,6 @@ setup(
     ext_modules=ext_modules,
     package_data={"highs_turbo": ["default_weights.pt"]},
     python_requires=">=3.10",
-    install_requires=["numpy", "scipy>=1.9", "networkx"],
+    install_requires=["numpy", "scipy>=1.9", "networkx", "highspy>=1.11"],
     extras_require={"ml": ["torch>=2.0"], "test": ["pytest>=7", "torch>=2.0"]},
 )

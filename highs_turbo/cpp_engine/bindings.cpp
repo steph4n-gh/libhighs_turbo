@@ -12,19 +12,6 @@
 namespace py = pybind11;
 using namespace highs_turbo;
 
-// Keep HiGHS and its simplex basis alive while original rows are restored.
-static void require_highs_ok(HighsStatus status) {
-    if (status == HighsStatus::kError) {
-        throw std::runtime_error("HiGHS rejected the model or solver operation");
-    }
-}
-
-static py::array_t<double> owned_array(const std::vector<double>& values) {
-    py::array_t<double> result(values.size());
-    std::copy(values.begin(), values.end(), result.mutable_data());
-    return result;
-}
-
 py::dict solve_milp_with_highs(
     const std::vector<double>& c,
     const std::vector<double>& col_lower,
@@ -85,101 +72,6 @@ py::dict solve_milp_with_highs(
 
 PYBIND11_MODULE(_compiled_engine, m) {
     m.doc() = "Compiled C++ Engine for Neural-Surrogate Cutting Plane System";
-
-    using Doubles = py::array_t<double, py::array::c_style | py::array::forcecast>;
-    using Ints = py::array_t<HighsInt, py::array::c_style | py::array::forcecast>;
-    py::class_<Highs>(m, "HighsSession")
-        .def("version", &Highs::version)
-        .def(py::init([](Doubles c, Doubles lower, Doubles upper, Ints integrality) {
-            if (c.ndim() != 1 || lower.ndim() != 1 || upper.ndim() != 1 ||
-                integrality.ndim() != 1 || lower.size() != c.size() ||
-                upper.size() != c.size() || integrality.size() != c.size()) {
-                throw py::value_error("Column arrays must be one-dimensional and equally sized");
-            }
-            auto highs = std::make_unique<Highs>();
-            require_highs_ok(highs->setOptionValue("output_flag", false));
-            require_highs_ok(highs->setOptionValue("solver", "simplex"));
-            require_highs_ok(highs->addCols(c.size(), c.data(), lower.data(), upper.data(),
-                                          0, nullptr, nullptr, nullptr));
-            std::vector<HighsInt> columns(c.size());
-            std::vector<HighsVarType> types(c.size());
-            bool has_integer = false;
-            for (py::ssize_t i = 0; i < c.size(); ++i) {
-                const HighsInt type = integrality.data()[i];
-                if (type < 0 || type > 3) throw py::value_error("Invalid integrality type");
-                columns[i] = i;
-                types[i] = static_cast<HighsVarType>(type);
-                has_integer |= type != 0;
-            }
-            if (has_integer) {
-                require_highs_ok(highs->setOptionValue("solver", "choose"));
-                require_highs_ok(highs->changeColsIntegrality(c.size(), columns.data(), types.data()));
-            }
-            return highs;
-        }))
-        .def("add_rows", [](Highs& highs, Doubles lower, Doubles upper, Ints starts,
-                            Ints indices, Doubles values) {
-            if (lower.ndim() != 1 || upper.ndim() != 1 || starts.ndim() != 1 ||
-                indices.ndim() != 1 || values.ndim() != 1 ||
-                lower.size() != upper.size() || starts.size() != lower.size() + 1 ||
-                indices.size() != values.size() || starts.data()[0] != 0 ||
-                starts.data()[lower.size()] != values.size()) {
-                throw py::value_error("Invalid CSR row arrays");
-            }
-            for (py::ssize_t i = 0; i < lower.size(); ++i) {
-                if (starts.data()[i] > starts.data()[i + 1])
-                    throw py::value_error("CSR row offsets must be nondecreasing");
-            }
-            for (py::ssize_t i = 0; i < indices.size(); ++i) {
-                if (indices.data()[i] < 0 || indices.data()[i] >= highs.getNumCol())
-                    throw py::value_error("CSR column index outside the model");
-            }
-            if (lower.size()) {
-                require_highs_ok(highs.addRows(lower.size(), lower.data(), upper.data(),
-                    values.size(), starts.data(), indices.data(), values.data()));
-            }
-        })
-        .def("set_options", [](Highs& highs, const py::dict& options) {
-            for (auto item : options) {
-                const auto key = py::cast<std::string>(item.first);
-                HighsStatus status;
-                if (py::isinstance<py::bool_>(item.second))
-                    status = highs.setOptionValue(key, py::cast<bool>(item.second));
-                else if (py::isinstance<py::int_>(item.second))
-                    status = highs.setOptionValue(key, py::cast<HighsInt>(item.second));
-                else if (py::isinstance<py::str>(item.second))
-                    status = highs.setOptionValue(key, py::cast<std::string>(item.second));
-                else
-                    status = highs.setOptionValue(key, py::cast<double>(item.second));
-                require_highs_ok(status);
-            }
-        })
-        .def("solve", [](Highs& highs) {
-            {
-                py::gil_scoped_release release;
-                require_highs_ok(highs.run());
-            }
-            const auto& solution = highs.getSolution();
-            const auto& info = highs.getInfo();
-            const auto status = highs.getModelStatus();
-            py::dict result;
-            result["model_status"] = static_cast<int>(status);
-            result["message"] = highs.modelStatusToString(status);
-            result["nit"] = info.simplex_iteration_count + info.ipm_iteration_count;
-            result["crossover_nit"] = info.crossover_iteration_count;
-            result["fun"] = info.objective_function_value;
-            result["x"] = solution.value_valid ? py::object(owned_array(solution.col_value)) : py::none();
-            result["row_dual"] = solution.dual_valid ? py::object(owned_array(solution.row_dual)) : py::none();
-            result["col_dual"] = solution.dual_valid ? py::object(owned_array(solution.col_dual)) : py::none();
-            std::vector<HighsInt> column_status;
-            for (auto value : highs.getBasis().col_status)
-                column_status.push_back(static_cast<HighsInt>(value));
-            result["col_status"] = column_status;
-            result["mip_node_count"] = info.mip_node_count;
-            result["mip_dual_bound"] = info.mip_dual_bound;
-            result["mip_gap"] = info.mip_gap;
-            return result;
-        });
 
     m.def("solve_milp_with_highs", &solve_milp_with_highs,
           py::arg("c"),
