@@ -1,2 +1,2 @@
-include README.md LICENSE
+include README.md NETLIB_RESULTS.md LICENSE
 recursive-include highs_turbo/cpp_engine *.cpp *.hpp *.h CMakeLists.txt

@@ -31,7 +31,7 @@ def run_quickstart():
     # -------------------------------------------------------------------------
     print("\n[Stage 1] 3-Line Drop-in scipy.optimize.linprog Replacement")
     # Generate graph and standard LP relaxation matrices
-    g = generate_k5_cluster_graph(num_k5=4, num_bridges=3, seed=42)
+    g = generate_k5_cluster_graph(num_k5=16, num_bridges=15, seed=42)
     solver = ExactMaxCutSolver()
     c, A_ub, b_ub, _, _ = solver.build_relaxation_matrices(g, include_k5=False)
 
@@ -41,7 +41,7 @@ def run_quickstart():
     print(f"  Optimal Relaxation Bound: {res.fun:.4f}")
     print(f"  Simplex Pivots Required:  {res.nit}")
     print(f"  Turbo Accelerated:        {getattr(res, 'turbo_accelerated', False)}")
-    print(f"  SHA-256 Proof Receipt:    {getattr(res, 'certificate_sha256', 'N/A')[:24]}...")
+    print(f"  Solve Strategy:           {getattr(res, 'turbo_strategy', 'scipy')}")
 
     # -------------------------------------------------------------------------
     # 2. High-Level 1-Line Max-Cut Solver

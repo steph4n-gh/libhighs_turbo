@@ -1,18 +1,21 @@
-# highs_turbo: Cutting Plane Experiments for HiGHS & SciPy
+# highs_turbo: Transparent LP Acceleration for HiGHS & SciPy
 
 [![Tests](https://github.com/steph4n-gh/libhighs_turbo/actions/workflows/tests.yml/badge.svg)](https://github.com/steph4n-gh/libhighs_turbo/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 
-`highs_turbo` provides a SciPy-style linear programming interface, Max-Cut and
-QUBO solvers, and an optional C++20 engine for discovering and combining graph
-cutting planes. A rational verifier checks cut combinations and produces SHA-256
-receipts. Optional PyTorch models predict combination weights.
+`highs_turbo.linprog` solves the supplied linear program using conic optimality
+checks, smaller working sets, and competing HiGHS methods where these help. It preserves
+the original problem and returns SciPy-style solutions, slacks, and marginals.
+The package also provides Max-Cut and QUBO solvers and a C++20 cutting-plane
+engine with rational verification.
 
 ## Installation
 
-Python 3.10 or newer is required. NumPy, SciPy (1.9 or newer, for `milp`), and
-NetworkX are installed automatically.
+Python 3.10 or newer is required. NumPy, SciPy (1.9 or newer, for `milp`),
+NetworkX, and the official HiGHS Python package (`highspy`) are installed
+automatically. LP acceleration runs on Linux, macOS, and Windows without
+compiling this project's C++ extension.
 
 ```bash
 git clone https://github.com/steph4n-gh/libhighs_turbo.git
@@ -22,17 +25,18 @@ source .venv/bin/activate
 python -m pip install .
 ```
 
-The native engine currently uses macOS CommonCrypto. On macOS, install the
-Xcode command line tools and the native dependencies before installing:
+The optional C++ cut engine uses macOS CommonCrypto. For its additional graph
+cut operations, install the Xcode command line tools and native dependencies:
 
 ```bash
 brew install gmp highs
 python -m pip install .
 ```
 
-If the native extension cannot compile, installation continues with Python and
-SciPy implementations. Native cut separation and native-only tests require a
-successful extension build. Check availability with:
+If the optional extension cannot compile, LP acceleration still works through
+`highspy`; graph operations use their Python implementations. Native cut
+separation and native-only tests require a successful extension build.
+Check the optional extension with:
 
 ```bash
 python -c 'from highs_turbo.compiled_engine import COMPILED_ENGINE_AVAILABLE; print(COMPILED_ENGINE_AVAILABLE)'
@@ -44,8 +48,9 @@ To use the bundled neural weights or train models, install the optional extra:
 python -m pip install '.[ml]'
 ```
 
-The weights are shipped inside the installed package. Without PyTorch, the solver
-uses its geometric weighting fallback.
+The weights are shipped inside the installed package. Max-Cut uses geometric
+weights when PyTorch is unavailable. Ordinary `linprog` calls do not load PyTorch
+or require a trained model.
 
 ## Quickstart
 
@@ -60,13 +65,46 @@ res = opt.linprog(
     b_ub=[6.0, 4.0],
 )
 print(res.fun, res.nit)
-print(getattr(res, "certificate_sha256", None))
+print(res.turbo_accelerated)
 ```
 
-The default `method="turbo"` detects graph structure and may add cuts that tighten
-the supplied relaxation. This can change the LP objective. Use `method="highs"`
-to delegate the original problem directly to SciPy. General LPs also fall back
-to SciPy; they do not receive cut-certificate metadata.
+The default `method="highs"` and the legacy `"turbo"` alias use the same
+transparent path:
+
+1. For suitable continuous LPs, construct a candidate primal solution and conic
+   dual bound. Return it only when primal feasibility, dual stationarity,
+   complementarity, and the objective gap pass checks against the original input.
+2. Otherwise, solve a smaller working model in one persistent HiGHS instance.
+   Small integer-coefficient rows can be summed exactly into surrogate rows.
+   Restore violated original constraints while retaining the simplex basis.
+3. Return a working-model optimum only after it satisfies every original
+   inequality. Lift its dual multipliers back to the original row order.
+   If recovery needs too many rounds, restore all rows and finish the solve.
+4. Sparse and equality-heavy LPs that do not suit row reduction use HiGHS
+   directly. For large models, give simplex a 5 ms head start; if it is still
+   running, start an independent interior-point solve. Return an optimal result,
+   cancel the other solve, and join both workers before returning. This can use
+   two CPU cores and two model copies; each call starts from scratch.
+
+The mathematical reason this preserves the answer is simple: the working model
+is a relaxation of the original. An optimal relaxation solution that is feasible
+for the original is also optimal for the original, subject to the requested
+numerical tolerances. Graph hints never authorize adding constraints that change
+the supplied LP. The LP conic check uses floating-point tolerances; it is not an
+exact rational certificate of the LP optimum.
+
+Integer models, explicit time/iteration/node budgets, other solver methods, and
+unsupported options retain ordinary SciPy execution. Small continuous LPs use
+the direct native path. An explicit simplex edge-weight strategy also keeps a
+single native method. Use `method="highs-ds"` to retain SciPy's simplex path.
+Successful native results expose `turbo_strategy`, `turbo_rows_used`,
+`turbo_original_rows`, and `turbo_rounds`; `nit` includes all working solves.
+The direct and competing-method paths also expose `turbo_solver` and
+`turbo_solver_iterations`, including work done by a canceled method.
+`turbo_accelerated` means a reduction or competing-method path was used; it is
+not a claim that the particular call ran faster. Inequality row counts exclude
+the equalities reported in `eqlin`.
+Call `scipy.optimize.linprog` directly for a baseline comparison.
 
 Graph edge relaxations need `bounds=(0, 1)`. Omitting bounds retains SciPy's
 nonnegative, unbounded-above default. A complete runnable graph example is in
@@ -110,13 +148,25 @@ right-hand side. It does not, on its own, certify that a returned partition is
 optimal or that a floating-point LP objective is an exact dual bound. QUBO
 receipts include the objective coefficients and the conservative lower bound.
 
-Speedups and simplex iteration counts depend on the input, solver version,
-hardware, and model weights. There is no fixed speedup or pivot-count guarantee.
-Run the benchmark suite to obtain measurements for your environment:
+Speedups and simplex iteration counts depend on the input, solver version, and
+hardware. There is no fixed speedup or pivot-count guarantee. One timing script
+compares complete solves of identical problems with SciPy, full native HiGHS,
+and turbo. It includes all preparation/recovery time, rotates execution order,
+reports medians, and checks objective agreement and original feasibility:
 
 ```bash
-python -m highs_turbo.large_scale_benchmarks --scope canonical --output benchmark_results.json
+python examples/benchmark_linprog.py --repeats 5
+python examples/benchmark_linprog.py --mps /path/to/afiro.mps /path/to/25fv47.mps
 ```
+
+The built-in timing cases are synthetic; optional local MPS files use HiGHS'
+public model reader. The full-native control uses the same HiGHS
+library as turbo, so library-version differences cannot explain that comparison.
+MPS maximization objectives are negated, and objective constants are omitted
+equally for all solvers. Infeasible and unbounded statuses are compared too.
+
+[Recorded Netlib results](NETLIB_RESULTS.md) cover complete cold solves of real
+models, including slower cases and the additional CPU use of competing methods.
 
 The generated G-set-style inputs are synthetic graphs; they are not downloaded
 Stanford G-set benchmark files. `mock_benchmark.py` is only a simulated demo and
@@ -148,8 +198,9 @@ python -m pip install --force-reinstall --no-deps dist/*.whl
 python -I tests/smoke_installed.py --require-native --require-ml
 ```
 
-CI runs the native suite on macOS and installation smoke checks without a native
-compiler or PyTorch on Linux, including the minimum supported Python version.
+CI runs the native suite on macOS and checks installed-package acceleration
+without the optional extension or PyTorch on Linux and Windows, including the
+minimum supported Python version.
 
 ## License
 

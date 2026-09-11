@@ -7,6 +7,7 @@ import networkx as nx
 import numpy as np
 import pytest
 from scipy import sparse
+from scipy.optimize import linprog as scipy_linprog
 
 import highs_turbo
 from highs_turbo.exact_solver import ExactMaxCutSolver
@@ -106,3 +107,120 @@ def test_explicit_empty_networkx_graph_is_not_ignored():
 def test_local_search_results_are_labelled_heuristic():
     assert highs_turbo.solve_qubo(np.eye(19)).status == "HEURISTIC"
     assert highs_turbo.solve_maxcut(nx.path_graph(201)).status == "HEURISTIC"
+
+
+@pytest.mark.parametrize("integer_coefficients", [False, True])
+def test_accelerated_lp_preserves_primal_and_dual_solution(integer_coefficients):
+    rng = np.random.default_rng(18)
+    A = rng.integers(0, 5, (800, 20)).astype(float)
+    if not integer_coefficients:
+        A += rng.random(A.shape)
+    b = A @ np.ones(20) + rng.integers(0, 10, 800)
+    c = -rng.random(20)
+    eq = np.ones((1, 20))
+    kwargs = dict(A_ub=sparse.csr_matrix(A), b_ub=b, A_eq=eq, b_eq=[18], bounds=(0, 2))
+    result = highs_turbo.linprog(c, **kwargs)
+    reference = scipy_linprog(c, **kwargs)
+    assert result.turbo_accelerated
+    assert result.fun == pytest.approx(reference.fun, abs=1e-7)
+    assert np.min(result.slack) >= -1e-7
+    np.testing.assert_allclose(result.con, 0, atol=1e-7)
+    np.testing.assert_allclose(result.slack, b - A @ result.x, atol=1e-9)
+    dual_residual = (c - A.T @ result.ineqlin.marginals - eq.T @ result.eqlin.marginals
+                     - result.lower.marginals - result.upper.marginals)
+    np.testing.assert_allclose(dual_residual, 0, atol=1e-7)
+    np.testing.assert_allclose(result.slack * result.ineqlin.marginals, 0, atol=1e-7)
+    dual_objective = (b @ result.ineqlin.marginals + 18 * result.eqlin.marginals[0]
+                      + 2 * result.upper.marginals.sum())
+    assert dual_objective == pytest.approx(result.fun, abs=1e-7)
+    if integer_coefficients:
+        assert result.turbo_surrogate_rows > 0
+
+
+@pytest.mark.parametrize("variable_type", [1, 2, 3])
+def test_integer_and_semicontinuous_models_keep_native_mip_semantics(variable_type):
+    rng = np.random.default_rng(12)
+    A = rng.integers(0, 5, (600, 8)).astype(float)
+    b = A.sum(axis=1) + rng.integers(0, 5, 600)
+    c = -rng.random(8)
+    kwargs = dict(A_ub=A, b_ub=b, bounds=(1, 2), integrality=variable_type)
+    result = highs_turbo.linprog(c, **kwargs)
+    reference = scipy_linprog(c, **kwargs)
+    assert result.success
+    assert result.fun == pytest.approx(reference.fun, abs=1e-7)
+    assert np.max(A @ result.x - b) <= 1e-7
+    assert result.mip_gap <= 1e-4
+    assert np.all((result.x >= 1 - 1e-7) | (np.abs(result.x) < 1e-7))
+    if variable_type != 2:
+        np.testing.assert_allclose(result.x, np.round(result.x), atol=1e-7)
+
+
+@pytest.mark.parametrize("kind", ["unbounded", "infeasible", "budget"])
+def test_original_status_and_explicit_budget_are_preserved(kind):
+    A = np.ones((600, 2))
+    c = [-1, 0]
+    kwargs = dict(A_ub=A, b_ub=np.ones(600))
+    if kind == "unbounded":
+        A[:, 0] = 0
+    elif kind == "infeasible":
+        kwargs["b_ub"][0] = -1
+    else:
+        kwargs["options"] = {"time_limit": 0}
+    result = highs_turbo.linprog(c, **kwargs)
+    reference = scipy_linprog(c, **kwargs)
+    assert result.status == reference.status
+    assert result.success == reference.success
+    assert result.x is None
+    assert not result.turbo_accelerated
+
+
+@pytest.mark.parametrize("mode", ["direct", "portfolio", "primary_error"])
+def test_sparse_native_solve_preserves_primal_dual_and_joins_workers(mode, monkeypatch):
+    import threading
+    import time
+    import highspy
+
+    rng = np.random.default_rng(53)
+    rows, cols = (40, 24) if mode == "direct" else (600, 1100)
+    A = sparse.random(rows, cols, density=0.04, random_state=rng, format="csr")
+    eq = sparse.random(20, cols, density=0.04, random_state=rng, format="csr")
+    bounds = np.tile([0.0, 2.0], (cols, 1))
+    bounds[0] = [-np.inf, np.inf]
+    bounds[1] = [0.5, 0.5]
+    point = np.ones(cols)
+    point[1] = 0.5
+    b, d, c = A @ point + rng.random(rows), eq @ point, -rng.random(cols)
+    # Ensure the free variable participates in a bounding equality.
+    eq = eq.tolil()
+    eq[0, 0] = 1.0
+    eq = eq.tocsr()
+    d = eq @ point
+    kwargs = dict(A_ub=A, b_ub=b, A_eq=eq, b_eq=d, bounds=bounds)
+    reference = scipy_linprog(c, **kwargs)
+    monkeypatch.setattr("highs_turbo.lp_accelerator.os.cpu_count", lambda: 2)
+    if mode == "primary_error":
+        original_run = highspy.Highs.run
+
+        def fail_simplex(session):
+            if session.getOptionValue("solver")[1] == "simplex":
+                time.sleep(0.01)  # Allow the independent method to start.
+                raise RuntimeError("Injected simplex failure")
+            return original_run(session)
+
+        monkeypatch.setattr(highspy.Highs, "run", fail_simplex)
+
+    before = set(threading.enumerate())
+    result = highs_turbo.TurboSolver(fallback_on_error=False).linprog(c, **kwargs)
+    assert not (set(threading.enumerate()) - before)
+    assert result.success and reference.success
+    assert result.fun == pytest.approx(reference.fun, abs=1e-7)
+    assert np.min(result.slack) >= -1e-7
+    np.testing.assert_allclose(result.con, 0, atol=1e-7)
+    np.testing.assert_allclose(
+        c - A.T @ result.ineqlin.marginals - eq.T @ result.eqlin.marginals
+        - result.lower.marginals - result.upper.marginals, 0, atol=1e-7,
+    )
+    assert result.nit == sum(result.turbo_solver_iterations.values())
+    if mode == "primary_error":
+        assert result.turbo_strategy == "highs_portfolio"
+        assert result.turbo_solver == "ipm"

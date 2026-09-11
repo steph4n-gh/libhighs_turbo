@@ -187,8 +187,8 @@ def test_topology_detector_qubo_mccormick():
 
 
 def test_linprog_automatic_acceleration():
-    """Verify highs_turbo.linprog automatically tightens bound on graph LP."""
-    g = generate_k5_cluster_graph(num_k5=4, num_bridges=3, seed=42)
+    """Graph structure must not change the objective of a continuous LP."""
+    g = generate_k5_cluster_graph(num_k5=16, num_bridges=15, seed=42)
     solver = ExactMaxCutSolver()
     c, A, b, _, _ = solver.build_relaxation_matrices(g, include_k5=False)
 
@@ -196,16 +196,20 @@ def test_linprog_automatic_acceleration():
 
     assert res.success
     assert res.turbo_accelerated
-    assert len(res.certificate_sha256) == 64
-    assert res.is_rationally_certified
     base = scipy_linprog(c, A_ub=A, b_ub=b, bounds=(0, 1))
-    assert res.fun > base.fun + 1e-4
-    assert -res.fun >= solver.solve_integer_maxcut(g)[0] - 1e-6
+    assert res.fun == pytest.approx(base.fun)
+    assert np.max(A @ res.x - b) <= 1e-7
+    assert res.turbo_rows_used < len(b)
+    assert res.turbo_strategy == "conic_certificate"
+    np.testing.assert_allclose(
+        c - A.T @ res.ineqlin.marginals - res.lower.marginals - res.upper.marginals,
+        0, atol=1e-7,
+    )
 
 
 def test_linprog_automatic_topology_detection_without_graph_kwarg():
-    """Verify highs_turbo.linprog automatically detects graph from (c, A_ub, b_ub) and tightens bound."""
-    g = generate_k5_cluster_graph(num_k5=4, num_bridges=3, seed=42)
+    """Acceleration uses the original rows and needs no explicit graph hint."""
+    g = generate_k5_cluster_graph(num_k5=16, num_bridges=15, seed=42)
     solver = ExactMaxCutSolver()
     c, A, b, _, _ = solver.build_relaxation_matrices(g, include_k5=False)
 
@@ -214,12 +218,10 @@ def test_linprog_automatic_topology_detection_without_graph_kwarg():
 
     assert res.success
     assert res.turbo_accelerated
-    assert res.is_rationally_certified
-    assert len(res.certificate_sha256) == 64
-    assert res.num_cuts_separated == 4
     base = scipy_linprog(c, A_ub=A, b_ub=b, bounds=(0, 1))
-    assert res.fun > base.fun + 1e-4
-    assert -res.fun >= solver.solve_integer_maxcut(g)[0] - 1e-6
+    assert res.fun == pytest.approx(base.fun)
+    assert np.max(A @ res.x - b) <= 1e-7
+    assert res.ineqlin.marginals.shape == b.shape
 
 
 # =============================================================================

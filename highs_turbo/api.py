@@ -2,7 +2,7 @@
 
 Provides:
 1. `highs_turbo.linprog(...)`: Exact signature and return format of scipy.optimize.linprog,
-   automatically accelerating graph/binary structures with certified surrogate cuts.
+   accelerating large inequality systems without changing the supplied problem.
 2. `highs_turbo.solve_maxcut(G)`: High-level 1-line Max-Cut solver returning cut value,
    partition vector, and SHA-256 cryptographic receipt.
 3. `highs_turbo.solve_qubo(Q)`: High-level QUBO / Ising spin glass solver.
@@ -38,7 +38,6 @@ from highs_turbo.compiled_engine import (
 from highs_turbo.detector import TopologyDetector, TopologyScanResult, detect_topology
 from highs_turbo.exact_solver import ExactMaxCutSolver
 from highs_turbo.graph_generator import GraphInstance
-from highs_turbo.large_scale_benchmarks import LargeScaleBenchmarkSuite
 from highs_turbo.rational_verifier import VerificationCertificate
 
 
@@ -153,7 +152,8 @@ class TurboSolver:
 
         self.detector = TopologyDetector()
         self.exact_solver = ExactMaxCutSolver(rational_denominator_limit=rational_denominator_limit)
-        self.bench_suite = LargeScaleBenchmarkSuite(seed=42)
+        self._bench_suite = None
+        self._gnn_model = None
 
         if COMPILED_ENGINE_AVAILABLE:
             self.cut_engine = CompiledCutEngine(rational_denominator_limit=rational_denominator_limit)
@@ -162,27 +162,44 @@ class TurboSolver:
             self.cut_engine = None
             self.verifier = None
 
-        self.gnn_model = None
+    @property
+    def bench_suite(self):
+        if self._bench_suite is None:
+            from highs_turbo.large_scale_benchmarks import LargeScaleBenchmarkSuite
+
+            self._bench_suite = LargeScaleBenchmarkSuite(seed=42)
+        return self._bench_suite
+
+    @property
+    def gnn_model(self):
+        if self._gnn_model is not None:
+            return self._gnn_model
         try:
             import os
             import torch
             from highs_turbo.surrogate_model import EdgeEquivariantSurrogateGNN
             weights_path = os.path.join(os.path.dirname(__file__), "default_weights.pt")
             if os.path.exists(weights_path):
-                self.gnn_model = EdgeEquivariantSurrogateGNN(hidden_dim=32, num_layers=2)
-                self.gnn_model.load_state_dict(torch.load(weights_path, map_location="cpu", weights_only=True))
-                self.gnn_model.eval()
+                self._gnn_model = EdgeEquivariantSurrogateGNN(hidden_dim=32, num_layers=2)
+                self._gnn_model.load_state_dict(torch.load(weights_path, map_location="cpu", weights_only=True))
+                self._gnn_model.eval()
         except Exception as e:
             if self.verbose:
                 print(f"[highs_turbo] Could not load GNN weights: {e}")
                 
-        if self.gnn_model is None:
+        if self._gnn_model is None:
             class GeometricFallback:
                 def forward(self, graph, k5_cliques=None, **kwargs):
                     if k5_cliques is None:
                         return {"k5_multipliers": {}}
                     return {"k5_multipliers": {clq: 0.5 ** i for i, clq in enumerate(k5_cliques)}}
-            self.gnn_model = GeometricFallback()
+            self._gnn_model = GeometricFallback()
+
+        return self._gnn_model
+
+    @gnn_model.setter
+    def gnn_model(self, model):
+        self._gnn_model = model
 
     def linprog(
         self,
@@ -191,19 +208,21 @@ class TurboSolver:
         b_ub: Optional[Sequence[float]] = None,
         A_eq: Optional[Any] = None,
         b_eq: Optional[Sequence[float]] = None,
-        bounds: Optional[Any] = None,
-        method: str = "turbo",
+        bounds: Optional[Any] = (0, None),
+        method: str = "highs",
         callback: Optional[Callable] = None,
         options: Optional[Dict[str, Any]] = None,
         x0: Optional[Sequence[float]] = None,
         integrality: Optional[Sequence[int]] = None,
         **kwargs: Any,
     ) -> OptimizeResult:
-        """Linear programming drop-in for scipy.optimize.linprog.
+        """SciPy-compatible solve with exact row aggregation and row recovery.
 
-        Matches exact scipy.optimize.linprog signature and return format.
-        Automatically applies compiled surrogate cut generation when graph or binary quadratic
-        structure is detected. Falls back seamlessly to standard HiGHS for general LPs.
+        Graph hints never authorize changing the supplied feasible set. Large
+        inequality systems can use a smaller working model. Sparse and equality
+        models use native HiGHS, with competing methods for large LPs. Returned
+        solutions satisfy the original model; methods, limits, and unsupported
+        options retain ordinary SciPy execution.
         """
         if isinstance(bounds, Bounds):
             bounds = np.column_stack((
@@ -211,305 +230,32 @@ class TurboSolver:
                 np.broadcast_to(bounds.ub, (len(c),)),
             ))
         method_clean = method.lower().replace("-", "_")
-        use_turbo = method_clean in ("turbo", "highs_turbo")
+        use_turbo = method_clean in ("highs", "turbo", "highs_turbo")
+        scipy_method = "highs" if use_turbo else method
+        fallback_reason = None
+        if use_turbo and callback is None and x0 is None:
+            try:
+                from highs_turbo.lp_accelerator import solve_reduced_lp
 
-        if not use_turbo:
-            # Delegate directly to standard SciPy HiGHS / requested method
-            return scipy_linprog(
-                c,
-                A_ub=A_ub,
-                b_ub=b_ub,
-                A_eq=A_eq,
-                b_eq=b_eq,
-                bounds=bounds,
-                method=method,
-                callback=callback,
-                options=options,
-                x0=x0,
-                integrality=integrality,
-            )
-
-        # 1. Scan topology in O(nnz)
-        scan = self.detector.detect(
-            c=c,
-            A_ub=A_ub,
-            b_ub=b_ub,
-            A_eq=A_eq,
-            b_eq=b_eq,
-            bounds=bounds,
-            options=options,
-            **kwargs,
-        )
-
-        if not scan.is_graph_structured or scan.graph is None:
-            # Standard non-graph LP: run via HiGHS seamlessly
-            res = scipy_linprog(
-                c,
-                A_ub=A_ub,
-                b_ub=b_ub,
-                A_eq=A_eq,
-                b_eq=b_eq,
-                bounds=bounds,
-                method="highs",
-                callback=callback,
-                options=options,
-                x0=x0,
-                integrality=integrality,
-            )
-            res.turbo_accelerated = False
-            return res
-
-        # 2. Graph/binary structure detected: apply Neural-Surrogate Cutting Plane acceleration
-        try:
-            return self._solve_accelerated_lp(
-                c=c,
-                A_ub=A_ub,
-                b_ub=b_ub,
-                A_eq=A_eq,
-                b_eq=b_eq,
-                bounds=bounds,
-                scan=scan,
-                callback=callback,
-                options=options,
-                x0=x0,
-                integrality=integrality,
-            )
-        except Exception as exc:
-            if not self.fallback_on_error:
-                raise
-            if self.verbose:
-                print(f"[highs_turbo] Fallback to HiGHS due to: {exc}")
-            res = scipy_linprog(
-                c,
-                A_ub=A_ub,
-                b_ub=b_ub,
-                A_eq=A_eq,
-                b_eq=b_eq,
-                bounds=bounds,
-                method="highs",
-                callback=callback,
-                options=options,
-                x0=x0,
-                integrality=integrality,
-            )
-            res.turbo_accelerated = False
-            res.fallback_reason = str(exc)
-            return res
-
-    def _solve_accelerated_lp(
-        self,
-        c: Sequence[float],
-        A_ub: Optional[Any],
-        b_ub: Optional[Sequence[float]],
-        A_eq: Optional[Any],
-        b_eq: Optional[Sequence[float]],
-        bounds: Optional[Any],
-        scan: TopologyScanResult,
-        callback: Optional[Callable],
-        options: Optional[Dict[str, Any]],
-        x0: Optional[Sequence[float]],
-        integrality: Optional[Sequence[int]],
-    ) -> OptimizeResult:
-        """Accelerates LP solve by injecting 1 rationally-certified surrogate cutting plane row."""
-        graph = scan.graph
-        assert graph is not None
-        c_arr = np.asarray(c, dtype=np.float64).flatten()
-        n_vars = len(c_arr)
-
-        # Solve root relaxation to obtain base primal solution
-        res_base = scipy_linprog(
-            c,
-            A_ub=A_ub,
-            b_ub=b_ub,
-            A_eq=A_eq,
-            b_eq=b_eq,
-            bounds=bounds,
-            method="highs",
-            callback=callback,
-            options=options,
-            x0=x0,
+                result = solve_reduced_lp(c, A_ub, b_ub, A_eq, b_eq, bounds,
+                                          integrality, dict(options or {}))
+                if result is not None:
+                    return result
+            except Exception as exc:
+                if not self.fallback_on_error:
+                    raise
+                fallback_reason = str(exc)
+                if self.verbose:
+                    print(f"[highs_turbo] Fallback to SciPy: {exc}")
+        result = scipy_linprog(
+            c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=bounds,
+            method=scipy_method, callback=callback, options=options, x0=x0,
             integrality=integrality,
         )
-
-        if not res_base.success or self.cut_engine is None:
-            res_base.turbo_accelerated = False
-            return res_base
-
-        # Map primal values to graph edges
-        x_primal = res_base.x
-        edge_vals = []
-        for e in graph.edges:
-            if scan.edge_to_var is not None and e in scan.edge_to_var:
-                var_indices = scan.edge_to_var[e]
-                val = sum(float(x_primal[idx]) if idx < len(x_primal) else 0.5 for idx in var_indices) / len(var_indices)
-                edge_vals.append(val)
-            elif scan.edge_var_indices is not None and len(edge_vals) < len(scan.edge_var_indices):
-                var_idx = scan.edge_var_indices[len(edge_vals)]
-                edge_vals.append(float(x_primal[var_idx]) if var_idx < len(x_primal) else 0.5)
-            else:
-                idx = len(edge_vals)
-                edge_vals.append(float(x_primal[idx]) if idx < len(x_primal) else 0.5)
-
-        # Bit-parallel cut discovery via compiled engine
-        cbg = CompiledBitGraph.from_graph_instance(graph)
-        k5_violated = self.cut_engine.separate_violated_k5(
-            cbg, graph.edges, edge_vals, threshold=1e-4, max_cuts=self.max_cuts
-        )
-        tri_violated = self.cut_engine.separate_violated_triangles(
-            cbg, graph.edges, edge_vals, threshold=1e-4, max_cuts=self.max_cuts
-        )
-        c4_violated = self.cut_engine.separate_violated_4cycles(
-            cbg, graph.edges, edge_vals, threshold=1e-4, max_cuts=self.max_cuts
-        )
-
-        cuts_to_aggregate = []
-        if k5_violated:
-            cuts_to_aggregate = k5_violated
-        elif tri_violated:
-            cuts_to_aggregate = tri_violated
-        elif c4_violated:
-            cuts_to_aggregate = c4_violated
-        else:
-            cuts_to_aggregate = self.bench_suite._separate_bipartite_4cycles(graph, np.array(edge_vals), limit=self.max_cuts)
-
-        if not cuts_to_aggregate:
-            # No cuts violated; base solution is optimal
-            res_base.turbo_accelerated = True
-            res_base.certificate_sha256 = "0" * 64
-            res_base.is_rationally_certified = True
-            res_base.num_cuts_separated = 0
-            return res_base
-
-        # Rationally certify conic combination and synthesize 1-row surrogate cutting plane
-        cert, a_surr_graph, b_surr = self.bench_suite._certify_and_build_surrogate(graph, cbg, cuts_to_aggregate, gnn_model=self.gnn_model)
-
-        if not cert.is_valid:
-            raise ValueError(f"Surrogate cut rejected by rational verifier: {cert.status} ({cert.rejection_reason})")
-
-        # Map surrogate coefficients to LP variables
-        surr_row = np.zeros(n_vars, dtype=np.float64)
-        for i, e in enumerate(graph.edges):
-            coeff = a_surr_graph[i] if i < len(a_surr_graph) else 0.0
-            if abs(coeff) > 1e-9:
-                if scan.edge_to_var is not None and e in scan.edge_to_var:
-                    for idx in scan.edge_to_var[e]:
-                        surr_row[idx] = coeff
-                elif scan.edge_var_indices is not None and i < len(scan.edge_var_indices):
-                    surr_row[scan.edge_var_indices[i]] = coeff
-                elif i < n_vars:
-                    surr_row[i] = coeff
-
-        # Augment LP with the single certified surrogate cut row
-        if A_ub is None:
-            A_aug = surr_row.reshape(1, -1)
-            b_aug = np.array([b_surr], dtype=np.float64)
-        elif sp is not None and sp.issparse(A_ub):
-            surr_csr = sp.csr_matrix(surr_row.reshape(1, -1))
-            A_aug = sp.vstack([A_ub, surr_csr], format="csr")
-            b_aug = np.append(np.asarray(b_ub, dtype=np.float64).flatten(), b_surr)
-        else:
-            A_arr = np.asarray(A_ub, dtype=np.float64)
-            A_aug = np.vstack([A_arr, surr_row.reshape(1, -1)])
-            b_aug = np.append(np.asarray(b_ub, dtype=np.float64).flatten(), b_surr)
-
-        # Solve accelerated LP via HiGHS
-        use_native_milp = (integrality is not None and any(i > 0 for i in np.atleast_1d(integrality)) and COMPILED_ENGINE_AVAILABLE)
-        if use_native_milp:
-            from highs_turbo.compiled_engine import solve_milp_with_highs, CompiledSolverCallbackBridge
-            
-            bridge = CompiledSolverCallbackBridge(len(graph.edges))
-            for cut in cuts_to_aggregate:
-                bridge.add_surrogate_cut(cut, "mid_tree_cut")
-                
-            row_lower = []
-            row_upper = []
-            row_starts = [0]
-            row_indices = []
-            row_values = []
-            
-            if A_aug is not None:
-                A_aug_sparse = sp.csr_matrix(A_aug)
-                b_aug_arr = np.asarray(b_aug).flatten()
-                for i in range(A_aug_sparse.shape[0]):
-                    row_lower.append(-float('inf'))
-                    row_upper.append(float(b_aug_arr[i]))
-                row_starts.extend((A_aug_sparse.indptr[1:] + row_starts[-1]).tolist())
-                row_indices.extend(A_aug_sparse.indices.tolist())
-                row_values.extend(A_aug_sparse.data.tolist())
-                
-            if A_eq is not None:
-                A_eq_sparse = sp.csr_matrix(A_eq)
-                b_eq_arr = np.asarray(b_eq).flatten()
-                for i in range(A_eq_sparse.shape[0]):
-                    row_lower.append(float(b_eq_arr[i]))
-                    row_upper.append(float(b_eq_arr[i]))
-                row_starts.extend((A_eq_sparse.indptr[1:] + row_starts[-1]).tolist())
-                row_indices.extend(A_eq_sparse.indices.tolist())
-                row_values.extend(A_eq_sparse.data.tolist())
-                
-            col_lower = []
-            col_upper = []
-            if bounds is not None:
-                for bnd in bounds:
-                    l = -float('inf') if bnd[0] is None else float(bnd[0])
-                    u = float('inf') if bnd[1] is None else float(bnd[1])
-                    col_lower.append(l)
-                    col_upper.append(u)
-            else:
-                col_lower = [0.0] * n_vars
-                col_upper = [float('inf')] * n_vars
-                
-            # Convert integrality array to a flat list
-            integrality_list = [int(i) for i in np.atleast_1d(integrality)]
-            # Match the length of variables if a scalar was given
-            if len(integrality_list) == 1:
-                integrality_list = integrality_list * n_vars
-                
-            res_dict = solve_milp_with_highs(
-                c=c,
-                col_lower=col_lower,
-                col_upper=col_upper,
-                row_lower=row_lower,
-                row_upper=row_upper,
-                row_starts=row_starts,
-                row_indices=row_indices,
-                row_values=row_values,
-                integrality=integrality_list,
-                bridge=bridge
-            )
-            
-            res_turbo = OptimizeResult(
-                x=res_dict.get("x"),
-                fun=res_dict.get("fun"),
-                success=(res_dict.get("status") in (7, 9)), # kOptimal = 7 or kOptimal (MIP)
-                status=res_dict.get("status"),
-                nit=res_base.nit # Simplex iterations roughly bounded by base LP
-            )
-        else:
-            res_turbo = scipy_linprog(
-                c,
-                A_ub=A_aug,
-                b_ub=b_aug,
-                A_eq=A_eq,
-                b_eq=b_eq,
-                bounds=bounds,
-                method="highs",
-                callback=callback,
-                options=options,
-                x0=x0,
-                integrality=integrality,
-            )
-
-        # Attach cryptographic and rational proof metadata
-        res_turbo.turbo_accelerated = True
-        res_turbo.certificate_sha256 = cert.sha256_hash
-        res_turbo.is_rationally_certified = cert.is_valid
-        res_turbo.num_cuts_separated = len(cuts_to_aggregate)
-        res_turbo.num_active_supports = cert.num_active_supports
-        res_turbo.exact_rational_rhs = str(cert.exact_rhs)
-        res_turbo.simplex_iteration_reduction = max(0, res_base.nit - res_turbo.nit)
-
-        return res_turbo
+        result.turbo_accelerated = False
+        if fallback_reason is not None:
+            result.fallback_reason = fallback_reason
+        return result
 
     def solve_maxcut(self, graph_or_adj: Any, **kwargs: Any) -> MaxCutResult:
         """High-level 1-line Max-Cut solver.
@@ -665,8 +411,7 @@ class TurboSolver:
         """Exposes direct rational verification for adversarial stress tests."""
         if self.verifier is not None:
             return self.verifier.verify_clique_conic_combination(graph, multipliers, rhs)
-        suite = LargeScaleBenchmarkSuite()
-        return suite.verifier.verify_clique_conic_combination(graph, multipliers, rhs)
+        return self.bench_suite.verifier.verify_clique_conic_combination(graph, multipliers, rhs)
 
     def _compute_approximate_partition(self, graph: GraphInstance) -> np.ndarray:
         """Fast greedy 1-flip local search for finding cut partitions on large graphs."""
@@ -801,8 +546,8 @@ def linprog(
     b_ub: Optional[Sequence[float]] = None,
     A_eq: Optional[Any] = None,
     b_eq: Optional[Sequence[float]] = None,
-    bounds: Optional[Any] = None,
-    method: str = "turbo",
+    bounds: Optional[Any] = (0, None),
+    method: str = "highs",
     callback: Optional[Callable] = None,
     options: Optional[Dict[str, Any]] = None,
     x0: Optional[Sequence[float]] = None,
