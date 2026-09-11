@@ -29,7 +29,7 @@ The optional C++ cut engine uses macOS CommonCrypto. For its additional graph
 cut operations, install the Xcode command line tools and native dependencies:
 
 ```bash
-brew install gmp highs
+brew install gmp
 python -m pip install .
 ```
 
@@ -201,6 +201,8 @@ The benchmark includes model construction, cut verification, initialization,
 and search. It alternates execution order and compares the same HiGHS version
 under equal time limits. It reports speedups only when every compared run
 reaches optimality; otherwise it reports energies and remaining gaps.
+See [the complete Pegasus measurements](PEGASUS_RESULTS.md), including weighted
+instances and unfinished full-fabric runs.
 
 ## Certificates and performance
 

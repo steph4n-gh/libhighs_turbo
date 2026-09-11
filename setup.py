@@ -9,11 +9,8 @@ include_dirs = [
     CPP_DIR,
     os.path.join(CPP_DIR, "include"),
     "/opt/homebrew/include",
-    "/opt/homebrew/include/highs",
     "/usr/local/include",
-    "/usr/local/include/highs",
     "/usr/include",
-    "/usr/include/highs",
 ]
 include_dirs = [d for d in include_dirs if os.path.isdir(d)]
 
@@ -52,7 +49,7 @@ ext_modules = [
         sources=sources,
         include_dirs=include_dirs,
         library_dirs=library_dirs,
-        libraries=["gmpxx", "gmp", "highs"],
+        libraries=["gmpxx", "gmp"],
         extra_compile_args=extra_compile_args,
         extra_link_args=extra_link_args,
         language="c++",

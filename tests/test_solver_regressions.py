@@ -14,6 +14,23 @@ from highs_turbo.exact_solver import ExactMaxCutSolver
 from highs_turbo.graph_generator import GraphInstance
 
 
+@pytest.mark.parametrize("integrality, expected", [([], -2.5), ([1] * 5, -2.)])
+def test_legacy_array_solver_and_ising_share_runtime(integrality, expected):
+    from highs_turbo.compiled_engine import solve_milp_with_highs
+
+    # The stable-set relaxation of a five-cycle is fractional; integer search
+    # must close its gap, including after another API has used the runtime.
+    for _ in range(2):
+        result = solve_milp_with_highs(
+            [-1.] * 5, [0.] * 5, [1.] * 5, [-np.inf] * 5, [1.] * 5,
+            [0, 2, 4, 6, 8], [0, 1, 1, 2, 2, 3, 3, 4, 4, 0], [1.] * 10, integrality,
+        )
+        assert result["fun"] == pytest.approx(expected)
+        assert sum(result["x"]) == pytest.approx(-expected)
+        ising = highs_turbo.solve_ising({0: 2, 1: 1}, {(0, 1): -2}, accelerate=False)
+        assert ising.success and ising.energy == -5
+
+
 @pytest.mark.parametrize("n", [3, 4, 5])
 def test_every_integer_cut_satisfies_relaxation(n):
     edges = list(itertools.combinations(range(n), 2))

@@ -8,8 +8,6 @@
 
 #include "cut_engine.hpp"
 
-class Highs;
-
 namespace highs_turbo {
 
 constexpr double HIGHS_INFINITY = 1e30;
@@ -39,8 +37,6 @@ private:
     double latest_dual_obj;
 
 public:
-    void* highs_model_ptr = nullptr;
-
     explicit SolverCallbackBridge(size_t m)
         : num_edges(m), latest_primal_obj(0.0), latest_dual_obj(0.0) {}
 
@@ -74,7 +70,6 @@ public:
         std::vector<double>& out_values
     ) const;
 
-    void attach_to_highs(::Highs* highs_model);
 };
 
 } // namespace highs_turbo

@@ -442,20 +442,42 @@ def solve_milp_with_highs(
     integrality: Sequence[int],
     bridge: Optional[CompiledSolverCallbackBridge] = None
 ) -> Dict[str, Any]:
-    if not COMPILED_ENGINE_AVAILABLE or not hasattr(_ce, "solve_milp_with_highs"):
-        raise RuntimeError("Native HiGHS solver is not available in the compiled engine.")
-    
-    bridge_native = bridge.native if bridge is not None else None
-    
-    return _ce.solve_milp_with_highs(
-        list(c),
-        list(col_lower),
-        list(col_upper),
-        list(row_lower),
-        list(row_upper),
-        list(row_starts),
-        list(row_indices),
-        list(row_values),
-        list(integrality),
-        bridge_native
-    )
+    """Legacy array interface using the same public runtime as the other APIs.
+
+    Queued bridge rows are added before solving. The graph extension only
+    manages and verifies cuts; it no longer loads a second HiGHS library.
+    The legacy integrality convention is preserved: positive means integer.
+    """
+    import highspy
+    from highs_turbo.lp_accelerator import _check_status, _add_rows
+
+    costs = np.asarray(c, dtype=float)
+    lower, upper = np.asarray(col_lower, dtype=float), np.asarray(col_upper, dtype=float)
+    row_lower, row_upper = np.asarray(row_lower, dtype=float), np.asarray(row_upper, dtype=float)
+    if (costs.ndim != 1 or lower.shape != costs.shape or upper.shape != costs.shape
+            or row_lower.ndim != 1 or row_lower.shape != row_upper.shape):
+        raise ValueError("Column and row arrays must have matching one-dimensional shapes")
+    starts = np.asarray(row_starts, dtype=np.int64)
+    if len(starts) == len(row_upper):
+        starts = np.r_[starts, len(row_values)]
+    matrix = sp.csr_matrix((row_values, row_indices, starts), shape=(len(row_upper), len(costs)), dtype=float)
+    matrix.check_format(full_check=True)
+    types = np.asarray(integrality)
+    if types.size and types.shape != costs.shape:
+        raise ValueError("integrality must be empty or have one entry per column")
+    session = highspy.Highs()
+    _check_status(session.setOptionValue("output_flag", False))
+    _check_status(session.addCols(len(costs), costs, lower, upper, 0, [], [], []))
+    _add_rows(session, matrix, row_lower, row_upper)
+    if types.size:
+        _check_status(session.changeColsIntegrality(len(costs), np.arange(len(costs)), (types > 0).astype(np.uint8)))
+    if bridge is not None:
+        lo, hi, ptr, idx, values = bridge.get_flat_row_data()
+        cuts = sp.csr_matrix((values, idx, ptr), shape=(len(hi), len(costs)))
+        cuts.check_format(full_check=True)
+        _add_rows(session, cuts, lo, hi)
+    _check_status(session.run())
+    info, solution = session.getInfo(), session.getSolution()
+    return {"status": int(session.getModelStatus()), "fun": info.objective_function_value,
+            "x": np.array(solution.col_value, copy=True) if solution.value_valid else None,
+            "simplex_iterations": info.simplex_iteration_count, "mip_node_count": info.mip_node_count}
