@@ -4,7 +4,7 @@ Fulfills requirements R1, R2, R3, R4, R5 for the Neural-Surrogate Cutting Plane 
 - Topologies:
   * Chimera Ising spin glass hardware graphs: C_{12,12,4} (1,152 nodes, 3,360 edges),
     C_{16,16,4} (2,048 nodes, 6,016 edges), bimodal +/-1 couplings, and embedded logical K5 cliques.
-  * Pegasus Ising spin glass hardware graphs: P_8 (1,344 nodes, 10,080 edges) with rich
+  * Pegasus Ising spin glass hardware graphs: P_8 (1,288 nodes, 8,804 edges) with rich
     native triangular frustrated structures.
   * G-set Max-Cut instances: G11 (800 nodes), G43 (1,000 nodes, 9,990 edges),
     G51 (1,000 nodes, 5,909 edges), and G22 (2,000 nodes, 19,990 edges).
@@ -151,12 +151,15 @@ def generate_pegasus_instance(
     m: int = 8,
     seed: int = 42,
     ising: bool = True,
+    *,
+    node_list=None,
+    edge_list=None,
 ) -> GraphInstance:
     """Generates a Pegasus Ising spin glass instance P_M.
 
-    For P_8: 1,344 nodes, 10,080 edges with rich native triangular frustrated structure.
+    For P_8: 1,288 nodes, 8,804 edges with rich native triangular frustrated structure.
     """
-    return _base_pegasus(m=m, seed=seed, ising=ising)
+    return _base_pegasus(m=m, seed=seed, ising=ising, node_list=node_list, edge_list=edge_list)
 
 
 def generate_gset_instance(
@@ -963,8 +966,8 @@ class LargeScaleBenchmarkSuite:
         r_a, r_b = self.evaluate_instance_pair(c12_embed, seed=13)
         results.extend([r_a, r_b])
 
-        # 3. Pegasus P_8 Ising (1,344 nodes, 10,080 edges)
-        print("Evaluating Pegasus P_8 (1,344 nodes, 10,080 edges)...")
+        # 3. Pegasus P_8 Ising (1,288 nodes, 8,804 edges)
+        print("Evaluating Pegasus P_8 (1,288 nodes, 8,804 edges)...")
         p8 = generate_pegasus_instance(8, seed=88, ising=True)
         r_a, r_b = self.evaluate_instance_pair(p8, seed=89)
         results.extend([r_a, r_b])

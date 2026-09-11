@@ -211,85 +211,34 @@ def generate_pegasus_instance(
     m: int,
     seed: int = 42,
     ising: bool = True,
+    *,
+    node_list=None,
+    edge_list=None,
 ) -> GraphInstance:
-    """Generates a Pegasus Ising spin glass instance P_M.
+    """Generate the official Pegasus fabric or a validated hardware subgraph.
 
-    Topology properties:
-    - Node count: 24 * M * (M - 1).
-    - Average degree: 15.
-    - Total edges: 15 * 12 * M * (M - 1) = 180 * M * (M - 1) / 2 = 90 * M * (M - 1)...
-      For P_8: 1,344 nodes, 10,080 edges.
-    - Pegasus natively contains triangles and 4-cliques.
+    ``node_list`` and ``edge_list`` use D-Wave's linear node labels. Internal
+    GraphInstance indices are contiguous; metadata["node_labels"] maps them
+    back to the original labels. No couplers are invented to meet an edge count.
     """
+    from dwave.graphs import pegasus_graph
+
+    if isinstance(m, bool) or not isinstance(m, (int, np.integer)) or m < 1:
+        raise ValueError("m must be a positive integer")
+    topology = pegasus_graph(
+        int(m), node_list=node_list, edge_list=edge_list,
+        check_node_list=True, check_edge_list=True,
+    )
+    labels = sorted(topology.nodes)
+    index = {label: i for i, label in enumerate(labels)}
+    edges = sorted((min(index[u], index[v]), max(index[u], index[v]))
+                   for u, v in topology.edges)
     rng = random.Random(seed)
-    num_nodes = 24 * m * (m - 1)
-    target_edges = 15 * num_nodes // 2  # 10,080 for P_8
-
-    # Construct Pegasus structure from Chimera backbone plus Pegasus cross-couplers
-    edges: Set[Tuple[int, int]] = set()
-
-    # Base grid structure with 24 filaments per cell
-    cells = m * (m - 1)
-    for c in range(cells):
-        base = c * 24
-        # Intra-cell dense block: 2 sets of 12 qubits with cross-connections and internal triangles
-        for i in range(12):
-            for j in range(12, 24):
-                if (i + j) % 3 != 0:
-                    edges.add((min(base + i, base + j), max(base + i, base + j)))
-        # Add internal odd couplers forming triangles
-        for i in range(0, 11, 2):
-            edges.add((base + i, base + i + 1))
-        for j in range(12, 23, 2):
-            edges.add((base + j, base + j + 1))
-
-    # Inter-cell couplers along horizontal and vertical directions
-    for c in range(cells):
-        base = c * 24
-        # Connect to next cell in cycle
-        next_c = (c + 1) % cells
-        next_base = next_c * 24
-        for k in range(8):
-            edges.add((min(base + k, next_base + k), max(base + k, next_base + k)))
-
-    # Fill deterministic inter-cell couplers up to exact target_edges
-    step = 1
-    while len(edges) < target_edges and step < cells:
-        for c in range(cells):
-            base = c * 24
-            partner = (c + step) % cells
-            p_base = partner * 24
-            for k in range(24):
-                u = base + k
-                v = p_base + ((k + step) % 24)
-                if u != v:
-                    edges.add((min(u, v), max(u, v)))
-                if len(edges) >= target_edges:
-                    break
-            if len(edges) >= target_edges:
-                break
-        step += 1
-
-    sorted_edges = sorted(list(edges))[:target_edges]
-    weights: Dict[Tuple[int, int], float] = {}
-    for e in sorted_edges:
-        if ising:
-            weights[e] = 1.0 if rng.random() > 0.5 else -1.0
-        else:
-            weights[e] = 1.0
-
+    weights = {edge: (rng.choice((-1.0, 1.0)) if ising else 1.0) for edge in edges}
     return GraphInstance(
-        name=f"pegasus_p{m}",
-        num_nodes=num_nodes,
-        edges=sorted_edges,
-        weights=weights,
-        metadata={
-            "family": "Pegasus_spin_glass",
-            "M": m,
-            "target_edges": len(sorted_edges),
-            "ising": ising,
-            "seed": seed,
-        },
+        name=f"pegasus_p{m}", num_nodes=len(labels), edges=edges, weights=weights,
+        metadata={"family": "Pegasus_spin_glass", "M": int(m), "ising": ising,
+                  "seed": seed, "node_labels": labels, "generator": "dwave.graphs.pegasus_graph"},
     )
 
 

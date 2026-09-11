@@ -1,18 +1,9 @@
-"""Production-ready solver application for recognized combinatorial optimization problems.
+"""Compare Max-Cut/Ising relaxation bounds and verify cut combinations.
 
-Utilizes the C++20 SIMD-accelerated Neural-Surrogate Cutting Plane Engine to solve
-and certify prominent real-world and benchmark instances:
-1. D-Wave Quantum Annealing Hardware Lattices (Frustrated Pegasus P_8 & Chimera C_{12,12,4} Ising Spin Glasses).
-2. Standard Stanford G-set Max-Cut benchmarks (G11, G43, G22).
-3. Biological interaction networks (E. coli transcriptional regulation with sign-inversion motifs).
-
-Executes the complete 5-stage pipeline:
-1. Solves the base unconstrained/metric relaxation.
-2. Performs compiled separation and exact rational verification (Stein GCD / GMP fallback).
-3. Solves the surrogate LP in exactly 0-1 simplex pivots.
-4. Compares against classical multi-row cutting-plane separation in wall-clock time,
-   simplex iterations, and constraint nonzeros.
-5. Generates a cryptographic SHA-256 certificate proving the certified bound.
+This application reports numerical LP bounds, not ground-state spin assignments.
+Use highs_turbo.solve_ising for a complete integer solve and an optimality gap.
+A SHA-256 receipt identifies a verified cut combination; it is not an independent
+proof of the floating-point LP optimum or integer ground state.
 """
 
 from __future__ import annotations
@@ -114,7 +105,7 @@ class ProblemSolutionReport:
         md.append(f"## Solution & Certification Report: `{self.instance_name}`")
         md.append(f"- **Problem Class:** {self.problem_category}")
         md.append(f"- **Graph Topology:** {self.num_nodes:,} nodes, {self.num_edges:,} edges (density: {self.graph_density:.4f})")
-        md.append(f"- **Rational Certification:** {'CERTIFIED' if self.is_rationally_certified else 'REJECTED'} (SHA-256: `{self.certificate_sha256}`)")
+        md.append(f"- **Cut-combination rational verification:** {'CERTIFIED' if self.is_rationally_certified else 'REJECTED'} (SHA-256: `{self.certificate_sha256}`)")
         md.append("")
         md.append("### 1. Comparative Performance Breakdown")
         md.append("| Metric | Classical Multi-Row Separation | 1-Row Neural-Surrogate Engine | Improvement / Speedup |")
@@ -132,10 +123,10 @@ class ProblemSolutionReport:
         if self.ising_ground_state_surrogate_bound is not None:
             md.append("### 2. Frustrated Ising Spin Glass Ground State Energy")
             md.append(f"- **Unconstrained Base Lower Bound:** {self.ising_ground_state_base_bound:.4f}")
-            md.append(f"- **Certified Rigorous Ground-State Energy Lower Bound:** **{self.ising_ground_state_surrogate_bound:.4f}**")
+            md.append(f"- **Surrogate LP energy lower bound (numerical):** **{self.ising_ground_state_surrogate_bound:.4f}**")
             md.append(f"- **Certified Exact Rational RHS:** `{self.exact_rational_rhs}`")
             md.append("")
-        md.append("### 3. Cryptographic Proof Certificate")
+        md.append("### 3. Cut-combination receipt")
         md.append("```json")
         cert_data = {
             "instance": self.instance_name,
@@ -151,7 +142,7 @@ class ProblemSolutionReport:
 
 
 class KnownProblemSolver:
-    """Production solver orchestrator utilizing compiled C++ surrogate engine."""
+    """Relaxation-bound comparison using the compiled C++ surrogate engine."""
 
     def __init__(self, rational_denominator_limit: int = 100000):
         if not COMPILED_ENGINE_AVAILABLE:

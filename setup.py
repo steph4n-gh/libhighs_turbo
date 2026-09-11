@@ -71,6 +71,6 @@ setup(
     ext_modules=ext_modules,
     package_data={"highs_turbo": ["default_weights.pt"]},
     python_requires=">=3.10",
-    install_requires=["numpy", "scipy>=1.9", "networkx", "highspy>=1.11"],
+    install_requires=["numpy", "scipy>=1.9", "networkx", "highspy>=1.11", "dwave-graphs>=1.0"],
     extras_require={"ml": ["torch>=2.0"], "test": ["pytest>=7", "torch>=2.0"]},
 )

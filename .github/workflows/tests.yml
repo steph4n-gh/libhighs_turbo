@@ -52,5 +52,5 @@ jobs:
           CXX: /usr/bin/false
         run: python -m build
       - run: python -m pip install dist/*.whl pytest
-      - run: python -m pytest tests/test_solver_regressions.py -q
+      - run: python -m pytest tests/test_solver_regressions.py tests/test_ising.py -q
       - run: python -I tests/smoke_installed.py --require-fallback

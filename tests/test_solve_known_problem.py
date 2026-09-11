@@ -30,8 +30,8 @@ def test_solve_dwave_pegasus_ising_ground_state():
     """Verify Pegasus P_4 and P_8 frustrated Ising spin glass ground-state certification."""
     solver = KnownProblemSolver()
     g = solver.load_dwave_pegasus_ising(m=4, seed=42)
-    assert g.num_nodes == 288
-    assert g.num_edges > 2000
+    assert g.num_nodes == 264
+    assert g.num_edges == 1604
 
     rep: ProblemSolutionReport = solver.solve(g, problem_category="Pegasus P_4 Ising Spin Glass")
 

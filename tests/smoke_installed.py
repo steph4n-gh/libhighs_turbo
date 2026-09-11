@@ -42,6 +42,11 @@ assert highs_turbo.solve_maxcut(np.ones((3, 3)) - np.eye(3)).cut_value == 2.0
 qubo = highs_turbo.solve_qubo([[0.0, -1.0], [-1.0, 0.0]])
 assert qubo.energy == qubo.lower_bound == -2.0
 
+# Exercise MIP scheduling after importing the optional graph extension, which
+# can load a second HiGHS runtime on macOS.
+ising = highs_turbo.solve_ising({0: 2, 1: 1, 2: 0}, {(0, 1): -2, (0, 2): -3}, accelerate=False)
+assert ising.status == "OPTIMAL" and ising.energy == ising.lower_bound == -8
+
 if "--require-native" in sys.argv:
     assert COMPILED_ENGINE_AVAILABLE
 if "--require-fallback" in sys.argv:
