@@ -30,7 +30,7 @@ from highs_turbo.graph_generator import (
     generate_ks_minus_edges,
 )
 from highs_turbo.rational_verifier import RationalCutVerifier, VerificationCertificate
-from tests.e2e.topologies import BitParallelGraph
+from highs_turbo.topologies import BitParallelGraph
 
 
 # =====================================================================

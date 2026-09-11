@@ -1,4 +1,4 @@
-"""Topologies and Bit-Parallel Graph Reference for E2E Test Suite.
+"""Deterministic benchmark topologies and a bit-parallel graph reference.
 
 Provides deterministic topology generators for:
 - Chimera spin glass instances (C_{M,N,L})

@@ -63,7 +63,7 @@ from highs_turbo.rational_verifier import (
     RationalCutVerifier,
     VerificationCertificate,
 )
-from tests.e2e.topologies import (
+from highs_turbo.topologies import (
     BitParallelGraph,
     generate_chimera_instance as _base_chimera,
     generate_gset_instance as _base_gset,

@@ -4,9 +4,9 @@ import numpy as np
 import os
 from torch.distributions import Normal
 
-from neural_surrogate.surrogate_model import EdgeEquivariantSurrogateGNN
-from neural_surrogate.large_scale_benchmarks import LargeScaleBenchmarkSuite, generate_pegasus_instance, generate_chimera_instance, generate_gset_instance
-from neural_surrogate.graph_generator import generate_exp91_family
+from highs_turbo.surrogate_model import EdgeEquivariantSurrogateGNN
+from highs_turbo.large_scale_benchmarks import LargeScaleBenchmarkSuite, generate_pegasus_instance, generate_chimera_instance, generate_gset_instance
+from highs_turbo.graph_generator import generate_exp91_family
 
 def ppo_train_curriculum():
     print("Starting PPO RL Curriculum Training...")
@@ -74,7 +74,7 @@ def ppo_train_curriculum():
                 if not cert.is_valid:
                     reward = -10.0
                 else:
-                    from neural_surrogate.exact_solver import ExactMaxCutSolver
+                    from highs_turbo.exact_solver import ExactMaxCutSolver
                     from scipy.optimize import linprog
                     import numpy as np
                     
@@ -118,9 +118,7 @@ def ppo_train_curriculum():
         print(f"Epoch {epoch+1}/{epochs} - Avg Reward: {epoch_reward/len(graphs):.4f}")
         
     # Save default weights
-    weights_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "neural_surrogate", "default_weights.pt")
-    if not os.path.exists(os.path.dirname(weights_path)):
-        weights_path = os.path.join(os.getcwd(), "neural_surrogate", "default_weights.pt")
+    weights_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "highs_turbo", "default_weights.pt")
             
     torch.save(model.state_dict(), weights_path)
     print(f"Saved default weights to {weights_path}")

@@ -1,7 +1,6 @@
 import os
 import sys
 from setuptools import Extension, find_packages, setup
-from setuptools.command.build_ext import build_ext
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 CPP_DIR = os.path.join(BASE_DIR, "highs_turbo", "cpp_engine")
@@ -11,21 +10,15 @@ include_dirs = [
     os.path.join(CPP_DIR, "include"),
     "/opt/homebrew/include",
     "/opt/homebrew/include/highs",
-    "/opt/homebrew/Cellar/gmp/6.3.0/include",
     "/usr/local/include",
+    "/usr/local/include/highs",
     "/usr/include",
+    "/usr/include/highs",
 ]
-include_dirs.extend([
-    p for p in [
-        "/opt/homebrew/Cellar/python@3.14/3.14.4_1/Frameworks/Python.framework/Versions/3.14/include/python3.14",
-        "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/include/python3.14",
-    ] if os.path.isdir(p)
-])
 include_dirs = [d for d in include_dirs if os.path.isdir(d)]
 
 library_dirs = [
     "/opt/homebrew/lib",
-    "/opt/homebrew/Cellar/gmp/6.3.0/lib",
     "/usr/local/lib",
     "/usr/lib",
 ]
@@ -53,27 +46,17 @@ if sys.platform == "darwin":
     extra_link_args.extend(["-framework", "Security"])
 
 
-class OptionalBuildExt(build_ext):
-    """Allows package installation to proceed gracefully with pure-Python fallback if C++ build fails."""
-
-    def build_extension(self, ext):
-        try:
-            super().build_extension(ext)
-        except Exception as exc:
-            print(f"[highs_turbo] WARNING: Failed to compile C++ extension {ext.name}: {exc}")
-            print("[highs_turbo] highs_turbo will continue with pure-Python fallback mode.")
-
-
 ext_modules = [
     Extension(
         "highs_turbo._compiled_engine",
         sources=sources,
         include_dirs=include_dirs,
         library_dirs=library_dirs,
-        libraries=["gmp", "gmpxx", "highs"],
+        libraries=["gmpxx", "gmp", "highs"],
         extra_compile_args=extra_compile_args,
         extra_link_args=extra_link_args,
         language="c++",
+        optional=True,
     ),
 ]
 
@@ -86,7 +69,8 @@ setup(
     author="Neural-Surrogate Team",
     packages=find_packages(include=["highs_turbo", "highs_turbo.*"]),
     ext_modules=ext_modules,
-    cmdclass={"build_ext": OptionalBuildExt},
-    python_requires=">=3.8",
-    install_requires=["numpy", "scipy"],
+    package_data={"highs_turbo": ["default_weights.pt"]},
+    python_requires=">=3.10",
+    install_requires=["numpy", "scipy>=1.9", "networkx"],
+    extras_require={"ml": ["torch>=2.0"], "test": ["pytest>=7", "torch>=2.0"]},
 )

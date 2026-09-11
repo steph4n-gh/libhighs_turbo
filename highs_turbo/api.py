@@ -27,29 +27,19 @@ except ImportError:
 from scipy.optimize import Bounds, LinearConstraint, OptimizeResult, linprog as scipy_linprog, milp as scipy_milp
 
 # Import compiled engine components with graceful fallback
-from neural_surrogate.compiled_engine import (
+from highs_turbo.compiled_engine import (
+    COMPILED_ENGINE_AVAILABLE,
     CompiledBitGraph,
     CompiledCutEngine,
     CompiledRationalVerifier,
     CompiledSolverCallbackBridge,
 )
 
-try:
-    from highs_turbo import _compiled_engine as _ce
-    COMPILED_ENGINE_AVAILABLE = True
-except ImportError:
-    try:
-        from neural_surrogate import _compiled_engine as _ce
-        COMPILED_ENGINE_AVAILABLE = True
-    except ImportError:
-        _ce = None
-        COMPILED_ENGINE_AVAILABLE = False
-
 from highs_turbo.detector import TopologyDetector, TopologyScanResult, detect_topology
-from neural_surrogate.exact_solver import ExactMaxCutSolver
-from neural_surrogate.graph_generator import GraphInstance
-from neural_surrogate.large_scale_benchmarks import LargeScaleBenchmarkSuite
-from neural_surrogate.rational_verifier import VerificationCertificate
+from highs_turbo.exact_solver import ExactMaxCutSolver
+from highs_turbo.graph_generator import GraphInstance
+from highs_turbo.large_scale_benchmarks import LargeScaleBenchmarkSuite
+from highs_turbo.rational_verifier import VerificationCertificate
 
 
 @dataclass
@@ -176,8 +166,8 @@ class TurboSolver:
         try:
             import os
             import torch
-            from neural_surrogate.surrogate_model import EdgeEquivariantSurrogateGNN
-            weights_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "neural_surrogate", "default_weights.pt")
+            from highs_turbo.surrogate_model import EdgeEquivariantSurrogateGNN
+            weights_path = os.path.join(os.path.dirname(__file__), "default_weights.pt")
             if os.path.exists(weights_path):
                 self.gnn_model = EdgeEquivariantSurrogateGNN(hidden_dim=32, num_layers=2)
                 self.gnn_model.load_state_dict(torch.load(weights_path, map_location="cpu", weights_only=True))
@@ -215,6 +205,11 @@ class TurboSolver:
         Automatically applies compiled surrogate cut generation when graph or binary quadratic
         structure is detected. Falls back seamlessly to standard HiGHS for general LPs.
         """
+        if isinstance(bounds, Bounds):
+            bounds = np.column_stack((
+                np.broadcast_to(bounds.lb, (len(c),)),
+                np.broadcast_to(bounds.ub, (len(c),)),
+            ))
         method_clean = method.lower().replace("-", "_")
         use_turbo = method_clean in ("turbo", "highs_turbo")
 
@@ -420,7 +415,7 @@ class TurboSolver:
         # Solve accelerated LP via HiGHS
         use_native_milp = (integrality is not None and any(i > 0 for i in np.atleast_1d(integrality)) and COMPILED_ENGINE_AVAILABLE)
         if use_native_milp:
-            from neural_surrogate.compiled_engine import solve_milp_with_highs, CompiledSolverCallbackBridge
+            from highs_turbo.compiled_engine import solve_milp_with_highs, CompiledSolverCallbackBridge
             
             bridge = CompiledSolverCallbackBridge(len(graph.edges))
             for cut in cuts_to_aggregate:
@@ -601,6 +596,7 @@ class TurboSolver:
             solve_time_ms=solve_time_ms,
             exact_rational_bound=cert.exact_rhs,
             num_active_supports=cert.num_active_supports,
+            status="OPTIMAL" if n <= 200 else "HEURISTIC",
         )
 
     def solve_qubo(self, Q: Any, **kwargs: Any) -> QuboResult:
@@ -614,7 +610,7 @@ class TurboSolver:
 
         # Parse and symmetrize Q
         if isinstance(Q, dict):
-            max_idx = max(max(i, j) for i, j in Q.keys())
+            max_idx = max((max(i, j) for i, j in Q.keys()), default=-1)
             n = max_idx + 1
             Q_mat = np.zeros((n, n), dtype=np.float64)
             for (i, j), v in Q.items():
@@ -624,7 +620,12 @@ class TurboSolver:
             n = Q_mat.shape[0]
         else:
             Q_mat = np.asarray(Q, dtype=np.float64)
-            n = Q_mat.shape[0]
+            n = Q_mat.shape[0] if Q_mat.ndim > 0 else 0
+
+        if Q_mat.ndim != 2 or Q_mat.shape[0] != Q_mat.shape[1]:
+            raise ValueError("Q must be a square matrix")
+        if not np.isfinite(Q_mat).all():
+            raise ValueError("Q must contain only finite values")
 
         Q_sym = 0.5 * (Q_mat + Q_mat.T)
         np.fill_diagonal(Q_sym, np.diag(Q_mat))
@@ -636,20 +637,8 @@ class TurboSolver:
             solution = self._solve_qubo_heuristic(Q_sym, n)
             energy = float(solution @ Q_sym @ solution)
 
-        # Transform to Ising / Max-Cut graph for rational certificate generation
-        edges = []
-        weights = {}
-        for i in range(n):
-            for j in range(i + 1, n):
-                val = float(Q_sym[i, j])
-                if abs(val) > 1e-9:
-                    edges.append((i, j))
-                    weights[(i, j)] = -2.0 * val  # Ferromagnetic coupling maps to Max-Cut weight
-
-        graph = GraphInstance(name=f"qubo_ising_{n}n", num_nodes=n, edges=edges, weights=weights)
-
         # Derive certified lower bound & SHA-256 proof receipt
-        cert = self._certify_qubo_lower_bound(graph, Q_sym, n)
+        cert = self._certify_qubo_lower_bound(Q_mat, n)
         lower_bound = float(cert.exact_rhs) if cert.is_valid else float("-inf")
 
         solve_time_ms = (time.perf_counter() - t0) * 1000.0
@@ -660,10 +649,11 @@ class TurboSolver:
             certificate=cert.sha256_hash,
             is_rationally_certified=cert.is_valid,
             lower_bound=lower_bound,
-            simplex_iterations=1,
+            simplex_iterations=0,
             solve_time_ms=solve_time_ms,
             exact_rational_bound=cert.exact_rhs,
             num_active_supports=cert.num_active_supports,
+            status="OPTIMAL" if n <= 18 else "HEURISTIC",
         )
 
     def verify_candidate_cut(
@@ -771,38 +761,30 @@ class TurboSolver:
                 break
         return x
 
-    def _certify_qubo_lower_bound(self, graph: GraphInstance, Q: np.ndarray, n: int) -> VerificationCertificate:
-        """Generates exact rational certificate proving a lower bound on QUBO energy."""
-        if graph.num_edges == 0:
-            # Diagonal only: sum min(0, Q_ii)
-            diag_lb = sum(min(0.0, float(Q[i, i])) for i in range(n))
-            cert = VerificationCertificate(
-                is_valid=True,
-                status="CERTIFIED_DIAGONAL_BOUND",
-                rejection_reason=None,
-                num_active_supports=0,
-                exact_coefficients={},
-                exact_rhs=Fraction.from_float(diag_lb).limit_denominator(self.rational_denominator_limit),
-                sha256_hash="0" * 64,
-            )
-            cert.compute_sha256()
-            return cert
+    def _certify_qubo_lower_bound(self, Q: np.ndarray, n: int) -> VerificationCertificate:
+        """Bound each binary monomial using its exact input coefficient.
 
-        cbg = CompiledBitGraph.from_graph_instance(graph) if COMPILED_ENGINE_AVAILABLE else None
-        cuts = self.bench_suite._separate_bipartite_4cycles(graph, np.ones(graph.num_edges) * 0.5, limit=50)
-        if cuts:
-            cert, _, _ = self.bench_suite._certify_and_build_surrogate(graph, cbg, cuts, gnn_model=self.gnn_model)
-            return cert
-
-        # Fallback to certified trivial bound
-        trivial_lb = sum(min(0.0, float(Q[i, i])) for i in range(n)) + sum(min(0.0, float(Q[i, j])) for i in range(n) for j in range(i + 1, n))
+        x^T Q x = sum Q_ii x_i + sum_{i<j} (Q_ij + Q_ji) x_i x_j.
+        Each monomial is in {0, 1}, so its contribution is at least
+        min(0, coefficient). Do not round coefficients toward zero.
+        """
+        coefficients = {}
+        for i in range(n):
+            coefficients[(i, i)] = Fraction.from_float(float(Q[i, i]))
+            for j in range(i + 1, n):
+                coefficients[(i, j)] = (
+                    Fraction.from_float(float(Q[i, j]))
+                    + Fraction.from_float(float(Q[j, i]))
+                )
+        coefficients = {key: value for key, value in coefficients.items() if value}
+        trivial_lb = sum((min(Fraction(0), value) for value in coefficients.values()), Fraction(0))
         cert = VerificationCertificate(
             is_valid=True,
-            status="CERTIFIED_TRIVIAL_LOWER_BOUND",
+            status="CERTIFIED_DIAGONAL_BOUND" if all(i == j for i, j in coefficients) else "CERTIFIED_TRIVIAL_LOWER_BOUND",
             rejection_reason=None,
             num_active_supports=0,
-            exact_coefficients={},
-            exact_rhs=Fraction.from_float(trivial_lb).limit_denominator(self.rational_denominator_limit),
+            exact_coefficients=coefficients,
+            exact_rhs=trivial_lb,
             sha256_hash="0" * 64,
         )
         cert.compute_sha256()
