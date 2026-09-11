@@ -6,6 +6,7 @@
 #include "rational_verifier.hpp"
 #include "cut_engine.hpp"
 #include "solver_callback.hpp"
+#include "ising_dual.hpp"
 
 
 namespace py = pybind11;
@@ -13,6 +14,8 @@ using namespace highs_turbo;
 
 PYBIND11_MODULE(_compiled_engine, m) {
     m.doc() = "Compiled C++ Engine for Neural-Surrogate Cutting Plane System";
+    m.def("ising_dual_ascent", &ising_dual_ascent,
+          py::call_guard<py::gil_scoped_release>());
 
     // 0. NativeTopologicalFeatures
     py::class_<BitGraph::NativeTopologicalFeatures>(m, "NativeTopologicalFeatures")

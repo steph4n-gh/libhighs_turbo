@@ -66,8 +66,9 @@ setup(
     author="Neural-Surrogate Team",
     packages=find_packages(include=["highs_turbo", "highs_turbo.*"]),
     ext_modules=ext_modules,
-    package_data={"highs_turbo": ["default_weights.pt"]},
+    package_data={"highs_turbo": ["default_weights.pt", "ising_policy.json"]},
     python_requires=">=3.10",
     install_requires=["numpy", "scipy>=1.9", "networkx", "highspy>=1.11", "dwave-graphs>=1.0"],
-    extras_require={"ml": ["torch>=2.0"], "test": ["pytest>=7", "torch>=2.0"]},
+    extras_require={"ml": ["torch>=2.0"], "ising": ["dwave-samplers>=1.8"],
+                    "test": ["pytest>=7", "torch>=2.0", "dwave-samplers>=1.8"]},
 )

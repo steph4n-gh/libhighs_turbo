@@ -114,3 +114,82 @@ def test_pegasus_is_official_fabric_and_preserves_subgraph_labels():
     invalid = next((u, v) for u in chosen for v in chosen if u != v and not official.has_edge(u, v))
     with pytest.raises(ValueError):
         generate_pegasus_instance(4, node_list=chosen, edge_list=[invalid])
+
+
+def test_adaptive_subgraph_cut_closes_gap_beyond_cycle_relaxation():
+    from highs_turbo import verify_ising_certificate
+    # The uniform K6 cycle relaxation has x=2/3 and energy -5; the true
+    # maximum cut is 9 edges, and its Ising energy is -3.
+    J = {edge: 1 for edge in nx.complete_graph(6).edges}
+    result = solve_ising({}, J, certified_gap=0, time_limit=5)
+    assert result.exact_energy == result.exact_cut_lower_bound == -3
+    assert result.subgraph_cuts >= 1
+    assert verify_ising_certificate({}, J, result.certificate.to_dict())
+
+
+def test_serialized_certificate_rejects_tampering_without_a_solver(monkeypatch):
+    import copy
+    import highspy
+    from highs_turbo import verify_ising_certificate
+    J = {(0, 1): .5, (0, 2): .5, (1, 2): .5}
+    result = solve_ising({}, J)
+    witness = result.certificate.to_dict()
+    monkeypatch.setattr(highspy.Highs, 'run', lambda self: pytest.fail('Checker must not run a solver'))
+    assert verify_ising_certificate({}, J, witness)
+    assert not verify_ising_certificate({}, J, witness, offset=.125)
+    for key, value in [('denominator', 0), ('multipliers', [-1]), ('lower_bound', [123, 1])]:
+        altered = copy.deepcopy(witness)
+        altered[key] = value
+        assert not verify_ising_certificate({}, J, altered)
+    altered = copy.deepcopy(witness)
+    altered['cuts'][0]['rhs'] -= 1
+    assert not verify_ising_certificate({}, J, altered)
+    assert not verify_ising_certificate({}, J, {})
+
+
+def test_numerical_multipliers_receive_exact_residual_repair():
+    import time
+    from highs_turbo.ising_cuts import IsingCut, make_certificate, optimize_dual, check_certificate
+    edges = sorted(nx.complete_graph(5).edges)
+    weights = {edge: Fraction(1, 8) for edge in edges}
+    cut = IsingCut(tuple(range(10)), (1,)*10, 6, 'subgraph')
+    dual, point = optimize_dual([cut], np.full(10, .125), [0.], time.perf_counter()+1, 0)
+    assert np.isfinite(point).all()
+    # Perturb both sides of the optimum, including outside LP tolerances.
+    for multiplier in [dual[0], .1249999999, .1250000001, .2]:
+        proof = make_certificate([cut], [-multiplier], edges, weights, Fraction(1, 10))
+        assert check_certificate(proof, edges, weights, Fraction(1, 10))
+        optimum = min(Fraction(1, 10)+sum(w*s[u]*s[v] for (u,v), w in weights.items())
+                      for s in product([-1, 1], repeat=5))
+        assert proof.lower_bound <= optimum
+
+
+def test_long_cycle_separator_and_integer_support_validation():
+    import time
+    from highs_turbo.ising_cuts import IsingCut, separate_cycles, verify_cut
+    graph = nx.cycle_graph(7)
+    edges = sorted(tuple(sorted(e)) for e in graph.edges)
+    cuts = separate_cycles(graph, edges, np.ones(7), [0], time.perf_counter()+1)
+    assert cuts and all(verify_cut(cut, edges) for cut in cuts)
+    assert any(len(cut.indices) == 7 for cut in cuts)
+    assert not verify_cut(IsingCut(tuple(range(7)), (1,)*7, 5, 'cycle'), edges)
+    assert not verify_cut(IsingCut(tuple(range(7)), (1,)*7, 5, 'subgraph'), edges)
+
+
+def test_learned_ranking_preserves_exact_proof_and_target_gap():
+    from highs_turbo import verify_ising_certificate
+    J = {edge: 1 for edge in nx.complete_graph(6).edges}
+    result = solve_ising({}, J, time_limit=5, cut_policy='learned', certified_gap=0)
+    assert result.exact_gap == 0
+    assert verify_ising_certificate({}, J, result.certificate)
+    # An absolute certificate target can stop before numerical optimality.
+    loose = solve_ising({}, J, time_limit=5, certified_gap=20)
+    assert loose.exact_gap <= 20
+    assert verify_ising_certificate({}, J, loose.certificate)
+
+
+@pytest.mark.parametrize('options', [{'cut_policy': 'unknown'}, {'certified_gap': -1},
+                                    {'threads': -1}, {'threads': True}, {'seed': -1}])
+def test_adaptive_options_are_validated(options):
+    with pytest.raises(ValueError):
+        solve_ising({}, {}, **options)

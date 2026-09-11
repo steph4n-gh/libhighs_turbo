@@ -53,6 +53,10 @@ legacy = solve_milp_with_highs(
 assert legacy["fun"] == -2 and sum(legacy["x"]) == 2
 ising = highs_turbo.solve_ising({0: 2, 1: 1, 2: 0}, {(0, 1): -2, (0, 2): -3}, accelerate=False)
 assert ising.status == "OPTIMAL" and ising.energy == ising.lower_bound == -8
+complete = {(i, j): 1. for i in range(6) for j in range(i+1, 6)}
+verified = highs_turbo.solve_ising({}, complete, cut_policy="learned", certified_gap=0, time_limit=5)
+assert verified.exact_gap == 0 and verified.energy == -3
+assert highs_turbo.verify_ising_certificate({}, complete, verified.certificate.to_dict())
 
 if "--require-native" in sys.argv:
     assert COMPILED_ENGINE_AVAILABLE
