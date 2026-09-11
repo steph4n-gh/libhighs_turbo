@@ -219,9 +219,10 @@ class TurboSolver:
         """SciPy-compatible solve with exact row aggregation and row recovery.
 
         Graph hints never authorize changing the supplied feasible set. Large
-        inequality systems can use a smaller working model; a solution is only
-        returned after checking every original inequality. Other calls retain
-        SciPy's behavior, including methods, limits, warnings, and errors.
+        inequality systems can use a smaller working model. Sparse and equality
+        models use native HiGHS, with competing methods for large LPs. Returned
+        solutions satisfy the original model; methods, limits, and unsupported
+        options retain ordinary SciPy execution.
         """
         if isinstance(bounds, Bounds):
             bounds = np.column_stack((

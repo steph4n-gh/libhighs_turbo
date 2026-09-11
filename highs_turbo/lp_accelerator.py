@@ -1,10 +1,13 @@
-"""Solve a smaller relaxation, restoring original rows with a retained HiGHS basis.
+"""Accelerate original LPs with constraint recovery and competing HiGHS methods.
 
 Every working model contains a subset of the original inequalities and, when
 exact integer aggregation is possible, nonnegative sums of original rows.
 An optimal working solution that satisfies the original model is therefore
 optimal for that model too. No graph interpretation changes the feasible set.
 """
+
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
+import os
 
 import highspy
 import numpy as np
@@ -21,6 +24,105 @@ def _add_rows(session, matrix, lower, upper):
     if matrix.shape[0]:
         _check_status(session.addRows(matrix.shape[0], lower, upper, matrix.nnz,
                                       matrix.indptr, matrix.indices, matrix.data))
+
+
+def _solve_full(c, matrix, rhs, equality, eq_rhs, lower, upper, options):
+    """Keep sparse/equality models on a native path even without row reduction.
+
+    A second, independent method can help large LPs where simplex is slow.
+    Give simplex a head start, accept only an optimal result, and join both
+    workers before returning. There is no result cache or retained worker pool.
+    """
+    def make_session(method):
+        session = highspy.Highs()
+        _check_status(session.setOptionValue("output_flag", False))
+        _check_status(session.setOptionValue("parallel", "off"))
+        _check_status(session.setOptionValue("solver", method))
+        for key, value in options.items():
+            _check_status(session.setOptionValue(key, value))
+        _check_status(session.addCols(len(c), c, lower, upper, 0, [], [], []))
+        _add_rows(session, matrix, np.full(len(rhs), -np.inf), rhs)
+        _add_rows(session, equality, eq_rhs, eq_rhs)
+        return session
+
+    primary = make_session("simplex")
+    sessions = {"simplex": primary}
+    winner = None
+    use_portfolio = (matrix.shape[0] + equality.shape[0] >= 512
+                     and matrix.nnz + equality.nnz >= 10000
+                     and len(c) >= 1000 and (os.cpu_count() or 1) > 1
+                     and "simplex_dual_edge_weight_strategy" not in options)
+    if not use_portfolio:
+        _check_status(primary.run())
+        winner = primary
+    else:
+        primary.HandleUserInterrupt = True
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            try:
+                futures = {pool.submit(primary.run): primary}
+                done, _ = wait(futures, timeout=0.005, return_when=FIRST_COMPLETED)
+                if not done:
+                    secondary = make_session("ipm")
+                    secondary.HandleUserInterrupt = True
+                    sessions["ipm"] = secondary
+                    futures[pool.submit(secondary.run)] = secondary
+                pending = set(futures)
+                errors = []
+                while pending:
+                    done, pending = wait(pending, return_when=FIRST_COMPLETED)
+                    for future in done:
+                        try:
+                            _check_status(future.result())
+                        except Exception as error:
+                            errors.append(error)
+                            continue
+                        candidate = futures[future]
+                        if candidate.getModelStatus() == highspy.HighsModelStatus.kOptimal:
+                            winner = candidate
+                            break
+                    if winner is not None:
+                        break
+                if winner is None and errors:
+                    raise errors[0]
+            finally:
+                for session in sessions.values():
+                    session.cancelSolve()
+
+    if winner is None or winner.getModelStatus() != highspy.HighsModelStatus.kOptimal:
+        return None
+    solution = winner.getSolution()
+    if not solution.value_valid or not solution.dual_valid:
+        return None
+    x = np.asarray(solution.col_value)
+    row_dual = np.asarray(solution.row_dual)
+    col_dual = np.asarray(solution.col_dual)
+    column_status = np.asarray(winner.getBasis().col_status, dtype=int)
+    lower_dual = np.where(column_status == int(highspy.HighsBasisStatus.kLower), col_dual, 0.0)
+    upper_dual = np.where(column_status == int(highspy.HighsBasisStatus.kUpper), col_dual, 0.0)
+    slack, con = rhs - matrix @ x, eq_rhs - equality @ x
+    tolerance = options.get("primal_feasibility_tolerance", 1e-7)
+    if (not np.isfinite(x).all() or np.any(slack < -tolerance)
+            or np.any(np.abs(con) > tolerance)
+            or np.any(x < lower - tolerance) or np.any(x > upper + tolerance)):
+        return None
+    iterations = {method: max(0, s.getInfo().simplex_iteration_count)
+                  + max(0, s.getInfo().ipm_iteration_count) for method, s in sessions.items()}
+    method = next(key for key, value in sessions.items() if value is winner)
+    return OptimizeResult(
+        x=x, fun=float(c @ x), success=True, status=0,
+        message="Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+        nit=sum(iterations.values()), crossover_nit=winner.getInfo().crossover_iteration_count,
+        slack=slack, con=con,
+        ineqlin=OptimizeResult(residual=slack, marginals=row_dual[:len(rhs)]),
+        eqlin=OptimizeResult(residual=con, marginals=row_dual[len(rhs):]),
+        lower=OptimizeResult(residual=x - lower, marginals=lower_dual),
+        upper=OptimizeResult(residual=upper - x, marginals=upper_dual),
+        turbo_accelerated=len(sessions) > 1,
+        turbo_strategy="highs_portfolio" if len(sessions) > 1 else "highs_direct",
+        turbo_solver=method, turbo_solver_iterations=iterations,
+        turbo_rounds=1, turbo_original_rows=len(rhs), turbo_rows_used=len(rhs),
+        turbo_initial_rows=len(rhs), turbo_surrogate_rows=0,
+    )
 
 
 def _integer_surrogates(matrix, rhs):
@@ -110,12 +212,7 @@ def solve_reduced_lp(c, A_ub, b_ub, A_eq, b_eq, bounds, integrality, options):
     Calls with explicit solve budgets or unfamiliar options stay with SciPy:
     several related solves must not reset a caller's time/iteration/node limit.
     """
-    if A_ub is None:
-        return None
     if integrality is not None and np.any(np.asarray(integrality)):
-        return None
-    num_rows = A_ub.shape[0] if hasattr(A_ub, "shape") else len(A_ub)
-    if num_rows < 512:
         return None
     supported = {"presolve", "primal_feasibility_tolerance", "dual_feasibility_tolerance",
                  "simplex_dual_edge_weight_strategy", "mip_rel_gap", "disp"}
@@ -125,14 +222,16 @@ def solve_reduced_lp(c, A_ub, b_ub, A_eq, b_eq, bounds, integrality, options):
     c = np.asarray(c, dtype=float)
     if c.ndim != 1 or not c.size:
         return None
-    matrix = sp.csr_matrix(A_ub, dtype=float)
+    if A_ub is not None and np.ndim(A_ub) != 2:
+        return None
+    matrix = sp.csr_matrix((0, len(c))) if A_ub is None else sp.csr_matrix(A_ub, dtype=float)
     rows, cols = matrix.shape
-    if cols != c.size or rows < max(512, 2 * cols):
+    if cols != c.size:
         return None
     if not matrix.has_canonical_format:
         matrix = matrix.copy()
         matrix.sum_duplicates()
-    rhs = np.asarray(b_ub, dtype=float)
+    rhs = np.empty(0) if b_ub is None else np.asarray(b_ub, dtype=float)
     if A_eq is not None and np.ndim(A_eq) != 2:
         return None
     equality = sp.csr_matrix((0, cols)) if A_eq is None else sp.csr_matrix(A_eq, dtype=float)
@@ -159,7 +258,10 @@ def solve_reduced_lp(c, A_ub, b_ub, A_eq, b_eq, bounds, integrality, options):
     if not np.isin(types, [0, 1, 2, 3]).all():
         return None
 
-    native_options = {"presolve": "on" if options.get("presolve", True) else "off"}
+    presolve = options.get("presolve")
+    if presolve is not None and not isinstance(presolve, (bool, np.bool_)):
+        return None
+    native_options = {"presolve": "off" if presolve is not None and not presolve else "on"}
     for name in ("primal_feasibility_tolerance", "dual_feasibility_tolerance", "mip_rel_gap"):
         value = options.get(name)
         if value is not None:
@@ -174,6 +276,9 @@ def solve_reduced_lp(c, A_ub, b_ub, A_eq, b_eq, bounds, integrality, options):
         if strategy not in strategies:
             return None
         native_options["simplex_dual_edge_weight_strategy"] = strategies[strategy]
+
+    if rows < max(512, 2 * cols):
+        return _solve_full(c, matrix, rhs, equality, eq_rhs, lower, upper, native_options)
 
     # Seed the working set using violations at the objective's box minimizer.
     point = np.where(c < 0, upper, lower)
@@ -192,7 +297,7 @@ def solve_reduced_lp(c, A_ub, b_ub, A_eq, b_eq, bounds, integrality, options):
     elif matrix.nnz < rows * cols * 0.1:
         # Sparse systems without an obvious small working set usually benefit
         # more from HiGHS' own presolve than from several row-recovery rounds.
-        return None
+        return _solve_full(c, matrix, rhs, equality, eq_rhs, lower, upper, native_options)
     tolerance = min(options.get("primal_feasibility_tolerance") or 1e-7,
                     options.get("dual_feasibility_tolerance") or 1e-7)
     if use_restrictive:

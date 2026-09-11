@@ -5,7 +5,7 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 
 `highs_turbo.linprog` solves the supplied linear program using conic optimality
-checks and a smaller working set of constraints where these help. It preserves
+checks, smaller working sets, and competing HiGHS methods where these help. It preserves
 the original problem and returns SciPy-style solutions, slacks, and marginals.
 The package also provides Max-Cut and QUBO solvers and a C++20 cutting-plane
 engine with rational verification.
@@ -80,6 +80,11 @@ transparent path:
 3. Return a working-model optimum only after it satisfies every original
    inequality. Lift its dual multipliers back to the original row order.
    If recovery needs too many rounds, restore all rows and finish the solve.
+4. Sparse and equality-heavy LPs that do not suit row reduction use HiGHS
+   directly. For large models, give simplex a 5 ms head start; if it is still
+   running, start an independent interior-point solve. Return an optimal result,
+   cancel the other solve, and join both workers before returning. This can use
+   two CPU cores and two model copies; each call starts from scratch.
 
 The mathematical reason this preserves the answer is simple: the working model
 is a relaxation of the original. An optimal relaxation solution that is feasible
@@ -88,11 +93,17 @@ numerical tolerances. Graph hints never authorize adding constraints that change
 the supplied LP. The LP conic check uses floating-point tolerances; it is not an
 exact rational certificate of the LP optimum.
 
-Small problems, integer models, explicit time/iteration/node budgets, other
-solver methods, and unsupported options retain ordinary SciPy execution.
-Some sparse systems are also delegated when reduction is unlikely to help.
-Successful accelerated results expose `turbo_strategy`, `turbo_rows_used`,
+Integer models, explicit time/iteration/node budgets, other solver methods, and
+unsupported options retain ordinary SciPy execution. Small continuous LPs use
+the direct native path. An explicit simplex edge-weight strategy also keeps a
+single native method. Use `method="highs-ds"` to retain SciPy's simplex path.
+Successful native results expose `turbo_strategy`, `turbo_rows_used`,
 `turbo_original_rows`, and `turbo_rounds`; `nit` includes all working solves.
+The direct and competing-method paths also expose `turbo_solver` and
+`turbo_solver_iterations`, including work done by a canceled method.
+`turbo_accelerated` means a reduction or competing-method path was used; it is
+not a claim that the particular call ran faster. Inequality row counts exclude
+the equalities reported in `eqlin`.
 Call `scipy.optimize.linprog` directly for a baseline comparison.
 
 Graph edge relaxations need `bounds=(0, 1)`. Omitting bounds retains SciPy's
@@ -151,6 +162,11 @@ python examples/benchmark_linprog.py --mps /path/to/afiro.mps /path/to/25fv47.mp
 The built-in timing cases are synthetic; optional local MPS files use HiGHS'
 public model reader. The full-native control uses the same HiGHS
 library as turbo, so library-version differences cannot explain that comparison.
+MPS maximization objectives are negated, and objective constants are omitted
+equally for all solvers. Infeasible and unbounded statuses are compared too.
+
+[Recorded Netlib results](NETLIB_RESULTS.md) cover complete cold solves of real
+models, including slower cases and the additional CPU use of competing methods.
 
 The generated G-set-style inputs are synthetic graphs; they are not downloaded
 Stanford G-set benchmark files. `mock_benchmark.py` is only a simulated demo and

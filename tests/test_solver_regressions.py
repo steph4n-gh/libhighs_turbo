@@ -172,3 +172,55 @@ def test_original_status_and_explicit_budget_are_preserved(kind):
     assert result.success == reference.success
     assert result.x is None
     assert not result.turbo_accelerated
+
+
+@pytest.mark.parametrize("mode", ["direct", "portfolio", "primary_error"])
+def test_sparse_native_solve_preserves_primal_dual_and_joins_workers(mode, monkeypatch):
+    import threading
+    import time
+    import highspy
+
+    rng = np.random.default_rng(53)
+    rows, cols = (40, 24) if mode == "direct" else (600, 1100)
+    A = sparse.random(rows, cols, density=0.04, random_state=rng, format="csr")
+    eq = sparse.random(20, cols, density=0.04, random_state=rng, format="csr")
+    bounds = np.tile([0.0, 2.0], (cols, 1))
+    bounds[0] = [-np.inf, np.inf]
+    bounds[1] = [0.5, 0.5]
+    point = np.ones(cols)
+    point[1] = 0.5
+    b, d, c = A @ point + rng.random(rows), eq @ point, -rng.random(cols)
+    # Ensure the free variable participates in a bounding equality.
+    eq = eq.tolil()
+    eq[0, 0] = 1.0
+    eq = eq.tocsr()
+    d = eq @ point
+    kwargs = dict(A_ub=A, b_ub=b, A_eq=eq, b_eq=d, bounds=bounds)
+    reference = scipy_linprog(c, **kwargs)
+    monkeypatch.setattr("highs_turbo.lp_accelerator.os.cpu_count", lambda: 2)
+    if mode == "primary_error":
+        original_run = highspy.Highs.run
+
+        def fail_simplex(session):
+            if session.getOptionValue("solver")[1] == "simplex":
+                time.sleep(0.01)  # Allow the independent method to start.
+                raise RuntimeError("Injected simplex failure")
+            return original_run(session)
+
+        monkeypatch.setattr(highspy.Highs, "run", fail_simplex)
+
+    before = set(threading.enumerate())
+    result = highs_turbo.TurboSolver(fallback_on_error=False).linprog(c, **kwargs)
+    assert not (set(threading.enumerate()) - before)
+    assert result.success and reference.success
+    assert result.fun == pytest.approx(reference.fun, abs=1e-7)
+    assert np.min(result.slack) >= -1e-7
+    np.testing.assert_allclose(result.con, 0, atol=1e-7)
+    np.testing.assert_allclose(
+        c - A.T @ result.ineqlin.marginals - eq.T @ result.eqlin.marginals
+        - result.lower.marginals - result.upper.marginals, 0, atol=1e-7,
+    )
+    assert result.nit == sum(result.turbo_solver_iterations.values())
+    if mode == "primary_error":
+        assert result.turbo_strategy == "highs_portfolio"
+        assert result.turbo_solver == "ipm"

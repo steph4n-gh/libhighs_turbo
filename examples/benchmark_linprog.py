@@ -42,9 +42,12 @@ def native_full(c, A_ub=None, b_ub=None, A_eq=None, b_eq=None, bounds=(0, 1), in
             session.addRows(len(rhs), rhs if is_equality else np.full(len(rhs), -np.inf), rhs,
                             matrix.nnz, matrix.indptr, matrix.indices, matrix.data)
     session.run()
-    if session.getModelStatus() != highspy.HighsModelStatus.kOptimal:
-        raise RuntimeError(session.modelStatusToString(session.getModelStatus()))
-    return dict(x=np.asarray(session.getSolution().col_value), fun=session.getObjectiveValue())
+    status = session.getModelStatus()
+    if status != highspy.HighsModelStatus.kOptimal:
+        if status not in (highspy.HighsModelStatus.kInfeasible, highspy.HighsModelStatus.kUnbounded):
+            raise RuntimeError(session.modelStatusToString(status))
+        return dict(x=None, fun=None, status=2 if status == highspy.HighsModelStatus.kInfeasible else 3)
+    return dict(x=np.asarray(session.getSolution().col_value), fun=session.getObjectiveValue(), status=0)
 
 
 def generated_cases():
@@ -73,8 +76,8 @@ def read_mps(path):
     if int(reader.readModel(str(path))) < 0:
         raise ValueError(f"Cannot read {path}")
     lp = reader.getLp()
-    if lp.offset_ != 0 or int(lp.sense_) != 1:
-        raise ValueError("This comparison expects minimization with no objective offset")
+    # Canonicalize maximization and omit the constant objective offset equally
+    # for every solver. Neither changes the feasible set or the optimizer.
     matrix = sp.csc_matrix((lp.a_matrix_.value_, lp.a_matrix_.index_, lp.a_matrix_.start_),
                            shape=(lp.num_row_, lp.num_col_)).tocsr()
     lower = np.asarray(lp.row_lower_)
@@ -82,7 +85,7 @@ def read_mps(path):
     equality = lower == upper
     below = (~equality) & (upper < 1e20)
     above = (~equality) & (lower > -1e20)
-    return Path(path).name, np.asarray(lp.col_cost_), dict(
+    return Path(path).name, int(lp.sense_) * np.asarray(lp.col_cost_), dict(
         A_ub=sp.vstack([matrix[below], -matrix[above]], format="csr"),
         b_ub=np.concatenate([upper[below], -lower[above]]),
         A_eq=matrix[equality], b_eq=upper[equality],
@@ -102,7 +105,7 @@ def main():
     version = highspy.Highs().version()
     print(f"SciPy {scipy.__version__}; native HiGHS {version}; "
           f"median of {args.repeats} complete solves; milliseconds")
-    print("case | rows x cols | scipy | native full | turbo | vs scipy | vs native | rows used")
+    print("case | rows x cols (including equalities) | scipy | native full | turbo | vs scipy | vs native | strategy")
     cases = list(generated_cases()) + [read_mps(path) for path in args.mps]
     for name, c, kwargs in cases:
         times = {key: [] for key in ("scipy", "native", "turbo")}
@@ -113,18 +116,23 @@ def main():
                 started = perf_counter()
                 result = solve(c, **kwargs)
                 times[key].append((perf_counter() - started) * 1000)
-                if result["x"] is None:
-                    raise RuntimeError(f"{name}: {key} returned no solution")
                 results[key] = result
         reference = results["scipy"]["fun"]
         for key, result in results.items():
+            assert result["status"] == results["scipy"]["status"], f"{name}: {key} status mismatch"
+            if reference is None:
+                assert result["x"] is None
+                continue
             np.testing.assert_allclose(result["fun"], reference, rtol=1e-7, atol=1e-7,
                                        err_msg=f"{name}: {key} objective mismatch")
             assert np.max(kwargs["A_ub"] @ result["x"] - kwargs["b_ub"], initial=0) <= 1e-6
+            if kwargs.get("A_eq") is not None:
+                assert np.max(np.abs(kwargs["A_eq"] @ result["x"] - kwargs["b_eq"]), initial=0) <= 1e-6
         elapsed = {key: np.median(values) for key, values in times.items()}
         shape = kwargs["A_ub"].shape
-        used = results["turbo"].get("turbo_rows_used", "SciPy")
-        print(f"{name} | {shape[0]} x {shape[1]} | {elapsed['scipy']:.2f} | "
+        rows = shape[0] + (len(kwargs["b_eq"]) if kwargs.get("b_eq") is not None else 0)
+        used = results["turbo"].get("turbo_strategy", "SciPy")
+        print(f"{name} | {rows} x {shape[1]} | {elapsed['scipy']:.2f} | "
               f"{elapsed['native']:.2f} | {elapsed['turbo']:.2f} | "
               f"{elapsed['scipy']/elapsed['turbo']:.2f}x | "
               f"{elapsed['native']/elapsed['turbo']:.2f}x | {used}", flush=True)
