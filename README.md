@@ -1,13 +1,14 @@
-# highs_turbo: Cutting Plane Experiments for HiGHS & SciPy
+# highs_turbo: Transparent LP Acceleration for HiGHS & SciPy
 
 [![Tests](https://github.com/steph4n-gh/libhighs_turbo/actions/workflows/tests.yml/badge.svg)](https://github.com/steph4n-gh/libhighs_turbo/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 
-`highs_turbo` provides a SciPy-style linear programming interface, Max-Cut and
-QUBO solvers, and an optional C++20 engine for discovering and combining graph
-cutting planes. A rational verifier checks cut combinations and produces SHA-256
-receipts. Optional PyTorch models predict combination weights.
+`highs_turbo.linprog` solves the supplied linear program using conic optimality
+checks and a smaller working set of constraints where these help. It preserves
+the original problem and returns SciPy-style solutions, slacks, and marginals.
+The package also provides Max-Cut and QUBO solvers and a C++20 cutting-plane
+engine with rational verification.
 
 ## Installation
 
@@ -44,8 +45,9 @@ To use the bundled neural weights or train models, install the optional extra:
 python -m pip install '.[ml]'
 ```
 
-The weights are shipped inside the installed package. Without PyTorch, the solver
-uses its geometric weighting fallback.
+The weights are shipped inside the installed package. Max-Cut uses geometric
+weights when PyTorch is unavailable. Ordinary `linprog` calls do not load PyTorch
+or require a trained model.
 
 ## Quickstart
 
@@ -60,13 +62,35 @@ res = opt.linprog(
     b_ub=[6.0, 4.0],
 )
 print(res.fun, res.nit)
-print(getattr(res, "certificate_sha256", None))
+print(res.turbo_accelerated)
 ```
 
-The default `method="turbo"` detects graph structure and may add cuts that tighten
-the supplied relaxation. This can change the LP objective. Use `method="highs"`
-to delegate the original problem directly to SciPy. General LPs also fall back
-to SciPy; they do not receive cut-certificate metadata.
+The default `method="highs"` and the legacy `"turbo"` alias use the same
+transparent path:
+
+1. For suitable continuous LPs, construct a candidate primal solution and conic
+   dual bound. Return it only when primal feasibility, dual stationarity,
+   complementarity, and the objective gap pass checks against the original input.
+2. Otherwise, solve a smaller working model in one persistent HiGHS instance.
+   Small integer-coefficient rows can be summed exactly into surrogate rows.
+   Restore violated original constraints while retaining the simplex basis.
+3. Return a working-model optimum only after it satisfies every original
+   inequality. Lift its dual multipliers back to the original row order.
+   If recovery needs too many rounds, restore all rows and finish the solve.
+
+The mathematical reason this preserves the answer is simple: the working model
+is a relaxation of the original. An optimal relaxation solution that is feasible
+for the original is also optimal for the original, subject to the requested
+numerical tolerances. Graph hints never authorize adding constraints that change
+the supplied LP. The LP conic check uses floating-point tolerances; it is not an
+exact rational certificate of the LP optimum.
+
+Small problems, integer models, explicit time/iteration/node budgets, other
+solver methods, and unsupported options retain ordinary SciPy execution.
+Some sparse systems are also delegated when reduction is unlikely to help.
+Successful accelerated results expose `turbo_strategy`, `turbo_rows_used`,
+`turbo_original_rows`, and `turbo_rounds`; `nit` includes all working solves.
+Call `scipy.optimize.linprog` directly for a baseline comparison.
 
 Graph edge relaxations need `bounds=(0, 1)`. Omitting bounds retains SciPy's
 nonnegative, unbounded-above default. A complete runnable graph example is in
@@ -110,13 +134,20 @@ right-hand side. It does not, on its own, certify that a returned partition is
 optimal or that a floating-point LP objective is an exact dual bound. QUBO
 receipts include the objective coefficients and the conservative lower bound.
 
-Speedups and simplex iteration counts depend on the input, solver version,
-hardware, and model weights. There is no fixed speedup or pivot-count guarantee.
-Run the benchmark suite to obtain measurements for your environment:
+Speedups and simplex iteration counts depend on the input, solver version, and
+hardware. There is no fixed speedup or pivot-count guarantee. One timing script
+compares complete solves of identical problems with SciPy, full native HiGHS,
+and turbo. It includes all preparation/recovery time, rotates execution order,
+reports medians, and checks objective agreement and original feasibility:
 
 ```bash
-python -m highs_turbo.large_scale_benchmarks --scope canonical --output benchmark_results.json
+python examples/benchmark_linprog.py --repeats 5
+python examples/benchmark_linprog.py --mps /path/to/afiro.mps /path/to/25fv47.mps
 ```
+
+The built-in timing cases are synthetic; optional local MPS files use SciPy's
+bundled model reader (SciPy 1.15+). The full-native control uses the same HiGHS
+library as turbo, so library-version differences cannot explain that comparison.
 
 The generated G-set-style inputs are synthetic graphs; they are not downloaded
 Stanford G-set benchmark files. `mock_benchmark.py` is only a simulated demo and
