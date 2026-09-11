@@ -61,7 +61,9 @@ def _solve_full(c, matrix, rhs, equality, eq_rhs, lower, upper, options):
             try:
                 futures = {pool.submit(primary.run): primary}
                 done, _ = wait(futures, timeout=0.005, return_when=FIRST_COMPLETED)
-                if not done:
+                # Completion can be an early error, not an optimal solve.
+                # Launch the independent method in either case.
+                if not done or primary.getModelStatus() != highspy.HighsModelStatus.kOptimal:
                     secondary = make_session("ipm")
                     secondary.HandleUserInterrupt = True
                     sessions["ipm"] = secondary
