@@ -37,13 +37,13 @@ def test_chimera_instance_generation_properties():
 def test_pegasus_instance_generation_properties():
     """Verify Pegasus instance properties and edge density."""
     p4 = generate_pegasus_instance(4, seed=1)
-    assert p4.num_nodes == 288
+    assert p4.num_nodes == 264
     assert p4.num_edges > 1000
     assert p4.metadata["family"] == "Pegasus_spin_glass"
 
     p8 = generate_pegasus_instance(8, seed=2)
-    assert p8.num_nodes == 1344
-    assert p8.num_edges == 10080
+    assert p8.num_nodes == 1288
+    assert p8.num_edges == 8804
 
 
 def test_gset_instance_generation_properties():

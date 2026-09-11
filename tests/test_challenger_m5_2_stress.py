@@ -113,13 +113,13 @@ def test_challenge_isomorphic_invariance_embedded_chimera():
     assert diff <= 1e-6, f"Embedded Chimera relabeling variance {diff:.2e} > 1e-6"
 
 
-def test_challenge_isomorphic_invariance_pegasus_1344_nodes():
-    """Challenge Pegasus P_8 (1,344 nodes, 10,080 edges) with rich triangles under permutations."""
+def test_challenge_isomorphic_invariance_pegasus_1288_nodes():
+    """Challenge Pegasus P_8 (1,288 nodes, 8,804 edges) with rich triangles under permutations."""
     suite = LargeScaleBenchmarkSuite(seed=42)
     g = generate_pegasus_instance(m=8, seed=42)
     n = g.num_nodes
-    assert n == 1344
-    assert g.num_edges == 10080
+    assert n == 1288
+    assert g.num_edges == 8804
 
     surr_a, cert_a, cuts_a = suite.solve_surrogate_cutting_plane(g)
     za = surr_a["objective"]
@@ -188,7 +188,7 @@ def compiled_verifier():
 def large_scale_graphs():
     return [
         ("Chimera_1152", generate_chimera_instance(12, 12, 4, seed=42)),
-        ("Pegasus_1344", generate_pegasus_instance(m=8, seed=42)),
+        ("Pegasus_1288", generate_pegasus_instance(m=8, seed=42)),
         ("Gset_G43_1000", generate_gset_instance("G43", seed=42)),
         ("Planted_K5_1000", generate_planted_1000_node_instance(num_k5=200, num_bridges=199, seed=1000)),
     ]
@@ -310,7 +310,7 @@ def test_challenge_hostile_rejection_rhs_claim_deficit_1000_nodes(compiled_verif
 
 
 def test_challenge_hostile_rejection_odd_cycle_parity_1000_nodes(compiled_verifier):
-    """Vector 6: Reject even |F| cardinalities on Pegasus 1,344-node graph."""
+    """Vector 6: Reject even |F| cardinalities on Pegasus 1,288-node graph."""
     g = generate_pegasus_instance(m=8, seed=42)
     cbg = CompiledBitGraph.from_graph_instance(g)
     triangles = cbg.find_triangles()
@@ -365,7 +365,7 @@ def test_challenge_hostile_solver_integration_zero_admission():
 def test_challenge_memory_scaling_up_to_10000_nodes():
     """Verify bit-parallel graph memory footprint remains < 13 MB for 10,000 nodes, < 50 MB RAM total."""
     suite = LargeScaleBenchmarkSuite(seed=42)
-    for n in [1000, 1152, 1344, 2048, 5000, 10000]:
+    for n in [1000, 1152, 1288, 2048, 5000, 10000]:
         words_per_row = (((n + 63) // 64 + 7) // 8) * 8
         bit_graph_bytes = n * words_per_row * 8
         bit_graph_mb = bit_graph_bytes / (1024 * 1024)
@@ -384,7 +384,7 @@ def test_challenge_speedup_and_simplex_reduction_metrics():
     """Verify speedup >= 2x and simplex iteration reduction >= 70% on large instances."""
     suite = LargeScaleBenchmarkSuite(seed=42)
 
-    # Pegasus P8 (1,344 nodes, 10,080 edges)
+    # Pegasus P8 (1,288 nodes, 8,804 edges)
     g_p8 = generate_pegasus_instance(m=8, seed=42)
     ra_p8, _ = suite.evaluate_instance_pair(g_p8, seed=100)
     assert ra_p8.speedup >= 1.5, f"Speedup {ra_p8.speedup:.2f}x too low on Pegasus"

@@ -3,7 +3,7 @@
 Evaluates the Neural-Surrogate Cutting Plane Engine on 1,000+ node industrial
 and physical benchmarks per requirement R3 and TEST_INFRA.md:
 - Scenario 1: Chimera Spin Glass instances (C_{4,4,4}, C_{8,8,4}, C_{12,12,4} with 1,152 nodes)
-- Scenario 2: Pegasus Spin Glass instances (P_4 with 288 nodes, P_8 with 1,344 nodes, 10,080 edges)
+- Scenario 2: Pegasus Spin Glass instances (P_4 with 264 nodes, P_8 with 1,288 nodes, 8,804 edges)
 - Scenario 3: G-set Max-Cut instances (G11 with 800 nodes, G43 with 1,000 nodes, G51 with 1,000 nodes)
 - Scenario 4: Planted 1,000-node multi-cluster instance with exact ground-truth integer target
 - Scenario 5: Adversarial mutation attacks on 1,000+ node candidate cuts ensuring 100% rejection
@@ -112,9 +112,9 @@ def test_tier4_chimera_c12_12_4_large_scale(verifier):
 # =====================================================================
 
 def test_tier4_pegasus_p4_triangles_and_surrogate(solver, verifier):
-    """Scenario 2a: Pegasus P_4 (288 nodes) native triangles and surrogate cut."""
+    """Scenario 2a: Pegasus P_4 (264 nodes) native triangles and surrogate cut."""
     g = generate_pegasus_instance(m=4, seed=44, ising=True)
-    assert g.num_nodes == 288
+    assert g.num_nodes == 264
     assert g.num_edges > 1000
 
     bg = BitParallelGraph.from_graph_instance(g)
@@ -132,18 +132,18 @@ def test_tier4_pegasus_p4_triangles_and_surrogate(solver, verifier):
     assert cert.exact_rhs == Fraction(2, 1)
 
 
-def test_tier4_pegasus_p8_1344_nodes_large_scale(verifier):
-    """Scenario 2b: Pegasus P_8 (1,344 nodes, 10,080 edges) - Requirement R3."""
+def test_tier4_pegasus_p8_1288_nodes_large_scale(verifier):
+    """Scenario 2b: Pegasus P_8 (1,288 nodes, 8,804 edges) - Requirement R3."""
     g = generate_pegasus_instance(m=8, seed=88, ising=True)
-    assert g.num_nodes == 1344
-    assert g.num_edges == 10080
+    assert g.num_nodes == 1288
+    assert g.num_edges == 8804
 
     bg = BitParallelGraph.from_graph_instance(g)
-    assert bg.words_per_row == 21  # (1344 + 63) // 64 = 21
+    assert bg.words_per_row == 21  # (1288 + 63) // 64 = 21
 
     # Memory efficiency check
     footprint_bytes = bg.words_per_row * 8 * bg.num_nodes
-    assert footprint_bytes < 250000  # < 250 KB RAM for 1,344 nodes
+    assert footprint_bytes < 250000  # < 250 KB RAM for 1,288 nodes
 
     # Verify a triangle cut
     triangles = bg.find_triangles()
@@ -238,7 +238,7 @@ def test_tier4_planted_1000_node_k5_cluster(solver, verifier):
 
 def test_tier4_hostile_adversarial_attack_on_1000_node_instance(verifier):
     """Scenario 5: 100% rejection of hostile mutated cuts on 1,000+ node instances."""
-    g_pegasus = generate_pegasus_instance(m=8, seed=88)  # 1,344 nodes
+    g_pegasus = generate_pegasus_instance(m=8, seed=88)  # 1,288 nodes
     g_chimera = generate_chimera_instance(m=12, n=12, l=4, seed=12)  # 1,152 nodes
     g_g43 = generate_gset_instance("G43", seed=43)  # 1,000 nodes
 

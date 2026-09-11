@@ -42,6 +42,18 @@ def test_compiled_engine_available():
     assert COMPILED_ENGINE_AVAILABLE, "Compiled native engine (_compiled_engine) must be available."
 
 
+def test_native_bridge_rows_reach_public_highs():
+    from highs_turbo.compiled_engine import CompiledSolverCallbackBridge, solve_milp_with_highs
+
+    bridge = CompiledSolverCallbackBridge(2)
+    bridge.add_cut_row(1.5, [0, 1], [1., 1.])
+    result = solve_milp_with_highs(
+        [-1., -1.], [0., 0.], [1., 1.], [], [], [0], [], [], [1, 1], bridge,
+    )
+    assert result["fun"] == -1
+    assert sum(result["x"]) == 1
+
+
 def test_bit_graph_edge_operations():
     bg = CompiledBitGraph(20)
     assert bg.num_nodes == 20
@@ -362,4 +374,3 @@ def test_cycle_cut_signs_status_and_sha256_parity():
     assert wrap_cert.exact_coefficients[(0, 1)] == Fraction(1, 1)
     assert wrap_cert.exact_coefficients[(0, 2)] == Fraction(-1, 1)
     assert wrap_cert.exact_coefficients[(1, 2)] == Fraction(-1, 1)
-

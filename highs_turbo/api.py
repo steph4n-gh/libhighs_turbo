@@ -402,6 +402,12 @@ class TurboSolver:
             status="OPTIMAL" if n <= 18 else "HEURISTIC",
         )
 
+    def solve_ising(self, h, J, **kwargs):
+        """Solve an Ising model, returning spins, bounds, and termination status."""
+        from highs_turbo.ising import solve_ising
+
+        return solve_ising(h, J, **kwargs)
+
     def verify_candidate_cut(
         self,
         graph: GraphInstance,

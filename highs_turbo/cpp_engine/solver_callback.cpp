@@ -3,7 +3,6 @@
 #include <stdexcept>
 #include <iostream>
 
-#include "Highs.h"
 
 namespace highs_turbo {
 
@@ -70,48 +69,6 @@ void SolverCallbackBridge::get_flat_row_data(
         out_values.insert(out_values.end(), row.values.begin(), row.values.end());
     }
     out_starts.push_back(static_cast<int>(out_indices.size()));
-}
-
-void SolverCallbackBridge::attach_to_highs(Highs* highs_model) {
-    if (!highs_model) return;
-    this->highs_model_ptr = highs_model;
-    
-    // Register the C++ callback for MIP node to inject surrogate cuts mid-tree
-    highs_model->setCallback(
-        [](int callback_type, const char* message, const HighsCallbackDataOut* data_out,
-           HighsCallbackDataIn* data_in, void* user_callback_data) {
-            
-            if (callback_type == kCallbackMipDefineLazyConstraints) {
-                auto* bridge = static_cast<SolverCallbackBridge*>(user_callback_data);
-                if (bridge && data_out && data_in && bridge->highs_model_ptr) {
-                    Highs* highs = static_cast<Highs*>(bridge->highs_model_ptr);
-                    // Extract relaxation solution at current MIP node
-                    // Generate cut via engine and inject directly into Highs solver
-                    for (const auto& cut : bridge->get_certified_cuts()) {
-                        // Bridge C++ cut engine directly to Highs_addCut
-                        // Note: Highs_addCut adds it to the cut pool in branch-and-bound
-                        int nz = cut.nz_indices.size();
-                        if (nz > 0) {
-                            // Mid-tree injection via native HiGHS API
-                            // Add cut to the MIP node custom cut pool
-                            std::vector<int> starts = {0};
-                            double lower = -HIGHS_INFINITY;
-                            double upper = cut.rhs;
-                            highs->addRows(1, &lower, &upper, nz, starts.data(), cut.nz_indices.data(), cut.nz_values.data());
-                            
-                            // Signal the solver that a user cut was added mid-tree
-                            if (data_in) {
-                                // For HiGHS v1.7+ custom cut injection
-                                // data_in->mip_node_action = kHighsCallbackActionAddCut;
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        this
-    );
-    highs_model->startCallback(kCallbackMipDefineLazyConstraints);
 }
 
 } // namespace highs_turbo

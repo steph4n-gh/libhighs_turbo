@@ -7,84 +7,12 @@
 #include "cut_engine.hpp"
 #include "solver_callback.hpp"
 
-#include "Highs.h"
 
 namespace py = pybind11;
 using namespace highs_turbo;
 
-py::dict solve_milp_with_highs(
-    const std::vector<double>& c,
-    const std::vector<double>& col_lower,
-    const std::vector<double>& col_upper,
-    const std::vector<double>& row_lower,
-    const std::vector<double>& row_upper,
-    const std::vector<int>& row_starts,
-    const std::vector<int>& row_indices,
-    const std::vector<double>& row_values,
-    const std::vector<int>& integrality,
-    SolverCallbackBridge* bridge
-) {
-    Highs highs;
-    
-    // Silence output by default
-    highs.setOptionValue("output_flag", false);
-
-    int num_col = c.size();
-    highs.addCols(num_col, c.data(), col_lower.data(), col_upper.data(), 0, nullptr, nullptr, nullptr);
-    
-    int num_row = row_lower.size();
-    int num_nz = row_values.size();
-    highs.addRows(num_row, row_lower.data(), row_upper.data(), num_nz, row_starts.data(), row_indices.data(), row_values.data());
-
-    if (!integrality.empty()) {
-        std::vector<int> col_indices(num_col);
-        std::vector<HighsVarType> var_types(num_col);
-        for(int i=0; i<num_col; ++i) {
-            col_indices[i] = i;
-            var_types[i] = (integrality[i] > 0) ? HighsVarType::kInteger : HighsVarType::kContinuous;
-        }
-        highs.changeColsIntegrality(num_col, col_indices.data(), var_types.data());
-    }
-
-    if (bridge) {
-        bridge->attach_to_highs(&highs);
-    }
-
-    HighsStatus status = highs.run();
-    py::dict result;
-    result["status"] = (int)highs.getModelStatus();
-    
-    const HighsInfo& info = highs.getInfo();
-    result["fun"] = info.objective_function_value;
-
-    const HighsSolution& sol = highs.getSolution();
-    if (sol.value_valid) {
-        result["x"] = py::array_t<double>(sol.col_value.size(), sol.col_value.data());
-    } else {
-        result["x"] = py::none();
-    }
-    
-    result["simplex_iterations"] = info.simplex_iteration_count;
-    result["mip_node_count"] = info.mip_node_count;
-    
-    return result;
-}
-
 PYBIND11_MODULE(_compiled_engine, m) {
     m.doc() = "Compiled C++ Engine for Neural-Surrogate Cutting Plane System";
-
-    m.def("solve_milp_with_highs", &solve_milp_with_highs,
-          py::arg("c"),
-          py::arg("col_lower"),
-          py::arg("col_upper"),
-          py::arg("row_lower"),
-          py::arg("row_upper"),
-          py::arg("row_starts"),
-          py::arg("row_indices"),
-          py::arg("row_values"),
-          py::arg("integrality"),
-          py::arg("bridge") = nullptr,
-          "Solve MILP using native HiGHS C++ API with mid-tree surrogate cut injection via bridge.");
 
     // 0. NativeTopologicalFeatures
     py::class_<BitGraph::NativeTopologicalFeatures>(m, "NativeTopologicalFeatures")

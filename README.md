@@ -29,7 +29,7 @@ The optional C++ cut engine uses macOS CommonCrypto. For its additional graph
 cut operations, install the Xcode command line tools and native dependencies:
 
 ```bash
-brew install gmp highs
+brew install gmp
 python -m pip install .
 ```
 
@@ -140,6 +140,69 @@ variables are enumerated exactly. Larger problems use local search and report
 `status="HEURISTIC"`. The lower bound sums the minimum contribution of each
 binary monomial using exact rational representations of the input floats,
 including both off-diagonal entries `Q[i, j] + Q[j, i]`.
+
+### Ising and genuine Pegasus subgraphs
+
+```python
+from highs_turbo import solve_ising
+
+# E(s) = sum(h[i] * s[i]) + sum(J[i, j] * s[i] * s[j]), s[i] in {-1, +1}
+result = solve_ising(
+    {"a": 0.25, "b": -0.5},
+    {("a", "b"): 1.0},
+    time_limit=10,
+)
+print(result.spins, result.energy, result.lower_bound, result.gap, result.status)
+```
+
+This is a complete sparse integer solve using the public HiGHS library, available
+on all supported platforms. Labels can be arbitrary hashable objects; `h` can
+also be a sequence. Both orientations of a coupling add together. Self-couplings
+and the optional `offset` contribute to the constant energy.
+Coefficients are interpreted as finite binary64 numbers; the returned rational
+values preserve those input values exactly.
+
+The accelerated path adds verified triangle, square, and fundamental-cycle
+inequalities, computes an exact rational bound from a nonnegative combination
+of frustrated-cycle inequalities, and supplies a local-search spin assignment
+to HiGHS. The integer solver retains every original constraint. Set
+`accelerate=False` to run the same formulation without those cuts or the start.
+Both paths use the same native settings with parallel search disabled.
+
+`OPTIMAL` reports HiGHS' numerical conclusion or an exact bound match.
+`TIME_LIMIT`, `INTERRUPTED`, and `GAP_LIMIT` return the best available spins and
+the remaining absolute `gap` and `relative_gap`. A positive requested
+`relative_gap` may terminate before proof of optimality. `time_limit` covers
+preparation and search; mandatory input processing can exceed very small limits.
+`SOLVER_ERROR` retains a feasible candidate and conservative cut bound when the
+solver cannot finish. `lower_bound` may use a numerical HiGHS bound;
+`exact_cut_lower_bound` and `exact_energy` are rational values.
+`is_rationally_certified` is true only when those exact values agree. A valid
+`cut_certificate` alone establishes the cut combination, not optimality.
+
+Pegasus generation now uses D-Wave's maintained `dwave-graphs` package. The
+default fabric has 264 spins / 1,604 couplers for P_4 and 1,288 / 8,804 for P_8.
+`generate_pegasus_instance(m, node_list=..., edge_list=...)` validates supplied
+D-Wave linear node labels and couplers. Its `metadata["node_labels"]` maps
+contiguous internal indices back to the original labels. The previous
+handcrafted substitute topology is no longer generated.
+
+Run [`examples/02_dwave_pegasus_qpu.py`](examples/02_dwave_pegasus_qpu.py) for a
+complete subgraph solve. No QPU connection or credentials are needed. The older
+`KnownProblemSolver` application compares relaxation bounds; use `solve_ising`
+when you need a spin assignment and an optimality gap.
+
+```bash
+python examples/benchmark_ising.py --sizes 32 48 64 --seeds 1 2 3 --repeats 3
+python examples/benchmark_ising.py --m 8 --sizes 128 256 512 --time-limit 5
+```
+
+The benchmark includes model construction, cut verification, initialization,
+and search. It alternates execution order and compares the same HiGHS version
+under equal time limits. It reports speedups only when every compared run
+reaches optimality; otherwise it reports energies and remaining gaps.
+See [the complete Pegasus measurements](PEGASUS_RESULTS.md), including weighted
+instances and unfinished full-fabric runs.
 
 ## Certificates and performance
 

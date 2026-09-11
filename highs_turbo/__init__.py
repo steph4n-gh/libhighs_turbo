@@ -11,6 +11,7 @@ from highs_turbo.api import (
     solve_qubo,
 )
 from highs_turbo.detector import TopologyDetector, TopologyScanResult, detect_topology
+from highs_turbo.ising import IsingResult, solve_ising
 
 __version__ = "0.1.0"
 
@@ -18,6 +19,8 @@ __all__ = [
     "linprog",
     "solve_maxcut",
     "solve_qubo",
+    "solve_ising",
+    "IsingResult",
     "TurboSolver",
     "MaxCutResult",
     "QuboResult",

@@ -16,7 +16,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - run: brew install gmp highs
+      - run: brew install gmp
       - run: python -m pip install '.[test]' build
       - run: python setup.py build_ext --inplace
       - run: python -m pytest tests -q
@@ -52,5 +52,5 @@ jobs:
           CXX: /usr/bin/false
         run: python -m build
       - run: python -m pip install dist/*.whl pytest
-      - run: python -m pytest tests/test_solver_regressions.py -q
+      - run: python -m pytest tests/test_solver_regressions.py tests/test_ising.py -q
       - run: python -I tests/smoke_installed.py --require-fallback

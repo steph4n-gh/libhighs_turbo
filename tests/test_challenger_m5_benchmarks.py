@@ -6,7 +6,7 @@ Scope:
    standard multi-row cutting plane separation on large instances (>= 1,000 vertices):
    - Chimera C_{12,12,4} (1,152 nodes, 3,360 edges) native Ising
    - Chimera C_{12,12,4} (1,152 nodes, 3,480 edges) embedded logical K5 cliques
-   - Pegasus P_8 (1,344 nodes, 10,080 edges) native triangular Ising
+   - Pegasus P_8 (1,288 nodes, 8,804 edges) native triangular Ising
    - G-set G43 (1,000 nodes, 9,990 edges)
    - G-set G22 (2,000 nodes, 19,990 edges)
    - Planted K5 cluster (1,000 nodes, 2,199 edges, IP target 1,399)
