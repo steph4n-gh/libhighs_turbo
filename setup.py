@@ -9,6 +9,8 @@ CPP_DIR = os.path.join(BASE_DIR, "highs_turbo", "cpp_engine")
 include_dirs = [
     CPP_DIR,
     os.path.join(CPP_DIR, "include"),
+    "/opt/homebrew/include",
+    "/opt/homebrew/include/highs",
     "/opt/homebrew/Cellar/gmp/6.3.0/include",
     "/usr/local/include",
     "/usr/include",
@@ -22,6 +24,7 @@ include_dirs.extend([
 include_dirs = [d for d in include_dirs if os.path.isdir(d)]
 
 library_dirs = [
+    "/opt/homebrew/lib",
     "/opt/homebrew/Cellar/gmp/6.3.0/lib",
     "/usr/local/lib",
     "/usr/lib",
@@ -67,7 +70,7 @@ ext_modules = [
         sources=sources,
         include_dirs=include_dirs,
         library_dirs=library_dirs,
-        libraries=["gmp", "gmpxx"],
+        libraries=["gmp", "gmpxx", "highs"],
         extra_compile_args=extra_compile_args,
         extra_link_args=extra_link_args,
         language="c++",

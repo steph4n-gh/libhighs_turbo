@@ -81,7 +81,7 @@ void SolverCallbackBridge::attach_to_highs(Highs* highs_model) {
         [](int callback_type, const char* message, const HighsCallbackDataOut* data_out,
            HighsCallbackDataIn* data_in, void* user_callback_data) {
             
-            if (callback_type == kHighsCallbackMipNode) {
+            if (callback_type == kCallbackMipDefineLazyConstraints) {
                 auto* bridge = static_cast<SolverCallbackBridge*>(user_callback_data);
                 if (bridge && data_out && data_in && bridge->highs_model_ptr) {
                     Highs* highs = static_cast<Highs*>(bridge->highs_model_ptr);
@@ -111,7 +111,7 @@ void SolverCallbackBridge::attach_to_highs(Highs* highs_model) {
         },
         this
     );
-    highs_model->startCallback(kHighsCallbackMipNode);
+    highs_model->startCallback(kCallbackMipDefineLazyConstraints);
 }
 
 } // namespace highs_turbo

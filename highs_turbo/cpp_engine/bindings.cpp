@@ -64,6 +64,9 @@ py::dict solve_milp_with_highs(
         result["x"] = py::none();
     }
     
+    result["simplex_iterations"] = info.simplex_iteration_count;
+    result["mip_node_count"] = info.mip_node_count;
+    
     return result;
 }
 

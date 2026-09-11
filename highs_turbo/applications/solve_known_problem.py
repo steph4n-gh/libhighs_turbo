@@ -322,7 +322,29 @@ class KnownProblemSolver:
         sum_J = float(sum(graph.weights.get(e, 1.0) for e in graph.edges))
 
         c = np.array([-graph.weights.get(e, 1.0) for e in graph.edges], dtype=np.float64)
-
+        if len(c) == 0:
+            return ProblemSolutionReport(
+                problem_category="Empty/Acyclic Graph",
+                instance_name=graph.name,
+                num_nodes=graph.num_nodes,
+                num_edges=0,
+                base_objective=0.0,
+                base_simplex_iters=0,
+                base_time_ms=0.0,
+                surrogate_objective=0.0,
+                surrogate_simplex_iters=0,
+                surrogate_time_ms=0.0,
+                std_multi_row_objective=0.0,
+                std_multi_row_simplex_iters=0,
+                std_multi_row_time_ms=0.0,
+                is_rationally_certified=True,
+                certificate_sha256="0" * 64,
+                cut_types_separated={},
+                nonzero_reduction_pct=0.0,
+                bound_tightness_gap_closed_pct=100.0,
+                simplex_iter_reduction_pct=0.0,
+                solver_message="SUCCESS"
+            )
         # ---------------------------------------------------------------------
         # Stage 1: Solve Base Unconstrained / Metric Root Relaxation
         # ---------------------------------------------------------------------

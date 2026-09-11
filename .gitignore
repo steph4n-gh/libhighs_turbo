@@ -8,3 +8,5 @@ venv/
 .venv/
 .pytest_cache/
 scipy/
+my_venv/
+*.egg-info/
