@@ -226,7 +226,8 @@ def _sample_spins(n, edges, weights, seed, deadline):
 
 
 def _adaptive_relaxation(graph, edges, weights, constant, energy, *, deadline, started,
-                         seed, policy, threads, certified_gap=None, training_samples=None):
+                         seed, policy, threads, certified_gap=None, training_samples=None,
+                         use_sdp=False):
     """Keep one LP and its basis while adding verified, solution-dependent cuts."""
     m = len(edges)
     edge_index = {e: i for i, e in enumerate(edges)}
@@ -315,6 +316,17 @@ def _adaptive_relaxation(graph, edges, weights, constant, energy, *, deadline, s
             if proof.lower_bound > best.lower_bound:
                 best = proof
             record_progress()
+    if use_sdp and time.perf_counter() < deadline and energy > best.lower_bound:
+        from highs_turbo.ising_sdp import strengthen_certificate
+        # First certify the original objective, then optimize cut multipliers
+        # together with the global relaxation. Keep the stronger witness.
+        for additional in ((), cuts):
+            source = make_certificate([], [], edges, weights, constant)
+            proof = strengthen_certificate(source, edges, weights, constant,
+                                           deadline=deadline, seed=seed, cuts=additional)
+            if proof.lower_bound > best.lower_bound:
+                best = proof
+        record_progress()
     last_objective, cluster_points = None, {}
     rng = np.random.default_rng(seed)
     shuffled = rng.permutation(len(graph))
@@ -403,7 +415,7 @@ def _adaptive_relaxation(graph, edges, weights, constant, energy, *, deadline, s
 
 def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
                 seed=0, accelerate=True, cut_policy="deterministic",
-                certified_gap=None, threads=0):
+                certified_gap=None, threads=0, relaxation="cuts"):
     """Minimize offset + sum(h[i]*s[i]) + sum(J[i,j]*s[i]*s[j]), s in {-1,1}.
 
     h is a mapping or sequence; J maps pairs of arbitrary hashable labels to
@@ -414,6 +426,9 @@ def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
     retains the original one-pass acceleration for comparison. certified_gap
     is an optional absolute target checked against the rational certificate.
     threads=0 leaves the native runtime's thread count automatic.
+    relaxation="sdp" uses a global sum-of-squares bound; "hybrid" also tries
+    it on the residual left by adaptive cuts. These dense bounds support up
+    to 2048 vertices including the reference spin; larger inputs use cuts.
     """
     started = time.perf_counter()
     if time_limit is not None and (not math.isfinite(time_limit) or time_limit < 0):
@@ -426,6 +441,10 @@ def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
         raise ValueError("threads must be a nonnegative integer")
     if cut_policy not in ("deterministic", "learned", "static"):
         raise ValueError("cut_policy must be 'deterministic', 'learned', or 'static'")
+    if relaxation not in ("cuts", "sdp", "hybrid"):
+        raise ValueError("relaxation must be 'cuts', 'sdp', or 'hybrid'")
+    if relaxation != "cuts" and cut_policy == "static":
+        raise ValueError("The static cut policy requires relaxation='cuts'")
     if isinstance(seed, bool) or not isinstance(seed, (int, np.integer)) or not 0 <= seed < 2**31:
         raise ValueError("seed must be an integer in [0, 2**31)")
     deadline = started + (time_limit if time_limit is not None else math.inf)
@@ -469,13 +488,24 @@ def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
         return constant + sum((w * int(state[u] * state[v]) for (u, v), w in weights.items()), Fraction())
 
     energy = exact_energy(spins)
-    if edges and accelerate and cut_policy != "static" and time.perf_counter() < deadline:
+    if relaxation == "sdp" and vertices > 2048:
+        relaxation = "cuts"
+    if edges and accelerate and relaxation == "sdp" and time.perf_counter() < deadline:
+        from highs_turbo.ising_sdp import strengthen_certificate
+        proof = strengthen_certificate(proof, edges, weights, constant,
+                                       deadline=deadline, seed=seed)
+        exact_lower = proof.lower_bound
+        root_rounds = 1
+        progress = ({"time": time.perf_counter()-started, "lower_bound": _downward(exact_lower),
+                     "energy": float(energy), "cuts": len(rhs), "round": root_rounds},)
+    elif edges and accelerate and cut_policy != "static" and time.perf_counter() < deadline:
         root_deadline = deadline if certified_gap is not None else min(
             deadline, started + (0.7*time_limit if time_limit else 3.0))
         cuts, proof, root_rounds, progress = _adaptive_relaxation(
             graph, edges, weights, constant, energy, deadline=root_deadline, started=started,
             seed=seed, policy=cut_policy, threads=int(threads),
             certified_gap=None if certified_gap is None else Fraction(float(certified_gap)),
+            use_sdp=relaxation == "hybrid",
         )
         exact_lower = proof.lower_bound
         matrix = cut_matrix(cuts, len(edges))
@@ -512,6 +542,12 @@ def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
             cuts_added = len(rhs)
         objective_constant = constant + sum(weights.values(), Fraction())
         _check_status(session.changeObjectiveOffset(float(objective_constant)))
+        if proof.gram_factor:
+            # Install the independently proved objective bound so that HiGHS
+            # can use the global relaxation during branch-and-bound as well.
+            _add_rows(session, sp.csr_matrix(costs.reshape(1, -1)),
+                      np.asarray([_downward(exact_lower-objective_constant)]), np.asarray([np.inf]))
+            cuts_added += 1
         if accelerate:
             values = np.r_[(spins[u] != spins[v]).astype(float), (1 - spins) / 2]
             _check_status(session.setSolution(len(values), np.arange(len(values)), values))

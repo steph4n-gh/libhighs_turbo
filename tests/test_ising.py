@@ -189,7 +189,58 @@ def test_learned_ranking_preserves_exact_proof_and_target_gap():
 
 
 @pytest.mark.parametrize('options', [{'cut_policy': 'unknown'}, {'certified_gap': -1},
-                                    {'threads': -1}, {'threads': True}, {'seed': -1}])
+                                    {'threads': -1}, {'threads': True}, {'seed': -1},
+                                    {'relaxation': 'unknown'},
+                                    {'relaxation': 'hybrid', 'cut_policy': 'static'}])
 def test_adaptive_options_are_validated(options):
     with pytest.raises(ValueError):
         solve_ising({}, {}, **options)
+
+
+def test_gram_bound_matches_exact_dense_arithmetic_and_all_spin_states():
+    from highs_turbo.ising_sdp import gram_lower_bound
+    # A sparse signed objective and a dense factor exercise nonedge fill-in.
+    edges = [(0, 1), (0, 4), (1, 3), (2, 4)]
+    weights = [3, -7, 2, 5]
+    factor = ((3,), (-2, 4), (1, -3, 2), (4, 1, -2, 1), (-1, 2, 3, -4, 2))
+    actual = gram_lower_bound(edges, weights, 8, factor, 16)
+    residual = [[Fraction() for _ in range(5)] for _ in range(5)]
+    for i in range(5):
+        for j in range(5):
+            residual[i][j] = -Fraction(sum(factor[i][k]*factor[j][k]
+                                             for k in range(min(i, j)+1)), 256)
+    for (u, v), w in zip(edges, weights):
+        residual[u][v] += Fraction(w, 16)
+        residual[v][u] += Fraction(w, 16)
+    expected = sum(residual[i][i] for i in range(5)) - sum(
+        abs(residual[i][j]) for i in range(5) for j in range(5) if i != j)
+    assert actual == expected
+    assert all(actual <= sum(Fraction(w, 8)*s[u]*s[v] for (u,v), w in zip(edges, weights))
+               for s in product([-1, 1], repeat=5))
+
+
+@pytest.mark.parametrize('relaxation', ['sdp', 'hybrid'])
+def test_global_relaxation_certificate_on_weighted_original_problem(relaxation, monkeypatch):
+    import copy
+    from highs_turbo import verify_ising_certificate
+    h = {'a': .3, 7: -.5, ('b',): .75, 'isolated': 0}
+    J = {('a', 7): .625, (7, ('b',)): -.75, (('b',), 'a'): .5, ('a', 'a'): .25}
+    result = solve_ising(h, J, offset=.1, relaxation=relaxation, time_limit=3)
+    optimum = min(energy(h, J, dict(zip(h, state)), .1) for state in product([-1, 1], repeat=len(h)))
+    assert result.exact_cut_lower_bound <= optimum == result.exact_energy
+    assert result.exact_energy == energy(h, J, result.spins, .1)
+    witness = result.certificate.to_dict()
+    # Checking the saved witness must work without any numerical solver.
+    import highs_turbo.ising_sdp as sdp
+    for name in ['eigh', 'minimize', 'cholesky']:
+        monkeypatch.setattr(sdp, name, lambda *a, **k: pytest.fail('No numerical solver in checker'))
+    assert verify_ising_certificate(h, J, witness, offset=.1)
+    if witness['version'] == 2:
+        altered = copy.deepcopy(witness)
+        altered['gram_factor'][0][0] = 2**53
+        assert not verify_ising_certificate(h, J, altered, offset=.1)
+        altered = copy.deepcopy(witness)
+        altered['gram_denominator'] = 0
+        assert not verify_ising_certificate(h, J, altered, offset=.1)
+    witness['lower_bound'] = [123, 1]
+    assert not verify_ising_certificate(h, J, witness, offset=.1)

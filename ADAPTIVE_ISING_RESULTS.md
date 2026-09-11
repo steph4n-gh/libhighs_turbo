@@ -1,5 +1,8 @@
 # Adaptive Ising solver: method and held-out evaluation
 
+This records the cut-only implementation. The subsequent global relaxation
+and its separate fresh-instance measurements are in [SDP_ISING_RESULTS.md](SDP_ISING_RESULTS.md).
+
 The implementation adds iterative separation, bounded subgraph inequalities,
 a fast multiplier search, annealing/tabu incumbents, a learned candidate ranker,
 and a serializable exact bound witness to `solve_ising`. The research target is

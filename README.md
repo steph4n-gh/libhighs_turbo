@@ -182,6 +182,20 @@ has no role in proof acceptance. `"static"` retains the original one-pass
 algorithm for comparison. The fast multiplier kernel uses the optional macOS
 extension; a slower Python implementation is available on other platforms.
 
+For a stronger global bound, use `relaxation="hybrid"`. It combines the cuts
+with a low-rank semidefinite relaxation and optimizes their multipliers together.
+`relaxation="sdp"` runs the global relaxation alone; `"cuts"` remains the default.
+Both new modes return an exact sum-of-squares certificate and install its
+objective bound in HiGHS. They use the existing NumPy/SciPy dependencies and
+support up to 2,048 vertices including the reference spin; larger inputs fall
+back to cuts. The dense witness needs quadratic memory, and final factorization
+and checking can overrun a short time limit. The static policy requires
+`relaxation="cuts"`. See [global-bound results and derivation](SDP_ISING_RESULTS.md).
+
+```python
+result = solve_ising(h, J, time_limit=5, relaxation="hybrid", certified_gap=2.0)
+```
+
 `OPTIMAL` reports HiGHS' numerical conclusion or an exact bound match.
 `TIME_LIMIT`, `INTERRUPTED`, and `GAP_LIMIT` return the best available spins and
 the remaining absolute `gap` and `relative_gap`. A positive requested
@@ -206,11 +220,15 @@ print(result.exact_gap)  # exact_energy - independently verified lower bound
 `certified_gap` requests an absolute gap from the exact certificate, including
 the offset. It never relies on the numerical MIP bound. The standalone checker
 runs no optimizer or model and rejects altered problem coefficients, invalid
-cuts, negative multipliers, and incorrect bounds. `progress` records checked
-bound/energy checkpoints with elapsed times; `root_rounds` counts LP solves.
+cuts, negative multipliers, and incorrect bounds. Global witnesses include a
+quantized triangular Gram factor; their checker accounts for every residual
+entry, including fill-in on nonedges. It does not trust numerical eigenvalues
+or a Cholesky status. `progress` records checked bound/energy checkpoints with
+elapsed times; `root_rounds` counts root relaxation rounds.
 The older `cut_certificate` field is retained only for the static policy.
 `threads=0` leaves HiGHS' thread count automatic; use a consistent thread setting
 within a process because HiGHS shares its native scheduler across instances.
+BLAS uses its usual environment settings independently of that HiGHS option.
 If search stops for another reason, inspect `exact_gap` to determine whether the
 requested certificate target was met, even if HiGHS reports numerical optimality.
 

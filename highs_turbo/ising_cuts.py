@@ -50,24 +50,32 @@ class IsingCertificate:
     multipliers: tuple[int, ...]
     denominator: int
     lower_bound: Fraction
+    gram_factor: tuple[tuple[int, ...], ...] = ()
+    gram_denominator: int = 1
 
     def to_dict(self):
-        return {
-            "version": 1, "problem_digest": self.problem_digest,
+        data = {
+            "version": 2 if self.gram_factor else 1, "problem_digest": self.problem_digest,
             "cuts": [{"indices": list(c.indices), "coefficients": list(c.coefficients),
                       "rhs": c.rhs, "kind": c.kind} for c in self.cuts],
             "multipliers": list(self.multipliers), "denominator": self.denominator,
             "lower_bound": [self.lower_bound.numerator, self.lower_bound.denominator],
         }
+        if self.gram_factor:
+            data.update(gram_factor=[list(row) for row in self.gram_factor],
+                        gram_denominator=self.gram_denominator)
+        return data
 
     @classmethod
     def from_dict(cls, data):
-        if data["version"] != 1:
+        if data["version"] not in (1, 2):
             raise ValueError("Unsupported Ising certificate version")
         return cls(data["problem_digest"],
                    tuple(IsingCut(tuple(c["indices"]), tuple(c["coefficients"]), c["rhs"], c["kind"])
                          for c in data["cuts"]),
-                   tuple(data["multipliers"]), data["denominator"], Fraction(*data["lower_bound"]))
+                   tuple(data["multipliers"]), data["denominator"], Fraction(*data["lower_bound"]),
+                   tuple(tuple(row) for row in data["gram_factor"]) if data["version"] == 2 else (),
+                   data["gram_denominator"] if data["version"] == 2 else 1)
 
 
 def problem_digest(edges, weights, constant):
@@ -185,7 +193,8 @@ def optimize_dual(cuts, weights, multipliers, deadline, seed, sweeps=64):
     return best, point
 
 
-def _bound(cuts, multipliers, denominator, edges, weights, constant):
+def _bound(cuts, multipliers, denominator, edges, weights, constant,
+           gram_factor=(), gram_denominator=1):
     """Exact nonnegative aggregation, box residual, and objective-lattice bound."""
     scale = lcm(denominator, constant.denominator, *(weights[e].denominator for e in edges))
     integer_weights = [weights[e].numerator * (scale // weights[e].denominator) for e in edges]
@@ -200,7 +209,20 @@ def _bound(cuts, multipliers, denominator, edges, weights, constant):
     lattice = reduce(gcd, integer_weights, 0)
     if lattice:
         upper_cut = (upper_cut // lattice) * lattice
-    return constant + Fraction(sum(integer_weights) - 2 * upper_cut, scale)
+    lower = constant + Fraction(sum(integer_weights) - 2 * upper_cut, scale)
+    if gram_factor:
+        from highs_turbo.ising_sdp import gram_lower_bound
+        residual = [w-a for w, a in zip(integer_weights, aggregate)]
+        spectral = (constant + Fraction(sum(aggregate)-2*rhs, scale)
+                    + gram_lower_bound(edges, residual, scale, gram_factor, gram_denominator))
+        if lattice:
+            # Every original energy is base + an integer multiple of step.
+            base = constant + Fraction(sum(integer_weights), scale)
+            step = Fraction(2*lattice, scale)
+            distance = (spectral-base)/step
+            spectral = base + (-(-distance.numerator // distance.denominator))*step
+        lower = max(lower, spectral)
+    return lower
 
 
 def make_certificate(cuts, dual, edges, weights, constant):
@@ -232,8 +254,12 @@ def check_certificate(certificate, edges, weights, constant):
             or any(type(x) is not int or x < 0 for x in certificate.multipliers)
             or any(not verify_cut(cut, edges) for cut in certificate.cuts)):
         return False
-    return certificate.lower_bound == _bound(certificate.cuts, certificate.multipliers,
-                                             certificate.denominator, edges, weights, constant)
+    try:
+        return certificate.lower_bound == _bound(
+            certificate.cuts, certificate.multipliers, certificate.denominator, edges, weights, constant,
+            certificate.gram_factor, certificate.gram_denominator)
+    except (TypeError, ValueError, OverflowError):
+        return False
 
 
 def cycle_cut(cycle, positive, edge_index):
