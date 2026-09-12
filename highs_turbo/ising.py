@@ -224,7 +224,10 @@ def _sample_spins(n, edges, weights, seed, deadline):
             samples = improved
     if time.perf_counter() < deadline:
         samples = SteepestDescentSolver().sample_ising(h, J, initial_states=samples)
-    return np.asarray([samples.first.sample[i] for i in range(n)], dtype=int)
+    # Accessing .first materializes the whole sample. Do it once, rather
+    # than rebuilding an n-entry mapping for each of the n returned spins.
+    best_sample = samples.first.sample
+    return np.asarray([best_sample[i] for i in range(n)], dtype=int)
 
 
 def _adaptive_relaxation(graph, edges, weights, constant, energy, *, deadline, started,
@@ -433,8 +436,8 @@ def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
     is an optional absolute target checked against the rational certificate.
     threads=0 leaves the native runtime's thread count automatic.
     relaxation="auto" uses global and geometric bounds on problems with up
-    to 2048 vertices including the reference spin. Larger inputs use sparse
-    global bounds up to 8192 vertices, subject to factor storage/work limits.
+    to 8192 vertices including the reference spin. Above 2048 vertices the
+    factors are sparse and subject to edge-count, storage, and work limits.
     Inputs exceeding these limits retain the cut relaxation.
     "cuts" selects only the sparse cut relaxation, "sdp" selects the basic
     global bound, and "hybrid" explicitly selects the combined relaxation.
@@ -467,16 +470,17 @@ def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
     weights.update({(i, n): value for i, value in enumerate(fields) if value})
     edges = sorted(weights)
     vertices = n + bool(any(fields))
-    geometric_direct = (relaxation in ("auto", "hybrid") and vertices <= 2048
-                        and len(edges) > 16*vertices)
+    geometric_direct = (relaxation in ("auto", "hybrid") and (
+        (vertices <= 2048 and len(edges) > 16*vertices)
+        or (2048 < vertices <= MAX_SPARSE_VERTICES and len(edges) <= 16*vertices)))
     if relaxation == "auto":
         relaxation = ("cuts" if cut_policy == "static" or vertices > MAX_SPARSE_VERTICES
                       else "hybrid" if vertices <= 2048 else "sdp")
     elif relaxation == "hybrid" and vertices > 2048:
         relaxation = "sdp" if vertices <= MAX_SPARSE_VERTICES else "cuts"
     if geometric_direct and cut_policy != "static":
-        # Dense objectives should not enumerate a cubic number of short
-        # cycles before their global relaxation can start.
+        # Go directly to vector fitting for dense objectives and large
+        # sparse inputs; their geometric pass chooses its own short cycles.
         relaxation = "sdp"
     graph = nx.Graph()
     graph.add_nodes_from(range(vertices))

@@ -30,7 +30,8 @@ def generate(directory, suite="geometric"):
     seeds = (
         [(4101, False), (4102, True)]
         if suite == "geometric"
-        else [(6111, False), (6112, True)]
+        else ([(6111, False), (6112, True)] if suite == "sparse"
+              else [(7111, False), (7112, True)])
     )
     size = 8 if suite == "geometric" else 16
     for seed, damaged in seeds:
@@ -54,7 +55,9 @@ def generate(directory, suite="geometric"):
                 couplings=[[u, v, float(w)] for (u, v), w in zip(edges, values) if w],
             )
         )
-    for name in ["G3", "G13"] if suite == "geometric" else ["G55"]:
+    names = (["G3", "G13"] if suite == "geometric"
+             else ["G55"] if suite == "sparse" else ["G56"])
+    for name in names:
         url = f"https://web.stanford.edu/~yyye/yyye/Gset/{name}"
         raw = urllib.request.urlopen(url).read()
         lines = raw.decode().splitlines()
@@ -112,8 +115,10 @@ def run(args):
         "native_highs",
         "scipy_linprog",
     ]
-    if args.suite == "sparse":
+    if args.suite != "geometric":
         methods.remove("scipy_linprog")
+    if args.suite == "sparse-geometric":
+        methods.append("sdp")
     for index, path in enumerate(paths):
         for method in methods[index:] + methods[:index]:
             command = [
@@ -156,5 +161,5 @@ if __name__ == "__main__":
     parser.add_argument("--directory", type=Path, required=True)
     parser.add_argument("--previous", type=Path, required=True)
     parser.add_argument("--seconds", type=float, default=5.0)
-    parser.add_argument("--suite", choices=["geometric", "sparse"], default="geometric")
+    parser.add_argument("--suite", choices=["geometric", "sparse", "sparse-geometric"], default="geometric")
     run(parser.parse_args())

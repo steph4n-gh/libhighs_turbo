@@ -269,13 +269,16 @@ global bound and `"cuts"` selects the earlier sparse cut relaxation. The static
 policy also uses cuts. These use existing NumPy/SciPy dependencies. Problems
 up to 2,048 vertices including the reference spin use the combined dense path.
 From 2,049 through 8,192 vertices, automatic selection uses a sparse global
-bound; the binary-product `linprog` bridge accepts up to 8,191 base variables.
+bound with geometric cuts. Independent vertex groups make vector updates
+cheap enough to spend more time strengthening that bound. The binary-product
+`linprog` bridge accepts up to 8,191 base variables.
 Dense inputs and factors exceeding the sparse work/storage limits fall back
 to cuts. The dense witness needs quadratic memory. Final factorization, original-model
 validation, and exact checking can overrun a short time limit. See
 [the geometric algorithm and measurements](GEOMETRIC_ISING_RESULTS.md) and
-[the sparse certificate comparison](SPARSE_ISING_RESULTS.md), including its
-published baseline, and [the global-bound derivation](SDP_ISING_RESULTS.md).
+[the larger sparse geometric comparison](SPARSE_GEOMETRIC_RESULTS.md),
+[the initial sparse certificate comparison](SPARSE_ISING_RESULTS.md), and
+[the global-bound derivation](SDP_ISING_RESULTS.md).
 
 ```python
 result = solve_ising(h, J, time_limit=5, relaxation="hybrid", certified_gap=2.0)

@@ -48,11 +48,11 @@ def worker(args):
     fields = data["fields"]
     couplings = {(u, v): w for u, v, w in data["couplings"]}
     n = len(fields)
-    if args.method in ("auto", "previous_hybrid", "cuts"):
+    if args.method in ("auto", "previous_hybrid", "cuts", "sdp"):
         options = (
             {"relaxation": "hybrid"}
             if args.method == "previous_hybrid"
-            else ({"relaxation": "cuts"} if args.method == "cuts" else {})
+            else ({"relaxation": args.method} if args.method in ("cuts", "sdp") else {})
         )
         began = time.perf_counter()
         result = solve_ising(
@@ -198,6 +198,7 @@ if __name__ == "__main__":
             "auto",
             "previous_hybrid",
             "cuts",
+            "sdp",
             "turbo_linprog",
             "scipy_linprog",
             "native_highs",

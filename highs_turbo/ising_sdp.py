@@ -94,9 +94,7 @@ def strengthen_certificate(proof, edges, weights, constant, *, deadline, seed=0,
     if sparse:
         if len(edges) > 16*n:
             return proof
-        # Reserve time for the factor and both exact checks. No geometry pass
-        # is scheduled here until its sparse fill-in cost has been established.
-        geometry = False
+        # Reserve part of the budget for factorization and exact checking.
         remaining = deadline-time.perf_counter()
         deadline -= min(2., .2*remaining) if np.isfinite(remaining) else 0.
     geometry_deadline = deadline
@@ -115,16 +113,24 @@ def strengthen_certificate(proof, edges, weights, constant, *, deadline, seed=0,
     # witness is rescaled before exact checking against the original input.
     magnitude = float(np.max(np.abs(values)))
     rng = np.random.default_rng(seed)
-    initial = rng.normal(size=(n, min(16, n)))
+    initial = rng.normal(size=(n, min(32 if sparse else 16, n)))
     initial /= np.linalg.norm(initial, axis=1)[:, None]
     latest = initial.ravel()
     original = 2*values/magnitude
     matrix = None
+    if sparse:
+        from highs_turbo.ising_sparse import independent_groups, fit_vectors
+        groups = independent_groups(edges, n)
 
     def fit(edge_values, iterations):
         nonlocal latest, matrix
         matrix = sp.csr_matrix((np.r_[edge_values, edge_values]/2,
                                (np.r_[u, v], np.r_[v, u])), shape=(n, n))
+        if sparse:
+            vectors = fit_vectors(matrix, latest.reshape(n, -1), groups,
+                                  deadline=deadline, iterations=iterations)
+            latest = vectors.ravel()
+            return float(np.sum(vectors*(matrix @ vectors)))
 
         def objective(flat):
             vectors = flat.reshape(n, -1)
@@ -195,7 +201,7 @@ def strengthen_certificate(proof, edges, weights, constant, *, deadline, seed=0,
         source = combined
     else:
         source = proof
-    fit(original, 350 if sparse else 150)
+    fit(original, 700 if sparse else 150)
     vectors = latest.reshape(n, -1)
     vectors /= np.maximum(np.linalg.norm(vectors, axis=1)[:, None], 1e-100)
     try:

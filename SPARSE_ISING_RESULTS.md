@@ -1,5 +1,9 @@
 # Sparse exact Gram certificates for larger binary problems
 
+This report records the initial basic sparse implementation. The subsequent
+[sparse geometric implementation](SPARSE_GEOMETRIC_RESULTS.md) adds faster
+vector updates and nonlocal cuts, with a separate frozen comparison.
+
 The global bound path now supports up to 8,192 vertices, including the
 reference spin used for local fields. It uses a sparse integer factor and an
 exact range argument to check its square. Automatic Ising selection and the

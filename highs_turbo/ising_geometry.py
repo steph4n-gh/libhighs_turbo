@@ -18,7 +18,7 @@ from highs_turbo.ising_cuts import (
     _bound,
     check_certificate,
 )
-from highs_turbo.ising_sdp import factor_witness
+from highs_turbo.ising_sdp import MAX_GRAM_VERTICES, factor_witness
 
 
 def geometric_triangles(vectors, edges, *, limit=2048, seed=0, epsilon=0.5):
@@ -103,7 +103,11 @@ def triangle_rows(triangles, edges):
 
 def strengthen_geometry(proof, edges, weights, constant, vectors, *, deadline, seed=0):
     """Fit a batch of nonlocal cuts, retaining the stronger exact certificate."""
-    triangles, _ = geometric_triangles(vectors, edges, seed=seed)
+    sparse = len(vectors) > MAX_GRAM_VERTICES
+    # Loose nearest-neighbor approximation keeps full 32-dimensional vectors
+    # affordable. The returned distance still has to prove a violated triangle.
+    triangles, _ = geometric_triangles(vectors, edges, seed=seed,
+                                      epsilon=4 if sparse else 0.5)
     expanded, new = triangle_rows(triangles, edges)
     known = set(proof.cuts)
     new = [cut for cut in new if cut not in known]
@@ -129,6 +133,9 @@ def strengthen_geometry(proof, edges, weights, constant, vectors, *, deadline, s
     matrix = None
     calls = 0
     phase_deadline = time.perf_counter() + 0.75 * (deadline - time.perf_counter())
+    if sparse:
+        from highs_turbo.ising_sparse import independent_groups, fit_vectors
+        groups = independent_groups(expanded, n)
 
     def fit(multipliers, iterations):
         nonlocal latest, matrix
@@ -136,6 +143,12 @@ def strengthen_geometry(proof, edges, weights, constant, vectors, *, deadline, s
         matrix = sp.csr_matrix(
             (np.r_[residual, residual] / 2, (np.r_[u, v], np.r_[v, u])), shape=(n, n)
         )
+        if sparse:
+            V = fit_vectors(matrix, latest.reshape(n, -1), groups,
+                            deadline=phase_deadline, iterations=2*iterations,
+                            tolerance=1e-6)
+            latest = V.ravel()
+            return float(np.sum(V*(matrix @ V)))
 
         def objective(flat):
             V = flat.reshape(n, -1)
@@ -203,7 +216,11 @@ def strengthen_geometry(proof, edges, weights, constant, vectors, *, deadline, s
     V = latest.reshape(n, -1)
     V = V / np.maximum(np.linalg.norm(V, axis=1)[:, None], 1e-100)
     try:
-        factor, denominator = factor_witness(matrix, V, magnitude)
+        if sparse:
+            from highs_turbo.ising_sparse import factor_witness as sparse_factor_witness
+            factor, denominator = sparse_factor_witness(matrix, V, magnitude)
+        else:
+            factor, denominator = factor_witness(matrix, V, magnitude)
         lower = _bound(
             source.cuts,
             source.multipliers,
@@ -211,8 +228,9 @@ def strengthen_geometry(proof, edges, weights, constant, vectors, *, deadline, s
             expanded,
             weights,
             constant,
-            factor,
+            () if sparse else factor,
             denominator,
+            factor if sparse else (),
         )
         if lower <= proof.lower_bound:
             return proof
@@ -220,12 +238,15 @@ def strengthen_geometry(proof, edges, weights, constant, vectors, *, deadline, s
             source,
             problem_digest=proof.problem_digest,
             lower_bound=lower,
-            gram_factor=factor,
+            gram_factor=() if sparse else factor,
+            sparse_gram_factor=factor if sparse else (),
             gram_denominator=denominator,
             extra_edges=tuple(expanded[len(edges) :]),
         )
-        if not check_certificate(candidate, edges, original_weights, constant):
+        # The public solver independently checks the full sparse certificate
+        # at return. Avoid repeating the expensive exact square here as well.
+        if not sparse and not check_certificate(candidate, edges, original_weights, constant):
             raise RuntimeError("Geometric certificate failed independent verification")
         return candidate
-    except (ValueError, OverflowError, np.linalg.LinAlgError):
+    except (ValueError, OverflowError, np.linalg.LinAlgError, RuntimeError):
         return proof

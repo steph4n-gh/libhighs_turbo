@@ -1,0 +1,647 @@
+{
+  "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "python": "3.13.5",
+  "numpy": "2.5.3",
+  "scipy": "1.18.1",
+  "highs": "1.15.1",
+  "networkx": "3.6.1",
+  "budget": 10.0,
+  "records": [
+    {
+      "energy": -9408.375,
+      "lower_bound": -11252.125,
+      "verified_bound": -11252.125,
+      "extra_edges": 0,
+      "sparse_factor_entries": 769326,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 7.346216500038281,
+          "lower_bound": -11252.125,
+          "energy": -9408.375,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.647950332961045,
+          "lower_bound": -11252.125,
+          "energy": -9408.375,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-7111",
+      "method": "previous_hybrid",
+      "seconds": 10.658964166999795,
+      "budget": 10.0,
+      "nodes": 5640,
+      "edges": 38063
+    },
+    {
+      "energy": -9408.375,
+      "lower_bound": -11050.125,
+      "verified_bound": -11050.125,
+      "extra_edges": 3404,
+      "sparse_factor_entries": 896690,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 8.33622229192406,
+          "lower_bound": -11050.125,
+          "energy": -9408.375,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.789464499917813,
+          "lower_bound": -11050.125,
+          "energy": -9408.375,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-7111",
+      "method": "auto",
+      "seconds": 10.791889625019394,
+      "budget": 10.0,
+      "nodes": 5640,
+      "edges": 38063
+    },
+    {
+      "lower_bound": -11050.125,
+      "verified_bound": -11050.125,
+      "status": "Time limit reached. (HiGHS Status 13: Time limit reached)",
+      "strategy": "ising_certificate",
+      "energy": -9408.375,
+      "case": "pegasus-7111",
+      "method": "turbo_linprog",
+      "seconds": 10.931942458031699,
+      "budget": 10.0,
+      "nodes": 5640,
+      "edges": 38063
+    },
+    {
+      "lower_bound": -21379.875,
+      "verified_bound": null,
+      "status": "Time limit reached",
+      "strategy": "original_highspy_model",
+      "energy": -146.875,
+      "case": "pegasus-7111",
+      "method": "native_highs",
+      "seconds": 12.254063082975335,
+      "budget": 10.0,
+      "nodes": 5640,
+      "edges": 38063
+    },
+    {
+      "energy": -9408.375,
+      "lower_bound": -11258.875,
+      "verified_bound": -11258.875,
+      "extra_edges": 0,
+      "sparse_factor_entries": 767034,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 2.0514890840277076,
+          "lower_bound": -11258.875,
+          "energy": -9408.375,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.59543362504337,
+          "lower_bound": -11258.875,
+          "energy": -9408.375,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-7111",
+      "method": "sdp",
+      "seconds": 10.605835665948689,
+      "budget": 10.0,
+      "nodes": 5640,
+      "edges": 38063
+    },
+    {
+      "energy": -8635.875,
+      "lower_bound": -10144.875,
+      "verified_bound": -10144.875,
+      "extra_edges": 3354,
+      "sparse_factor_entries": 721658,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 7.763610500027426,
+          "lower_bound": -10144.875,
+          "energy": -8635.875,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.552095666062087,
+          "lower_bound": -10144.875,
+          "energy": -8635.875,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-7112",
+      "method": "auto",
+      "seconds": 10.560596666997299,
+      "budget": 10.0,
+      "nodes": 5360,
+      "edges": 34306
+    },
+    {
+      "lower_bound": -10145.125,
+      "verified_bound": -10145.125,
+      "status": "Time limit reached. (HiGHS Status 13: Time limit reached)",
+      "strategy": "ising_certificate",
+      "energy": -8635.875,
+      "case": "pegasus-7112",
+      "method": "turbo_linprog",
+      "seconds": 10.603299082955346,
+      "budget": 10.0,
+      "nodes": 5360,
+      "edges": 34306
+    },
+    {
+      "lower_bound": -19261.875,
+      "verified_bound": null,
+      "status": "Time limit reached",
+      "strategy": "original_highspy_model",
+      "energy": -499.625,
+      "case": "pegasus-7112",
+      "method": "native_highs",
+      "seconds": 10.036095625022426,
+      "budget": 10.0,
+      "nodes": 5360,
+      "edges": 34306
+    },
+    {
+      "energy": -8635.875,
+      "lower_bound": -10359.625,
+      "verified_bound": -10359.625,
+      "extra_edges": 0,
+      "sparse_factor_entries": 656564,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 1.838996791979298,
+          "lower_bound": -10359.625,
+          "energy": -8635.875,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.496237458079122,
+          "lower_bound": -10359.625,
+          "energy": -8635.875,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-7112",
+      "method": "sdp",
+      "seconds": 10.498464750009589,
+      "budget": 10.0,
+      "nodes": 5360,
+      "edges": 34306
+    },
+    {
+      "energy": -8635.875,
+      "lower_bound": -10352.625,
+      "verified_bound": -10352.625,
+      "extra_edges": 0,
+      "sparse_factor_entries": 657839,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 6.411149583989754,
+          "lower_bound": -10352.625,
+          "energy": -8635.875,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.517562458990142,
+          "lower_bound": -10352.625,
+          "energy": -8635.875,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-7112",
+      "method": "previous_hybrid",
+      "seconds": 10.519818124943413,
+      "budget": 10.0,
+      "nodes": 5360,
+      "edges": 34306
+    },
+    {
+      "lower_bound": -9538.0,
+      "verified_bound": -9538.0,
+      "status": "Time limit reached. (HiGHS Status 13: Time limit reached)",
+      "strategy": "ising_certificate",
+      "energy": -7914.0,
+      "case": "G56",
+      "method": "turbo_linprog",
+      "seconds": 12.539997166953981,
+      "budget": 10.0,
+      "nodes": 5000,
+      "edges": 12498
+    },
+    {
+      "lower_bound": -12456.0,
+      "verified_bound": null,
+      "status": "Time limit reached",
+      "strategy": "original_highspy_model",
+      "energy": -232.0,
+      "case": "G56",
+      "method": "native_highs",
+      "seconds": 11.150898166000843,
+      "budget": 10.0,
+      "nodes": 5000,
+      "edges": 12498
+    },
+    {
+      "energy": -7914.0,
+      "lower_bound": -9574.0,
+      "verified_bound": -9574.0,
+      "extra_edges": 0,
+      "sparse_factor_entries": 1058188,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 2.881505375029519,
+          "lower_bound": -9574.0,
+          "energy": -7914.0,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 11.719912374974228,
+          "lower_bound": -9574.0,
+          "energy": -7914.0,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "G56",
+      "method": "sdp",
+      "seconds": 11.72104895801749,
+      "budget": 10.0,
+      "nodes": 5000,
+      "edges": 12498
+    },
+    {
+      "energy": -7914.0,
+      "lower_bound": -9600.0,
+      "verified_bound": -9600.0,
+      "extra_edges": 0,
+      "sparse_factor_entries": 1057671,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 7.527351333061233,
+          "lower_bound": -9600.0,
+          "energy": -7914.0,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 11.77553700003773,
+          "lower_bound": -9600.0,
+          "energy": -7914.0,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "G56",
+      "method": "previous_hybrid",
+      "seconds": 11.776794042089023,
+      "budget": 10.0,
+      "nodes": 5000,
+      "edges": 12498
+    },
+    {
+      "energy": -7914.0,
+      "lower_bound": -9538.0,
+      "verified_bound": -9538.0,
+      "extra_edges": 4535,
+      "sparse_factor_entries": 1391516,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 9.619704082957469,
+          "lower_bound": -9538.0,
+          "energy": -7914.0,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 12.527269750018604,
+          "lower_bound": -9538.0,
+          "energy": -7914.0,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "G56",
+      "method": "auto",
+      "seconds": 12.528379500028677,
+      "budget": 10.0,
+      "nodes": 5000,
+      "edges": 12498
+    }
+  ],
+  "cases": {
+    "pegasus-7111": "24f4d841fd52ddc61b72dff8d5ae3ede306aa6ad11d06c0564f863f73b522991",
+    "pegasus-7112": "e1bc44ffe5c88bc7e01811fe924e208f7f0c0026393a28c9e2e155b485b26324",
+    "G56": "fbace648de224a91805bd73332c6b061ead10b197576cc621bc2bf13c6fa42c4"
+  },
+  "suite": "sparse-geometric",
+  "production_hashes": {
+    "highs_turbo/ising.py": "78b7de680639e40fd31b5afe53ec2c454ee462c38524fb7d64ecef7e1823efbc",
+    "highs_turbo/ising_cuts.py": "b547214d650acf6ee3c66c8c6dc7806ed99a39cc0970cf558e040bc851589341",
+    "highs_turbo/ising_geometry.py": "66946294708ca578e520e79b99ee223bc2f830a21851d53ac3a975a4c0f10928",
+    "highs_turbo/ising_linearized.py": "5d66c66f7f10a654d59dee4774b917c2140bbde1c2d6b021dbb1512147afb04e",
+    "highs_turbo/ising_policy.py": "bd23e589584bde64a394442c5c1013589abfd49556f6d9fad6bee4ecf0f26574",
+    "highs_turbo/ising_sdp.py": "75e4a595c65e50ea7d798e84d7fa25905146c1154c1d8512c63362bfd16b6ecb",
+    "highs_turbo/ising_sparse.py": "a4afe30ed9a7650adbb7534127c19cd40fd938c0c91acdf6f6fe3f13001fd195"
+  },
+  "previous_commit": "615ece9b0b4bd74a82c270d430e0755804538b7f",
+  "published_mixing": {
+    "source": "https://github.com/locuslab/mixing",
+    "revision": "e7d84e744d1826d596f7dace449248a36de4d050",
+    "records": [
+      {
+        "case": "pegasus-7111",
+        "method": "mixing2017",
+        "settings": "default",
+        "rank": 107,
+        "seconds": 3.5539795830845833,
+        "solve_seconds": 2.1066403329605237,
+        "certificate_seconds": 1.3402687920024619,
+        "numerical": -11249.073293603265,
+        "verified_bound": -11251.625,
+        "exact": [
+          -90013,
+          8
+        ],
+        "factor_entries": 769444,
+        "command": [
+          "/tmp/libhighs-turbo-original-mixing/mixing",
+          "-s",
+          "maxcut",
+          "/tmp/libhighs-turbo-sparse-geometry-final/pegasus-7111-mixing2017-default.input"
+        ]
+      },
+      {
+        "case": "pegasus-7111",
+        "method": "mixing2017",
+        "settings": "rank16-accurate",
+        "rank": 16,
+        "seconds": 1.9592074999818578,
+        "solve_seconds": 0.5457100420026109,
+        "certificate_seconds": 1.32785541692283,
+        "numerical": -11248.715889371084,
+        "verified_bound": -11258.875,
+        "exact": [
+          -90071,
+          8
+        ],
+        "factor_entries": 767432,
+        "command": [
+          "/tmp/libhighs-turbo-original-mixing/mixing",
+          "-s",
+          "maxcut",
+          "-k",
+          "16",
+          "-e",
+          "1e-7",
+          "/tmp/libhighs-turbo-sparse-geometry-final/pegasus-7111-mixing2017-rank16-accurate.input"
+        ]
+      },
+      {
+        "case": "pegasus-7112",
+        "method": "mixing2017",
+        "settings": "default",
+        "rank": 104,
+        "seconds": 2.9642869170056656,
+        "solve_seconds": 1.7485784169984981,
+        "certificate_seconds": 1.1377742090262473,
+        "numerical": -10349.917473466652,
+        "verified_bound": -10352.375,
+        "exact": [
+          -82819,
+          8
+        ],
+        "factor_entries": 657761,
+        "command": [
+          "/tmp/libhighs-turbo-original-mixing/mixing",
+          "-s",
+          "maxcut",
+          "/tmp/libhighs-turbo-sparse-geometry-final/pegasus-7112-mixing2017-default.input"
+        ]
+      },
+      {
+        "case": "pegasus-7112",
+        "method": "mixing2017",
+        "settings": "rank16-accurate",
+        "rank": 16,
+        "seconds": 1.6402912919875234,
+        "solve_seconds": 0.48816408310085535,
+        "certificate_seconds": 1.0742490839911625,
+        "numerical": -10349.54162310947,
+        "verified_bound": -10359.625,
+        "exact": [
+          -82877,
+          8
+        ],
+        "factor_entries": 656736,
+        "command": [
+          "/tmp/libhighs-turbo-original-mixing/mixing",
+          "-s",
+          "maxcut",
+          "-k",
+          "16",
+          "-e",
+          "1e-7",
+          "/tmp/libhighs-turbo-sparse-geometry-final/pegasus-7112-mixing2017-rank16-accurate.input"
+        ]
+      },
+      {
+        "case": "G56",
+        "method": "mixing2017",
+        "settings": "default",
+        "rank": 100,
+        "seconds": 4.641179500031285,
+        "solve_seconds": 0.4788490409264341,
+        "certificate_seconds": 4.119695874978788,
+        "numerical": -9573.968795893516,
+        "verified_bound": -9574.0,
+        "exact": [
+          -9574,
+          1
+        ],
+        "factor_entries": 1058150,
+        "command": [
+          "/tmp/libhighs-turbo-original-mixing/mixing",
+          "-s",
+          "maxcut",
+          "/tmp/libhighs-turbo-sparse-geometry-final/G56-mixing2017-default.input"
+        ]
+      },
+      {
+        "case": "G56",
+        "method": "mixing2017",
+        "settings": "rank16-accurate",
+        "rank": 16,
+        "seconds": 4.833163958974183,
+        "solve_seconds": 0.32011945894919336,
+        "certificate_seconds": 4.485077916062437,
+        "numerical": -9573.651043884991,
+        "verified_bound": -9684.0,
+        "exact": [
+          -9684,
+          1
+        ],
+        "factor_entries": 1056133,
+        "command": [
+          "/tmp/libhighs-turbo-original-mixing/mixing",
+          "-s",
+          "maxcut",
+          "-k",
+          "16",
+          "-e",
+          "1e-7",
+          "/tmp/libhighs-turbo-sparse-geometry-final/G56-mixing2017-rank16-accurate.input"
+        ]
+      }
+    ]
+  },
+  "published_conicbundle": {
+    "source": "https://www-user.tu-chemnitz.de/~helmberg/ConicBundle/CB_v1.a.2.tgz",
+    "version": "1.a.2",
+    "sha256": "2baec791c00dbee164c5cd97b143206de37742c6263a1105282c311da0051eef",
+    "build": "Apple clang++ -O3 -DNDEBUG -std=c++11 -DWITH_BLAS; Accelerate BLAS; VECLIB_MAXIMUM_THREADS=1",
+    "cut_selection_charged": false,
+    "warm_vector_solve_charged": false,
+    "records": [
+      {
+        "case": "pegasus-7111",
+        "method": "conicbundle",
+        "n": 5641,
+        "cuts": 1823,
+        "budget": 10,
+        "seconds": 12.379005125025287,
+        "solve_seconds": 9.880917666014284,
+        "driver_seconds": 9.855663625,
+        "numerical": -12020.585702219836,
+        "status": 2,
+        "rank": 38,
+        "spectral_shift": 2.0688550810870217,
+        "verified": -12021.125,
+        "certificate_seconds": 2.4746487910160795,
+        "exact": [
+          -96169,
+          8
+        ],
+        "repairs": {
+          "trivial": -22623.625,
+          "cuts": -23141.875,
+          "sparse_vectors": -23141.875,
+          "sparse_dual": -12021.125
+        },
+        "repair_errors": {},
+        "initialization": "zero"
+      },
+      {
+        "case": "G56",
+        "method": "conicbundle",
+        "n": 5000,
+        "cuts": 1447,
+        "budget": 10,
+        "seconds": 21.079284834093414,
+        "solve_seconds": 9.863729124888778,
+        "driver_seconds": 9.814999959,
+        "numerical": -9730.783679553766,
+        "status": 2,
+        "rank": 33,
+        "spectral_shift": 1.902822476149505,
+        "verified": -9730.0,
+        "certificate_seconds": 11.197507167002186,
+        "exact": [
+          -9730,
+          1
+        ],
+        "repairs": {
+          "trivial": -12498.0,
+          "cuts": -12906.0,
+          "sparse_vectors": -9862.0,
+          "sparse_dual": -9730.0
+        },
+        "repair_errors": {},
+        "initialization": "zero"
+      },
+      {
+        "case": "pegasus-7111",
+        "method": "conicbundle",
+        "initialization": "published_mixing_free",
+        "n": 5641,
+        "cuts": 1823,
+        "budget": 10,
+        "seconds": 13.769686041981913,
+        "solve_seconds": 10.332758124917746,
+        "driver_seconds": 10.09608275,
+        "numerical": -11189.503065385521,
+        "status": 2,
+        "rank": 34,
+        "spectral_shift": -0.044138975036290384,
+        "verified": -11190.375,
+        "certificate_seconds": 3.2858271250734106,
+        "exact": [
+          -89523,
+          8
+        ],
+        "repairs": {
+          "trivial": -22623.625,
+          "cuts": -22915.125,
+          "sparse_vectors": -11767.125,
+          "sparse_dual": -11190.375
+        },
+        "repair_errors": {}
+      },
+      {
+        "case": "G56",
+        "method": "conicbundle",
+        "initialization": "published_mixing_free",
+        "n": 5000,
+        "cuts": 1447,
+        "budget": 10,
+        "seconds": 18.361088417004794,
+        "solve_seconds": 10.07738837506622,
+        "driver_seconds": 10.05807925,
+        "numerical": -9574.66261582816,
+        "status": 2,
+        "rank": 46,
+        "spectral_shift": 0.00013876398692882504,
+        "verified": -9574.0,
+        "certificate_seconds": 8.166152834077366,
+        "exact": [
+          -9574,
+          1
+        ],
+        "repairs": {
+          "trivial": -12498.0,
+          "cuts": -12498.0,
+          "sparse_vectors": -11220.0,
+          "sparse_dual": -9574.0
+        },
+        "repair_errors": {}
+      }
+    ]
+  }
+}

@@ -1,6 +1,7 @@
 """Independent arithmetic, serialized proof validation, and large API routing."""
 
 import copy
+import time
 from dataclasses import replace
 from fractions import Fraction
 from itertools import product
@@ -131,3 +132,26 @@ def test_default_large_graph_uses_sparse_certificate():
     assert result.exact_cut_lower_bound <= -684 <= result.exact_energy
     assert result.exact_cut_lower_bound > -2052
     assert verify_ising_certificate({}, J, result.certificate.to_dict())
+
+
+def test_colored_updates_preserve_unit_vectors_and_decrease_objective():
+    from highs_turbo.ising_sparse import independent_groups, fit_vectors
+
+    # Include an isolated vertex and a potential cut edge whose weight is
+    # initially zero. Reusing these groups must remain valid when it activates.
+    edges = [(0, 1), (1, 2), (0, 2), (2, 3)]
+    groups = independent_groups(edges, 5)
+    assert all(not ({u, v} <= set(group)) for u, v in edges for group in groups)
+    vectors = np.random.default_rng(17).normal(size=(5, 3))
+    vectors /= np.linalg.norm(vectors, axis=1)[:, None]
+    isolated = vectors[4].copy()
+    u, v = np.asarray(edges).T
+    for weight in [0., -2.]:
+        values = np.array([1., -1., weight, .5])
+        matrix = sp.csr_matrix((np.r_[values, values],
+                                (np.r_[u, v], np.r_[v, u])), shape=(5, 5))
+        before = np.sum(vectors*(matrix @ vectors))
+        vectors = fit_vectors(matrix, vectors, groups, deadline=time.perf_counter()+2)
+        assert np.sum(vectors*(matrix @ vectors)) <= before+1e-12
+        np.testing.assert_allclose(np.linalg.norm(vectors, axis=1), 1.)
+        np.testing.assert_array_equal(vectors[4], isolated)

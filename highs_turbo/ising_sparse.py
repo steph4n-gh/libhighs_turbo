@@ -4,6 +4,9 @@ The numerical factorization proposes B/D. The checker only uses the fact
 that s' B B' s / D**2 is nonnegative, and accounts for every residual entry.
 """
 
+import time
+
+import networkx as nx
 import numpy as np
 import scipy.sparse as sp
 from scipy.sparse.linalg import splu
@@ -15,6 +18,41 @@ MAX_SPARSE_VERTICES = 8192
 MAX_FACTOR_ENTRIES = 8_000_000
 MAX_GRAM_ENTRIES = 16_000_000
 MAX_GRAM_WORK = 2_000_000_000
+
+
+def independent_groups(edges, n):
+    """Color every potential edge, including currently zero cut coefficients."""
+    graph = nx.Graph()
+    graph.add_nodes_from(range(n))
+    graph.add_edges_from(edges)
+    colors = nx.coloring.greedy_color(graph, strategy="largest_first")
+    groups = [[] for _ in range(max(colors.values(), default=-1) + 1)]
+    for vertex, color in colors.items():
+        groups[color].append(vertex)
+    return [np.asarray(group, dtype=int) for group in groups]
+
+
+def fit_vectors(matrix, vectors, groups, *, deadline, iterations=700, tolerance=1e-7):
+    """Known Mixing coordinate updates, batched over independent vertices.
+
+    Unit vectors minimize the current quadratic objective one color at a
+    time. These numerical proposals are never used as certified bounds.
+    """
+    blocks = [(indices, matrix[indices]) for indices in groups]
+    previous = float(np.sum(vectors * (matrix @ vectors)))
+    for _ in range(iterations):
+        if time.perf_counter() >= deadline:
+            break
+        for indices, row in blocks:
+            values = -(row @ vectors)
+            norms = np.linalg.norm(values, axis=1)
+            active = norms > 1e-100
+            vectors[indices[active]] = values[active] / norms[active, None]
+        current = float(np.sum(vectors * (matrix @ vectors)))
+        if previous - current < tolerance:
+            break
+        previous = current
+    return vectors
 
 
 def factor_witness(matrix, vectors, magnitude=1.0):
