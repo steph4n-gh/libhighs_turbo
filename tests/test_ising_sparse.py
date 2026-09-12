@@ -124,7 +124,9 @@ def test_default_large_graph_uses_sparse_certificate():
         for u in range(0, 2052, 3)
         for a, b in [(0, 1), (0, 2), (1, 2)]
     }
-    result = solve_ising({}, J, time_limit=1)
+    # Test proof routing without depending on initializer startup speed. The
+    # checked-gap target stops before an unnecessary native integer solve.
+    result = solve_ising({}, J, time_limit=10, certified_gap=500)
     assert result.certificate.sparse_gram_factor
     assert result.exact_cut_lower_bound <= -684 <= result.exact_energy
     assert result.exact_cut_lower_bound > -2052
