@@ -117,6 +117,76 @@ def test_sparse_expansion_budgets_reject_before_numeric_product(monkeypatch):
                 gram_lower_bound(edges, [1, 1], 1, factor, 16)
 
 
+def test_reused_gram_still_validates_fields_and_complete_arithmetic(monkeypatch):
+    import highs_turbo.ising_sparse as sparse
+    from highs_turbo.ising_cuts import check_certificate
+
+    edges = [(0, 1), (0, 2), (1, 2)]
+    weights = dict.fromkeys(edges, Fraction(1))
+    source = make_certificate([], [], edges, weights, Fraction())
+    packed = pack([[4, 0, 0], [4, 1, 0], [4, 0, 1]])
+    original = sparse._exact_gram_lower_bound
+    computations = []
+
+    def measured(*args):
+        computations.append(args)
+        return original(*args)
+
+    monkeypatch.setattr(sparse, "_exact_gram_lower_bound", measured)
+    with sparse._reuse_gram_bounds() as cache:
+        lower = _bound((), (), source.denominator, edges, weights, Fraction(), (), 8, packed)
+        proof = replace(source, lower_bound=lower, sparse_gram_factor=packed, gram_denominator=8)
+        assert check_certificate(proof, edges, weights, Fraction())
+        assert check_certificate(proof, edges, weights, Fraction())
+        assert len(computations) == 1
+
+        # These malformed values compare equal to their valid cache-key entries.
+        for row, index, value in [(0, 0, False), (1, 0, 0.0), (2, 2, True)]:
+            malformed = [list(values) for values in packed]
+            malformed[row][index] = value
+            altered = replace(proof, sparse_gram_factor=tuple(map(tuple, malformed)))
+            assert not check_certificate(altered, edges, weights, Fraction())
+        assert not check_certificate(replace(proof, gram_denominator=8.0), edges, weights, Fraction())
+        assert len(computations) == 1
+
+        changed = {**weights, (0, 1): Fraction(3, 2)}
+        _bound((), (), source.denominator, edges, changed, Fraction(), (), 8, packed)
+        other_factor = pack([[5, 0, 0], [4, 1, 0], [4, 0, 1]])
+        _bound((), (), source.denominator, edges, weights, Fraction(), (), 8, other_factor)
+        assert len(computations) == 3
+
+        assert check_certificate(proof, edges, weights, Fraction())
+        for name in ["MAX_FACTOR_ENTRIES", "MAX_GRAM_WORK", "MAX_GRAM_ENTRIES"]:
+            with monkeypatch.context() as context:
+                context.setattr(sparse, name, 1)
+                assert not check_certificate(proof, edges, weights, Fraction())
+
+    assert not cache
+    assert sparse._gram_cache.get() is None
+    before = len(computations)
+    assert verify_ising_certificate({}, weights, proof.to_dict())
+    assert len(computations) == before + 1
+
+
+def test_gram_reuse_scopes_restore_and_clear_after_exception():
+    import highs_turbo.ising_sparse as sparse
+
+    arguments = ([(0, 1)], [1], 1, pack([[1, 0], [1, 1]]), 2)
+    with sparse._reuse_gram_bounds() as outer:
+        expected = gram_lower_bound(*arguments)
+        with pytest.raises(RuntimeError, match="scope cleanup"):
+            with sparse._reuse_gram_bounds() as inner:
+                assert gram_lower_bound(*arguments) == expected
+                assert len(inner) == 1
+                raise RuntimeError("scope cleanup")
+        assert not inner
+        assert sparse._gram_cache.get() is outer
+        assert gram_lower_bound(*arguments) == expected
+        assert len(outer) == 1
+    assert not outer
+    assert sparse._gram_cache.get() is None
+
+
 def test_default_large_graph_uses_sparse_certificate():
     # Independent triangles have a known exact minimum, without exponential
     # enumeration or reliance on a second solver for this large routing test.

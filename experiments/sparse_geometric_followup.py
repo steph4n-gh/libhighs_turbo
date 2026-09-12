@@ -32,7 +32,12 @@ from highs_turbo.ising_cuts import (
     problem_digest,
 )
 from highs_turbo.ising_geometry import geometric_triangles, triangle_rows
-from highs_turbo.ising_sparse import factor_witness, fit_vectors, independent_groups
+from highs_turbo.ising_sparse import (
+    MAX_GRAM_WORK,
+    factor_witness,
+    fit_vectors,
+    independent_groups,
+)
 
 
 def pair_parity(vectors, edges, *, limit=512, seed=0, epsilon=4, queries=4096):
@@ -143,7 +148,58 @@ def parity_rows(parity, edges):
     return expanded, cuts
 
 
-def strengthen_two_pass(proof, edges, weights, constant, vectors, *, deadline, seed=0):
+def compact_factor_witness(matrix, vectors, magnitude=1):
+    """Research proposal: remove small entries until Gram work fits 95% of cap."""
+    packed, denominator = factor_witness(matrix, vectors, magnitude)
+    n = matrix.shape[0]
+    factor = sp.csr_matrix(
+        (
+            np.asarray(packed[2], dtype=np.int64),
+            np.asarray(packed[1]),
+            np.asarray(packed[0]),
+        ),
+        shape=(n, n),
+    )
+    degrees = np.bincount(factor.indices, minlength=n)
+    original_work = int(degrees @ degrees)
+    target = 95 * MAX_GRAM_WORK // 100
+    threshold = 0
+    if original_work > target:
+        absolute = abs(factor.data)
+        low, high = 0, int(absolute.max())
+        while low < high:
+            middle = (low + high) // 2
+            degrees = np.bincount(factor.indices[absolute > middle], minlength=n)
+            if int(degrees @ degrees) <= target:
+                high = middle
+            else:
+                low = middle + 1
+        threshold = low
+        factor.data[absolute <= threshold] = 0
+        factor.eliminate_zeros()
+        packed = tuple(
+            tuple(map(int, row)) for row in (factor.indptr, factor.indices, factor.data)
+        )
+    degrees = np.bincount(factor.indices, minlength=n)
+    print(
+        json.dumps(
+            {
+                "phase": "compact_factor",
+                "original_work": original_work,
+                "work": int(degrees @ degrees),
+                "threshold": threshold,
+                "entries": factor.nnz,
+                "denominator": denominator,
+            }
+        ),
+        flush=True,
+    )
+    return packed, denominator
+
+
+def strengthen_two_pass(
+    proof, edges, weights, constant, vectors, *, deadline, seed=0, compact=False
+):
     n = len(vectors)
     expanded = list(edges)
     cuts = list(proof.cuts)
@@ -244,7 +300,8 @@ def strengthen_two_pass(proof, edges, weights, constant, vectors, *, deadline, s
     phase_deadline = deadline
     fit(np.array([exact.get(c, 0) for c in cuts]), 300)
     try:
-        packed, denominator = factor_witness(matrix, V, magnitude)
+        propose_factor = compact_factor_witness if compact else factor_witness
+        packed, denominator = propose_factor(matrix, V, magnitude)
         lower = _bound(
             source.cuts,
             source.multipliers,
@@ -391,7 +448,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--mode",
-        choices=("production", "two-pass", "append-three", "append-five"),
+        choices=(
+            "production",
+            "two-pass",
+            "two-pass-compact",
+            "append-three",
+            "append-five",
+        ),
         required=True,
     )
     parser.add_argument("--case", type=Path, required=True)
@@ -408,8 +471,12 @@ def main():
     else:
         from examples.benchmark_geometric_ising import worker
 
-        if args.mode == "two-pass":
-            geometry.strengthen_geometry = strengthen_two_pass
+        if args.mode.startswith("two-pass"):
+            from functools import partial
+
+            geometry.strengthen_geometry = partial(
+                strengthen_two_pass, compact=args.mode == "two-pass-compact"
+            )
         worker(
             argparse.Namespace(
                 case=args.case,

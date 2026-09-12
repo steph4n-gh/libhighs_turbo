@@ -19,7 +19,7 @@ from highs_turbo.ising_cuts import (
     optimize_dual, separate_cycles, separate_short_cycles, square_indices, subgraph_cut, triangle_indices, verify_cut,
 )
 from highs_turbo.ising_policy import cluster_candidates, rank_clusters
-from highs_turbo.ising_sparse import MAX_SPARSE_VERTICES
+from highs_turbo.ising_sparse import MAX_SPARSE_VERTICES, _reuse_gram_bounds
 
 
 @dataclass
@@ -422,6 +422,7 @@ def _adaptive_relaxation(graph, edges, weights, constant, energy, *, deadline, s
     return cuts, best, rounds, tuple(progress)
 
 
+@_reuse_gram_bounds()
 def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
                 seed=0, accelerate=True, cut_policy="deterministic",
                 certified_gap=None, threads=0, relaxation="auto"):

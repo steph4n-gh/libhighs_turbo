@@ -280,6 +280,11 @@ validation, and exact checking can overrun a short time limit. See
 [the initial sparse certificate comparison](SPARSE_ISING_RESULTS.md), and
 [the global-bound derivation](SDP_ISING_RESULTS.md).
 
+Within each solve, repeated checks of the same sparse witness reuse its exact
+Gram calculation after validating all certificate fields. The stored result
+is cleared when the solve ends; a subsequent independent verification
+recomputes it. See [proof-checking costs and measurements](SPARSE_PROOF_REUSE_RESULTS.md).
+
 ```python
 result = solve_ising(h, J, time_limit=5, relaxation="hybrid", certified_gap=2.0)
 ```

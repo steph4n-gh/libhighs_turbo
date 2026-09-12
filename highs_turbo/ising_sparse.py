@@ -5,6 +5,8 @@ that s' B B' s / D**2 is nonnegative, and accounts for every residual entry.
 """
 
 import time
+from contextlib import contextmanager
+from contextvars import ContextVar
 
 import networkx as nx
 import numpy as np
@@ -18,6 +20,20 @@ MAX_SPARSE_VERTICES = 8192
 MAX_FACTOR_ENTRIES = 8_000_000
 MAX_GRAM_ENTRIES = 16_000_000
 MAX_GRAM_WORK = 2_000_000_000
+
+_gram_cache = ContextVar("ising_gram_cache", default=None)
+
+
+@contextmanager
+def _reuse_gram_bounds():
+    """Reuse one exact calculation within a solve; retain no proof afterward."""
+    cache = {}
+    token = _gram_cache.set(cache)
+    try:
+        yield cache
+    finally:
+        _gram_cache.reset(token)
+        cache.clear()
 
 
 def independent_groups(edges, n):
@@ -164,9 +180,30 @@ def gram_lower_bound(edges, residual, scale, packed, denominator):
     degrees = np.bincount(factor.indices, minlength=n)
     if int(degrees @ degrees) > MAX_GRAM_WORK:
         raise ValueError("Sparse Gram expansion exceeds the work budget")
+    # Validate before looking up a result: bools and floats can compare equal
+    # to integer tuple entries. Key the complete immutable arithmetic inputs,
+    # including the storage limit, rather than a digest or a claimed bound.
+    cache = _gram_cache.get()
+    if cache is not None:
+        key = (tuple(edges), tuple(residual), scale, packed, denominator, MAX_GRAM_ENTRIES)
+        previous = cache.get(key)
+        if previous is not None:
+            return previous
+    result = _exact_gram_lower_bound(
+        edges, residual, scale, factor, denominator, MAX_GRAM_ENTRIES
+    )
+    if cache is not None:
+        cache.clear()
+        cache[key] = result
+    return result
+
+
+def _exact_gram_lower_bound(edges, residual, scale, factor, denominator, entry_limit):
+    """Expand a factor already validated by gram_lower_bound."""
+    n = factor.shape[0]
     pattern = factor.astype(bool)
     expanded = pattern @ pattern.T
-    if expanded.nnz > MAX_GRAM_ENTRIES:
+    if expanded.nnz > entry_limit:
         raise ValueError("Sparse Gram pattern exceeds the storage budget")
     del pattern, expanded
     floats = factor.astype(np.float64)

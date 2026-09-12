@@ -8,8 +8,11 @@ See [the frozen comparison](SPARSE_GEOMETRIC_RESULTS.md) for the original
 measurements and published baselines.
 
 This follow-up tested two possible next steps on development cases only.
-Neither candidate is enabled in the public solver. The production source
-remains commit `33e038f89206563c259575e0d636be2ec6c5f252`.
+Neither search candidate is enabled in the public solver. At the time of
+these experiments, the production source was commit
+`33e038f89206563c259575e0d636be2ec6c5f252`. A subsequent
+[proof-cost investigation](SPARSE_PROOF_REUSE_RESULTS.md) retains both failed
+search candidates and describes the separate exact-arithmetic reuse change.
 
 ## Five-variable rules versus another triangle pass
 
