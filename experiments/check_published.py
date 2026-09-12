@@ -15,6 +15,7 @@ import sys
 import time
 
 import numpy as np
+import scipy.sparse as sp
 from scipy.linalg import cholesky, eigh
 
 from highs_turbo.ising_cuts import IsingCut, make_certificate, _bound, check_certificate
@@ -61,6 +62,69 @@ def mixing(data, output, path):
         "trivial": -sum(map(abs, weights.values())),
         "cuts": source.lower_bound,
     }
+    if n > 2048:
+        from highs_turbo.ising_sparse import factor_witness
+
+        residual = dict(weights)
+        for cut, numerator in zip(source.cuts, source.multipliers):
+            for index, coefficient in zip(cut.indices, cut.coefficients):
+                residual[edges[index]] -= Fraction(
+                    numerator * coefficient, source.denominator
+                )
+        u, v = np.asarray(edges).T
+        values = np.asarray([float(residual[e]) / 2 for e in edges])
+        matrix = sp.csr_matrix(
+            (np.r_[values, values], (np.r_[u, v], np.r_[v, u])), shape=(n, n)
+        )
+        vectors = (
+            np.fromfile(path + ".vectors", dtype=np.float64)
+            .reshape(output["rank"], n, order="F")
+            .T
+        )
+        vectors = vectors / np.maximum(np.linalg.norm(vectors, axis=1)[:, None], 1e-100)
+        # Offer both returned dual coefficients and returned vector directions
+        # to the exact same sparse proposal/checker used by the new engine.
+        # No optimization or refitting is hidden in certificate repair.
+        errors = {}
+        for name, objective, point in [
+            ("sparse_vectors", matrix, vectors),
+            (
+                "sparse_dual",
+                matrix - sp.diags(np.asarray(output["dual"][:n])),
+                np.zeros((n, 1)),
+            ),
+        ]:
+            try:
+                factor, denominator = factor_witness(objective, point)
+                bound = _bound(
+                    source.cuts,
+                    source.multipliers,
+                    source.denominator,
+                    edges,
+                    weights,
+                    Fraction(),
+                    (),
+                    denominator,
+                    factor,
+                )
+                proof = replace(
+                    source,
+                    lower_bound=bound,
+                    sparse_gram_factor=factor,
+                    gram_denominator=denominator,
+                )
+                assert check_certificate(proof, edges, weights, Fraction())
+                candidates[name] = bound
+            except (ValueError, RuntimeError, OverflowError) as error:
+                errors[name] = str(error)
+        bound = max(candidates.values())
+        return dict(
+            verified=float(bound),
+            certificate_seconds=time.perf_counter() - began,
+            exact=[bound.numerator, bound.denominator],
+            repairs={k: float(v) for k, v in candidates.items()},
+            repair_errors=errors,
+        )
     slack = np.fromfile(path + ".gram", dtype=np.float64).reshape(n, n, order="F")
     eig, vec = eigh((slack + slack.T) / 2, check_finite=False)
     projected = (vec * np.maximum(eig, 0)) @ vec.T

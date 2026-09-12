@@ -38,10 +38,14 @@ if method == "mixing"
         mu_start=get(data,"mu_start",sqrt(Float64(n))),
         scaling=get(data,"scaling",true),tau=get(data,"tau",1.03))
     elapsed = (time_ns()-started)/1e9
-    write(output*".gram",Z[1])
+    if n <= 2048
+        write(output*".gram",Z[1])
+    end
+    write(output*".vectors",ws.Vs[1])
     open(output,"w") do stream
         JSON.print(stream,Dict("method"=>method,"seconds"=>elapsed,"status"=>string(status),
-                              "dual"=>y,"n"=>n,"numerical"=>dot(sdp.b,y)))
+                              "dual"=>y,"n"=>n,"rank"=>size(ws.Vs[1],1),
+                              "numerical"=>dot(sdp.b,y)))
     end
 elseif method in ("tssos", "cs_tssos")
     # SCS is an explicitly supported open-source backend. No Mosek licence is

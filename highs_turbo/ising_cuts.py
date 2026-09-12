@@ -53,26 +53,29 @@ class IsingCertificate:
     gram_factor: tuple[tuple[int, ...], ...] = ()
     gram_denominator: int = 1
     extra_edges: tuple[tuple[int, int], ...] = ()
+    sparse_gram_factor: tuple[tuple[int, ...], ...] = ()
 
     def to_dict(self):
         data = {
-            "version": 3 if self.extra_edges else 2 if self.gram_factor else 1,
+            "version": 4 if self.sparse_gram_factor else 3 if self.extra_edges else 2 if self.gram_factor else 1,
             "problem_digest": self.problem_digest,
             "cuts": [{"indices": list(c.indices), "coefficients": list(c.coefficients),
                       "rhs": c.rhs, "kind": c.kind} for c in self.cuts],
             "multipliers": list(self.multipliers), "denominator": self.denominator,
             "lower_bound": [self.lower_bound.numerator, self.lower_bound.denominator],
         }
-        if self.gram_factor or self.extra_edges:
+        if self.gram_factor or self.extra_edges or self.sparse_gram_factor:
             data.update(gram_factor=[list(row) for row in self.gram_factor],
                         gram_denominator=self.gram_denominator)
         if self.extra_edges:
             data["extra_edges"] = [list(edge) for edge in self.extra_edges]
+        if self.sparse_gram_factor:
+            data["sparse_gram_factor"] = [list(row) for row in self.sparse_gram_factor]
         return data
 
     @classmethod
     def from_dict(cls, data):
-        if data["version"] not in (1, 2, 3):
+        if data["version"] not in (1, 2, 3, 4):
             raise ValueError("Unsupported Ising certificate version")
         return cls(data["problem_digest"],
                    tuple(IsingCut(tuple(c["indices"]), tuple(c["coefficients"]), c["rhs"], c["kind"])
@@ -80,7 +83,8 @@ class IsingCertificate:
                    tuple(data["multipliers"]), data["denominator"], Fraction(*data["lower_bound"]),
                    tuple(tuple(row) for row in data["gram_factor"]) if data["version"] >= 2 else (),
                    data["gram_denominator"] if data["version"] >= 2 else 1,
-                   tuple(tuple(edge) for edge in data["extra_edges"]) if data["version"] == 3 else ())
+                   tuple(tuple(edge) for edge in data.get("extra_edges", ())) if data["version"] >= 3 else (),
+                   tuple(tuple(row) for row in data["sparse_gram_factor"]) if data["version"] == 4 else ())
 
 
 def problem_digest(edges, weights, constant):
@@ -199,7 +203,7 @@ def optimize_dual(cuts, weights, multipliers, deadline, seed, sweeps=64):
 
 
 def _bound(cuts, multipliers, denominator, edges, weights, constant,
-           gram_factor=(), gram_denominator=1):
+           gram_factor=(), gram_denominator=1, sparse_gram_factor=()):
     """Exact nonnegative aggregation, box residual, and objective-lattice bound."""
     scale = lcm(denominator, constant.denominator, *(weights[e].denominator for e in edges))
     integer_weights = [weights[e].numerator * (scale // weights[e].denominator) for e in edges]
@@ -215,11 +219,17 @@ def _bound(cuts, multipliers, denominator, edges, weights, constant,
     if lattice:
         upper_cut = (upper_cut // lattice) * lattice
     lower = constant + Fraction(sum(integer_weights) - 2 * upper_cut, scale)
-    if gram_factor:
-        from highs_turbo.ising_sdp import gram_lower_bound
+    if gram_factor or sparse_gram_factor:
+        if gram_factor and sparse_gram_factor:
+            raise ValueError("A certificate must use one Gram factor format")
+        if sparse_gram_factor:
+            from highs_turbo.ising_sparse import gram_lower_bound
+        else:
+            from highs_turbo.ising_sdp import gram_lower_bound
         residual = [w-a for w, a in zip(integer_weights, aggregate)]
         spectral = (constant + Fraction(sum(aggregate)-2*rhs, scale)
-                    + gram_lower_bound(edges, residual, scale, gram_factor, gram_denominator))
+                    + gram_lower_bound(edges, residual, scale,
+                                       sparse_gram_factor or gram_factor, gram_denominator))
         if lattice:
             # Every original energy is base + an integer multiple of step.
             base = constant + Fraction(sum(integer_weights), scale)
@@ -276,7 +286,7 @@ def check_certificate(certificate, edges, weights, constant):
             return False
         return certificate.lower_bound == _bound(
             certificate.cuts, certificate.multipliers, certificate.denominator, edges, weights, constant,
-            certificate.gram_factor, certificate.gram_denominator)
+            certificate.gram_factor, certificate.gram_denominator, certificate.sparse_gram_factor)
     except (TypeError, ValueError, OverflowError):
         return False
 

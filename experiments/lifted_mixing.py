@@ -78,7 +78,7 @@ def repeated_products(basis, base_count=0):
     return rows, cols, np.asarray(groups,dtype=int), np.bincount(groups)
 
 
-def lifted_mixing(n, edges, weights, pairs, *, cuts=(), seconds=5, seed=0, rank=24, penalty=1., initial_proof=None):
+def lifted_mixing(n, edges, weights, pairs, *, cuts=(), seconds=5, seed=0, rank=24, penalty=1., initial_proof=None, triples=(), initial_vectors=None, equality_only=False):
     began = time.perf_counter()
     deadline = began+seconds
     phase_deadline = began+.75*seconds
@@ -88,6 +88,12 @@ def lifted_mixing(n, edges, weights, pairs, *, cuts=(), seconds=5, seed=0, rank=
     seen = set(basis)
     for u,v in pairs:
         mask = (1 << int(u)) ^ (1 << int(v))
+        if mask not in seen:
+            seen.add(mask); basis.append(mask)
+    for triple in triples:
+        mask = (1 << anchor)
+        for vertex in triple:
+            mask ^= 1 << int(vertex)
         if mask not in seen:
             seen.add(mask); basis.append(mask)
     size = len(basis)
@@ -104,6 +110,28 @@ def lifted_mixing(n, edges, weights, pairs, *, cuts=(), seconds=5, seed=0, rank=
     rng = np.random.default_rng(seed)
     latest = rng.normal(size=(size,min(rank,size)))
     latest /= np.linalg.norm(latest,axis=1)[:,None]
+    if initial_vectors is not None:
+        rank = initial_vectors.shape[1]
+        latest = np.empty((size, rank))
+        latest[:n] = initial_vectors
+        for index, mask in enumerate(basis[n:], n):
+            triple = mask ^ (1 << anchor)
+            nodes = [i for i in range(n) if (triple >> i) & 1]
+            if len(nodes) != 3:
+                raise ValueError('Warm start currently supports odd triples only')
+            A = latest[nodes]
+            rhs = np.array([A[1] @ A[2], A[0] @ A[2], A[0] @ A[1]])
+            value = np.linalg.lstsq(A, rhs, rcond=1e-10)[0]
+            size2 = value @ value
+            if size2 > 1:
+                value /= np.sqrt(size2)
+            else:
+                extra = rng.normal(size=rank)
+                extra -= A.T @ np.linalg.lstsq(A @ A.T, A @ extra, rcond=1e-10)[0]
+                norm = np.linalg.norm(extra)
+                if norm > 1e-10:
+                    value += extra * np.sqrt(max(0., 1-size2))/norm
+            latest[index] = value
     latest = latest.ravel()
     rho, outer = 0., 0
     delta = np.zeros(len(rows))
@@ -141,7 +169,30 @@ def lifted_mixing(n, edges, weights, pairs, *, cuts=(), seconds=5, seed=0, rank=
         if time.perf_counter() >= phase_deadline:
             raise StopIteration
 
-    while outer < 1000 and time.perf_counter() < phase_deadline:
+    if equality_only and len(rows):
+        calls = 0
+        def equality_objective(beta):
+            nonlocal alpha, latest, calls
+            if calls and time.perf_counter() >= phase_deadline:
+                raise StopIteration
+            alpha = beta - np.bincount(groups, weights=beta, minlength=len(count))[groups]/count[groups]
+            result = minimize(objective, latest, jac=True, method='L-BFGS-B', callback=checkpoint,
+                              options={'maxiter':300 if calls==0 else 75, 'maxcor':5,
+                                       'ftol':1e-11, 'gtol':1e-7})
+            latest = result.x
+            vectors = latest.reshape(size, -1)
+            vectors = vectors/np.maximum(np.linalg.norm(vectors, axis=1)[:, None], 1e-100)
+            _, _, difference = correlations(vectors)
+            calls += 1
+            return -objective(latest)[0], -difference
+        try:
+            result = minimize(equality_objective, alpha, jac=True, method='L-BFGS-B',
+                              options={'maxiter':60,'maxls':10,'maxcor':5,'ftol':1e-10,'gtol':1e-7})
+            alpha = result.x - np.bincount(groups, weights=result.x, minlength=len(count))[groups]/count[groups]
+        except StopIteration:
+            pass
+        outer = calls
+    while not equality_only and outer < 1000 and time.perf_counter() < phase_deadline:
         try:
             result = minimize(objective,latest,jac=True,method='L-BFGS-B',callback=checkpoint,
                               options={'maxiter':150 if outer==0 else 70,'maxcor':5,
@@ -151,6 +202,7 @@ def lifted_mixing(n, edges, weights, pairs, *, cuts=(), seconds=5, seed=0, rank=
             pass
         vectors = latest.reshape(size,-1)
         vectors /= np.maximum(np.linalg.norm(vectors,axis=1)[:,None],1e-100)
+        latest = vectors.copy().ravel()
         edge,product,delta = correlations(vectors)
         alpha += rho*delta
         alpha -= np.bincount(groups,weights=alpha,minlength=len(count))[groups]/count[groups]
@@ -196,6 +248,7 @@ def lifted_mixing(n, edges, weights, pairs, *, cuts=(), seconds=5, seed=0, rank=
     denominator = 2**max(0,bits)
     integers = np.rint(factor*denominator).astype(np.int64)
     timings['factor_done'] = time.perf_counter()-began
+    _, _, delta = correlations(vectors)
     coefficients = {(1 << int(u)) ^ (1 << int(v)):w for (u,v),w in residual.items()}
     coefficients[0] = constant
     exact = exact_gram_bound(coefficients,basis,integers,denominator)

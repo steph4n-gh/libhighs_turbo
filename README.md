@@ -43,6 +43,12 @@ proves, including rounding errors. A **higher-order** SOS method would also
 reason about products of switches, giving it a richer language for expressing
 their joint restrictions; that extension is currently research work.
 
+A **sparse** proof stores the nonzero pieces of its square instead of a full
+table. This lets the global bound engine handle larger networks without
+requiring a dense proof. The checker first proves that its integer arithmetic
+fits exactly, then checks the complete receipt, including connections created
+by the square that were absent from the input.
+
 The useful part is confidence: a better bound can tell you sooner that your
 answer is good enough, and can help the integer solver discard fruitless search.
 On six weighted Pegasus examples, the current hybrid option reduced the
@@ -260,12 +266,16 @@ with local cuts and geometric separation of nonlocal triangle inequalities.
 Dense objectives skip enumeration of local cycles and start with the global
 bound. `"hybrid"` explicitly chooses the combined path; `"sdp"` uses the basic
 global bound and `"cuts"` selects the earlier sparse cut relaxation. The static
-policy also uses cuts. These use existing NumPy/SciPy dependencies and support
-up to 2,048 vertices including the reference spin; larger inputs use cuts.
-The dense witness needs quadratic memory. Final factorization, original-model
+policy also uses cuts. These use existing NumPy/SciPy dependencies. Problems
+up to 2,048 vertices including the reference spin use the combined dense path.
+From 2,049 through 8,192 vertices, automatic selection uses a sparse global
+bound; the binary-product `linprog` bridge accepts up to 8,191 base variables.
+Dense inputs and factors exceeding the sparse work/storage limits fall back
+to cuts. The dense witness needs quadratic memory. Final factorization, original-model
 validation, and exact checking can overrun a short time limit. See
 [the geometric algorithm and measurements](GEOMETRIC_ISING_RESULTS.md) and
-[the earlier global-bound derivation](SDP_ISING_RESULTS.md).
+[the sparse certificate comparison](SPARSE_ISING_RESULTS.md), including its
+published baseline, and [the global-bound derivation](SDP_ISING_RESULTS.md).
 
 ```python
 result = solve_ising(h, J, time_limit=5, relaxation="hybrid", certified_gap=2.0)
@@ -300,8 +310,11 @@ quantized triangular Gram factor; their checker accounts for every residual
 entry, including fill-in on nonedges. It does not trust numerical eigenvalues
 or a Cholesky status. Version 3 witnesses can include additional edges with
 zero objective weight to express nonlocal cuts; the checker binds them to the
-original problem and validates each inequality. Versions 1 and 2 remain
-readable. `progress` records checked bound/energy checkpoints with
+original problem and validates each inequality. Version 4 stores a sparse
+integer Gram factor as row pointers, column indices, and values. Its checker
+validates the structure, exact arithmetic range, and expansion size before
+numeric multiplication. Versions 1–3 remain readable.
+`progress` records checked bound/energy checkpoints with
 elapsed times; `root_rounds` counts root relaxation rounds.
 The older `cut_certificate` field is retained only for the static policy.
 `threads=0` leaves HiGHS' thread count automatic; use a consistent thread setting

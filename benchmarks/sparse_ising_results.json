@@ -1,0 +1,638 @@
+{
+  "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "python": "3.13.5",
+  "numpy": "2.5.3",
+  "scipy": "1.18.1",
+  "highs": "1.15.1",
+  "networkx": "3.6.1",
+  "budget": 10.0,
+  "records": [
+    {
+      "energy": -9410.5,
+      "lower_bound": -12898.0,
+      "verified_bound": -12898.0,
+      "extra_edges": 0,
+      "sparse_factor_entries": 0,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 8.112305791932158,
+          "lower_bound": -12898.0,
+          "energy": -9410.5,
+          "cuts": 147496,
+          "round": 0
+        },
+        {
+          "time": 9.338050791993737,
+          "lower_bound": -12898.0,
+          "energy": -9410.5,
+          "cuts": 148008,
+          "round": 0
+        },
+        {
+          "time": 10.51213587494567,
+          "lower_bound": -12898.0,
+          "energy": -9410.5,
+          "cuts": 148008,
+          "round": 0
+        }
+      ],
+      "case": "pegasus-6111",
+      "method": "previous_hybrid",
+      "seconds": 10.51687083300203,
+      "budget": 10.0,
+      "nodes": 5640,
+      "edges": 38070
+    },
+    {
+      "energy": -9410.5,
+      "lower_bound": -11280.75,
+      "verified_bound": -11280.75,
+      "extra_edges": 0,
+      "sparse_factor_entries": 862540,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 7.5046797909308225,
+          "lower_bound": -11280.75,
+          "energy": -9410.5,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.731479040929116,
+          "lower_bound": -11280.75,
+          "energy": -9410.5,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-6111",
+      "method": "auto",
+      "seconds": 10.74046954093501,
+      "budget": 10.0,
+      "nodes": 5640,
+      "edges": 38070
+    },
+    {
+      "lower_bound": -11280.75,
+      "verified_bound": -11280.75,
+      "status": "Time limit reached. (HiGHS Status 13: Time limit reached)",
+      "strategy": "ising_certificate",
+      "energy": -9410.5,
+      "case": "pegasus-6111",
+      "method": "turbo_linprog",
+      "seconds": 10.757747957948595,
+      "budget": 10.0,
+      "nodes": 5640,
+      "edges": 38070
+    },
+    {
+      "lower_bound": -21409.25,
+      "verified_bound": null,
+      "status": "Time limit reached",
+      "strategy": "original_highspy_model",
+      "energy": -111.5,
+      "case": "pegasus-6111",
+      "method": "native_highs",
+      "seconds": 10.687013167073019,
+      "budget": 10.0,
+      "nodes": 5640,
+      "edges": 38070
+    },
+    {
+      "energy": -8722.0,
+      "lower_bound": -10382.25,
+      "verified_bound": -10382.25,
+      "extra_edges": 0,
+      "sparse_factor_entries": 642801,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 6.360777624999173,
+          "lower_bound": -10382.25,
+          "energy": -8722.0,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.501309749903157,
+          "lower_bound": -10382.25,
+          "energy": -8722.0,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-6112",
+      "method": "auto",
+      "seconds": 10.50333374994807,
+      "budget": 10.0,
+      "nodes": 5360,
+      "edges": 34425
+    },
+    {
+      "lower_bound": -10382.25,
+      "verified_bound": -10382.25,
+      "status": "Time limit reached. (HiGHS Status 13: Time limit reached)",
+      "strategy": "ising_certificate",
+      "energy": -8722.0,
+      "case": "pegasus-6112",
+      "method": "turbo_linprog",
+      "seconds": 10.526851292001083,
+      "budget": 10.0,
+      "nodes": 5360,
+      "edges": 34425
+    },
+    {
+      "lower_bound": -19335.0,
+      "verified_bound": null,
+      "status": "Time limit reached",
+      "strategy": "original_highspy_model",
+      "energy": -255.5,
+      "case": "pegasus-6112",
+      "method": "native_highs",
+      "seconds": 10.315821250085719,
+      "budget": 10.0,
+      "nodes": 5360,
+      "edges": 34425
+    },
+    {
+      "energy": -8722.0,
+      "lower_bound": -11758.0,
+      "verified_bound": -11758.0,
+      "extra_edges": 0,
+      "sparse_factor_entries": 0,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 6.962952792062424,
+          "lower_bound": -11758.0,
+          "energy": -8722.0,
+          "cuts": 123702,
+          "round": 0
+        },
+        {
+          "time": 8.114410792011768,
+          "lower_bound": -11758.0,
+          "energy": -8722.0,
+          "cuts": 124214,
+          "round": 0
+        },
+        {
+          "time": 8.485241833957843,
+          "lower_bound": -11758.0,
+          "energy": -8722.0,
+          "cuts": 124214,
+          "round": 0
+        },
+        {
+          "time": 9.427489917026833,
+          "lower_bound": -11758.0,
+          "energy": -8722.0,
+          "cuts": 124214,
+          "round": 1
+        },
+        {
+          "time": 10.454996000044048,
+          "lower_bound": -11758.0,
+          "energy": -8722.0,
+          "cuts": 124214,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-6112",
+      "method": "previous_hybrid",
+      "seconds": 10.459254916990176,
+      "budget": 10.0,
+      "nodes": 5360,
+      "edges": 34425
+    },
+    {
+      "lower_bound": -9688.0,
+      "verified_bound": -9688.0,
+      "status": "Time limit reached. (HiGHS Status 13: Time limit reached)",
+      "strategy": "ising_certificate",
+      "energy": -7932.0,
+      "case": "G55",
+      "method": "turbo_linprog",
+      "seconds": 11.69748824997805,
+      "budget": 10.0,
+      "nodes": 5000,
+      "edges": 12498
+    },
+    {
+      "lower_bound": -12416.0,
+      "verified_bound": null,
+      "status": "Time limit reached",
+      "strategy": "original_highspy_model",
+      "energy": 78.0,
+      "case": "G55",
+      "method": "native_highs",
+      "seconds": 10.225992291932926,
+      "budget": 10.0,
+      "nodes": 5000,
+      "edges": 12498
+    },
+    {
+      "energy": -7932.0,
+      "lower_bound": -12206.0,
+      "verified_bound": -12206.0,
+      "extra_edges": 0,
+      "sparse_factor_entries": 0,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 4.238756957929581,
+          "lower_bound": -12454.0,
+          "energy": -7932.0,
+          "cuts": 23,
+          "round": 0
+        },
+        {
+          "time": 4.2818607919616625,
+          "lower_bound": -12454.0,
+          "energy": -7932.0,
+          "cuts": 24,
+          "round": 0
+        },
+        {
+          "time": 4.33088066696655,
+          "lower_bound": -12454.0,
+          "energy": -7932.0,
+          "cuts": 24,
+          "round": 0
+        },
+        {
+          "time": 4.346659957896918,
+          "lower_bound": -12454.0,
+          "energy": -7932.0,
+          "cuts": 24,
+          "round": 1
+        },
+        {
+          "time": 4.5270717919338495,
+          "lower_bound": -12420.0,
+          "energy": -7932.0,
+          "cuts": 144,
+          "round": 2
+        },
+        {
+          "time": 4.696733207907528,
+          "lower_bound": -12406.0,
+          "energy": -7932.0,
+          "cuts": 259,
+          "round": 3
+        },
+        {
+          "time": 4.865599707933143,
+          "lower_bound": -12388.0,
+          "energy": -7932.0,
+          "cuts": 375,
+          "round": 4
+        },
+        {
+          "time": 5.043338999967091,
+          "lower_bound": -12368.0,
+          "energy": -7932.0,
+          "cuts": 483,
+          "round": 5
+        },
+        {
+          "time": 5.228282957919873,
+          "lower_bound": -12354.0,
+          "energy": -7932.0,
+          "cuts": 606,
+          "round": 6
+        },
+        {
+          "time": 5.413076541968621,
+          "lower_bound": -12340.0,
+          "energy": -7932.0,
+          "cuts": 717,
+          "round": 7
+        },
+        {
+          "time": 5.602483207941987,
+          "lower_bound": -12328.0,
+          "energy": -7932.0,
+          "cuts": 836,
+          "round": 8
+        },
+        {
+          "time": 5.798376332968473,
+          "lower_bound": -12312.0,
+          "energy": -7932.0,
+          "cuts": 953,
+          "round": 9
+        },
+        {
+          "time": 5.998986708000302,
+          "lower_bound": -12306.0,
+          "energy": -7932.0,
+          "cuts": 1075,
+          "round": 10
+        },
+        {
+          "time": 6.203366457950324,
+          "lower_bound": -12298.0,
+          "energy": -7932.0,
+          "cuts": 1165,
+          "round": 11
+        },
+        {
+          "time": 6.416408291901462,
+          "lower_bound": -12284.0,
+          "energy": -7932.0,
+          "cuts": 1287,
+          "round": 12
+        },
+        {
+          "time": 6.646465832949616,
+          "lower_bound": -12266.0,
+          "energy": -7932.0,
+          "cuts": 1397,
+          "round": 13
+        },
+        {
+          "time": 6.8756859169807285,
+          "lower_bound": -12258.0,
+          "energy": -7932.0,
+          "cuts": 1510,
+          "round": 14
+        },
+        {
+          "time": 7.110361541970633,
+          "lower_bound": -12244.0,
+          "energy": -7932.0,
+          "cuts": 1600,
+          "round": 15
+        },
+        {
+          "time": 7.361196957994252,
+          "lower_bound": -12232.0,
+          "energy": -7932.0,
+          "cuts": 1720,
+          "round": 16
+        },
+        {
+          "time": 7.604537957930006,
+          "lower_bound": -12228.0,
+          "energy": -7932.0,
+          "cuts": 1836,
+          "round": 17
+        },
+        {
+          "time": 7.861143791931681,
+          "lower_bound": -12222.0,
+          "energy": -7932.0,
+          "cuts": 1941,
+          "round": 18
+        },
+        {
+          "time": 8.122397957951762,
+          "lower_bound": -12214.0,
+          "energy": -7932.0,
+          "cuts": 2044,
+          "round": 19
+        },
+        {
+          "time": 8.389373957994394,
+          "lower_bound": -12206.0,
+          "energy": -7932.0,
+          "cuts": 2148,
+          "round": 20
+        },
+        {
+          "time": 8.590741249965504,
+          "lower_bound": -12206.0,
+          "energy": -7932.0,
+          "cuts": 2260,
+          "round": 21
+        },
+        {
+          "time": 10.033373499987647,
+          "lower_bound": -12206.0,
+          "energy": -7932.0,
+          "cuts": 2260,
+          "round": 21
+        }
+      ],
+      "case": "G55",
+      "method": "previous_hybrid",
+      "seconds": 10.034572958014905,
+      "budget": 10.0,
+      "nodes": 5000,
+      "edges": 12498
+    },
+    {
+      "energy": -7932.0,
+      "lower_bound": -9688.0,
+      "verified_bound": -9688.0,
+      "extra_edges": 0,
+      "sparse_factor_entries": 1055754,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 7.764398290892132,
+          "lower_bound": -9688.0,
+          "energy": -7932.0,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 11.688966374960728,
+          "lower_bound": -9688.0,
+          "energy": -7932.0,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "G55",
+      "method": "auto",
+      "seconds": 11.69019999995362,
+      "budget": 10.0,
+      "nodes": 5000,
+      "edges": 12498
+    }
+  ],
+  "cases": {
+    "pegasus-6111": "7671ebc81fbb1cbe5a55ad9d00d02093e4f028786533408a6f2d10ad3f100dea",
+    "pegasus-6112": "a19fc4846ac54fb9310c73372744fb743fd9d0f2abc2282d4015579900036aa7",
+    "G55": "1470390078b098afb73ad4521f06e4950471698cae7f9be0d894f829082fce7e"
+  },
+  "suite": "sparse",
+  "production_hashes": {
+    "highs_turbo/ising.py": "31c6b2d1ef8e24b64a41c8888aeb0f0509c637e8a95a3777e864e22b6544cc39",
+    "highs_turbo/ising_cuts.py": "b547214d650acf6ee3c66c8c6dc7806ed99a39cc0970cf558e040bc851589341",
+    "highs_turbo/ising_geometry.py": "46dc315e18cf3fac8980da89de5cae7f3e4cdecd70bc9ddd26c79689a02d9adf",
+    "highs_turbo/ising_linearized.py": "5d66c66f7f10a654d59dee4774b917c2140bbde1c2d6b021dbb1512147afb04e",
+    "highs_turbo/ising_policy.py": "bd23e589584bde64a394442c5c1013589abfd49556f6d9fad6bee4ecf0f26574",
+    "highs_turbo/ising_sdp.py": "d7a4850eb9c36fa1fa3fa42fce9c69147393dd2a5b2c6fb06c6fea5920d90094",
+    "highs_turbo/ising_sparse.py": "48e8a033333aa11517a2d2f04e34ce33158c5a2c5a2247d8f2c99b45e5cf4b9e"
+  },
+  "mixing2017": [
+    {
+      "case": "pegasus-6111",
+      "method": "mixing2017",
+      "settings": "default",
+      "rank": 107,
+      "seconds": 3.996099832933396,
+      "solve_seconds": 2.3121020830003545,
+      "certificate_seconds": 1.5816254579694942,
+      "numerical": -11277.586478963312,
+      "verified_bound": -11280.25,
+      "exact": [
+        -45121,
+        4
+      ],
+      "factor_entries": 862577,
+      "command": [
+        "/tmp/libhighs-turbo-original-mixing/mixing",
+        "-s",
+        "maxcut",
+        "/tmp/libhighs-turbo-sparse-final/pegasus-6111-mixing2017-default.input"
+      ]
+    },
+    {
+      "case": "pegasus-6111",
+      "method": "mixing2017",
+      "settings": "rank16-accurate",
+      "rank": 16,
+      "seconds": 2.213093457976356,
+      "solve_seconds": 0.5503724160371348,
+      "certificate_seconds": 1.5768372080055997,
+      "numerical": -11277.313834373286,
+      "verified_bound": -11288.0,
+      "exact": [
+        -11288,
+        1
+      ],
+      "factor_entries": 860777,
+      "command": [
+        "/tmp/libhighs-turbo-original-mixing/mixing",
+        "-s",
+        "maxcut",
+        "-k",
+        "16",
+        "-e",
+        "1e-7",
+        "/tmp/libhighs-turbo-sparse-final/pegasus-6111-mixing2017-rank16-accurate.input"
+      ]
+    },
+    {
+      "case": "G55",
+      "method": "mixing2017",
+      "settings": "default",
+      "rank": 100,
+      "seconds": 4.612520709051751,
+      "solve_seconds": 0.48161141702439636,
+      "certificate_seconds": 4.10235554096289,
+      "numerical": -9580.857038613316,
+      "verified_bound": -9582.0,
+      "exact": [
+        -9582,
+        1
+      ],
+      "factor_entries": 1057699,
+      "command": [
+        "/tmp/libhighs-turbo-original-mixing/mixing",
+        "-s",
+        "maxcut",
+        "/tmp/libhighs-turbo-sparse-final/G55-mixing2017-default.input"
+      ]
+    },
+    {
+      "case": "G55",
+      "method": "mixing2017",
+      "settings": "rank16-accurate",
+      "rank": 16,
+      "seconds": 4.767096708063036,
+      "solve_seconds": 0.3034361250465736,
+      "certificate_seconds": 4.435021625016816,
+      "numerical": -9580.56328751874,
+      "verified_bound": -9688.0,
+      "exact": [
+        -9688,
+        1
+      ],
+      "factor_entries": 1055740,
+      "command": [
+        "/tmp/libhighs-turbo-original-mixing/mixing",
+        "-s",
+        "maxcut",
+        "-k",
+        "16",
+        "-e",
+        "1e-7",
+        "/tmp/libhighs-turbo-sparse-final/G55-mixing2017-rank16-accurate.input"
+      ]
+    }
+  ],
+  "mixing2017_revision": "e7d84e744d1826d596f7dace449248a36de4d050",
+  "previous_revision": "f74a41d89550af0ca7c6bd86a625189e3450d483",
+  "augmented_mixing_exploratory": [
+    {
+      "case": "pegasus-6111",
+      "settings": "default",
+      "method": "mixing",
+      "seconds": 49.488578208,
+      "numerical": 0.0,
+      "verified": -22608.5,
+      "certificate_seconds": 1.1687475419603288,
+      "exact": [
+        -45217,
+        2
+      ],
+      "repairs": {
+        "trivial": -22608.5,
+        "cuts": -22608.5
+      },
+      "repair_errors": {
+        "sparse_vectors": "Could not construct a stable sparse square",
+        "sparse_dual": "Could not construct a stable sparse square"
+      }
+    },
+    {
+      "case": "pegasus-6111",
+      "settings": "tuned",
+      "method": "mixing",
+      "seconds": 52.135893083,
+      "numerical": 0.0,
+      "verified": -22608.5,
+      "certificate_seconds": 1.7298935420112684,
+      "exact": [
+        -45217,
+        2
+      ],
+      "repairs": {
+        "trivial": -22608.5,
+        "cuts": -22608.5,
+        "sparse_vectors": -22608.5
+      },
+      "repair_errors": {
+        "sparse_dual": "Could not construct a stable sparse square"
+      }
+    }
+  ],
+  "augmented_mixing_revision": "21f29340faefb4080e61f453075ab3ff76c62e1f",
+  "geometric_exploratory": [
+    {
+      "case": "pegasus-6111",
+      "before": -11280.75,
+      "after": -11076.5,
+      "extra_edges": 3408,
+      "cuts": 1813,
+      "factor_entries": 883574,
+      "seconds": 8.837528584059328
+    },
+    {
+      "case": "G55",
+      "before": -9688.0,
+      "after": -9632.0,
+      "extra_edges": 4803,
+      "cuts": 1273,
+      "factor_entries": 1356262,
+      "seconds": 12.313355082995258
+    }
+  ]
+}

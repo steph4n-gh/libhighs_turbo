@@ -19,6 +19,7 @@ from highs_turbo.ising_cuts import (
     optimize_dual, separate_cycles, separate_short_cycles, square_indices, subgraph_cut, triangle_indices, verify_cut,
 )
 from highs_turbo.ising_policy import cluster_candidates, rank_clusters
+from highs_turbo.ising_sparse import MAX_SPARSE_VERTICES
 
 
 @dataclass
@@ -330,7 +331,7 @@ def _adaptive_relaxation(graph, edges, weights, constant, energy, *, deadline, s
             if proof.lower_bound > best.lower_bound:
                 best = proof
         record_progress()
-        if best.gram_factor:
+        if best.gram_factor or best.sparse_gram_factor:
             return cuts, best, rounds, tuple(progress)
     last_objective, cluster_points = None, {}
     rng = np.random.default_rng(seed)
@@ -432,7 +433,9 @@ def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
     is an optional absolute target checked against the rational certificate.
     threads=0 leaves the native runtime's thread count automatic.
     relaxation="auto" uses global and geometric bounds on problems with up
-    to 2048 vertices including the reference spin; larger inputs use cuts.
+    to 2048 vertices including the reference spin. Larger inputs use sparse
+    global bounds up to 8192 vertices, subject to factor storage/work limits.
+    Inputs exceeding these limits retain the cut relaxation.
     "cuts" selects only the sparse cut relaxation, "sdp" selects the basic
     global bound, and "hybrid" explicitly selects the combined relaxation.
     """
@@ -467,7 +470,10 @@ def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
     geometric_direct = (relaxation in ("auto", "hybrid") and vertices <= 2048
                         and len(edges) > 16*vertices)
     if relaxation == "auto":
-        relaxation = "hybrid" if vertices <= 2048 and cut_policy != "static" else "cuts"
+        relaxation = ("cuts" if cut_policy == "static" or vertices > MAX_SPARSE_VERTICES
+                      else "hybrid" if vertices <= 2048 else "sdp")
+    elif relaxation == "hybrid" and vertices > 2048:
+        relaxation = "sdp" if vertices <= MAX_SPARSE_VERTICES else "cuts"
     if geometric_direct and cut_policy != "static":
         # Dense objectives should not enumerate a cubic number of short
         # cycles before their global relaxation can start.
@@ -502,7 +508,7 @@ def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
         return constant + sum((w * int(state[u] * state[v]) for (u, v), w in weights.items()), Fraction())
 
     energy = exact_energy(spins)
-    if relaxation == "sdp" and vertices > 2048:
+    if relaxation == "sdp" and vertices > MAX_SPARSE_VERTICES:
         relaxation = "cuts"
     if edges and accelerate and relaxation == "sdp" and time.perf_counter() < deadline:
         from highs_turbo.ising_sdp import strengthen_certificate
@@ -512,7 +518,8 @@ def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
         root_rounds = 1
         progress = ({"time": time.perf_counter()-started, "lower_bound": _downward(exact_lower),
                      "energy": float(energy), "cuts": len(rhs), "round": root_rounds},)
-    elif edges and accelerate and cut_policy != "static" and time.perf_counter() < deadline:
+    if (edges and accelerate and cut_policy != "static" and time.perf_counter() < deadline
+            and (relaxation != "sdp" or (vertices > 2048 and not proof.sparse_gram_factor))):
         root_deadline = deadline if certified_gap is not None else min(
             deadline, started + ((0.9 if relaxation == "hybrid" else 0.7)*time_limit if time_limit else 3.0))
         cuts, proof, root_rounds, progress = _adaptive_relaxation(
@@ -556,7 +563,7 @@ def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
             cuts_added = len(rhs)
         objective_constant = constant + sum(weights.values(), Fraction())
         _check_status(session.changeObjectiveOffset(float(objective_constant)))
-        if proof.gram_factor:
+        if proof.gram_factor or proof.sparse_gram_factor:
             # Install the independently proved objective bound so that HiGHS
             # can use the global relaxation during branch-and-bound as well.
             _add_rows(session, sp.csr_matrix(costs.reshape(1, -1)),

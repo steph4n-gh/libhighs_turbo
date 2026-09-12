@@ -15,6 +15,7 @@ from scipy.linalg import cholesky, eigh
 from scipy.optimize import minimize
 
 from highs_turbo.ising_cuts import _bound, check_certificate, cut_matrix, make_certificate
+from highs_turbo.ising_sparse import MAX_SPARSE_VERTICES
 
 
 MAX_GRAM_VERTICES = 2048
@@ -82,13 +83,22 @@ def factor_witness(matrix, vectors, magnitude=1.):
 def strengthen_certificate(proof, edges, weights, constant, *, deadline, seed=0, cuts=(), geometry=False):
     """Try a low-rank vector relaxation, retaining the stronger valid witness.
 
-    The dense factor and eigenvalue work are limited to 2048 vertices. Larger
-    inputs retain their existing certificate. The cooperative deadline can
-    overrun by the final factorization and exact check.
+    Dense factors are limited to 2048 vertices. Larger problems use sparse
+    factors up to 8192 vertices, subject to work and storage limits. The
+    cooperative deadline can overrun by final factorization and exact checks.
     """
     n = max((max(e) for e in edges), default=-1)+1
-    if not 1 < n <= MAX_GRAM_VERTICES or time.perf_counter() >= deadline:
+    if not 1 < n <= MAX_SPARSE_VERTICES or time.perf_counter() >= deadline:
         return proof
+    sparse = n > MAX_GRAM_VERTICES
+    if sparse:
+        if len(edges) > 16*n:
+            return proof
+        # Reserve time for the factor and both exact checks. No geometry pass
+        # is scheduled here until its sparse fill-in cost has been established.
+        geometry = False
+        remaining = deadline-time.perf_counter()
+        deadline -= min(2., .2*remaining) if np.isfinite(remaining) else 0.
     geometry_deadline = deadline
     if geometry and n >= 32:
         deadline = min(deadline, time.perf_counter()+max(.3, .4*(deadline-time.perf_counter())))
@@ -185,19 +195,27 @@ def strengthen_certificate(proof, edges, weights, constant, *, deadline, seed=0,
         source = combined
     else:
         source = proof
-    fit(original, 150)
+    fit(original, 350 if sparse else 150)
     vectors = latest.reshape(n, -1)
     vectors /= np.maximum(np.linalg.norm(vectors, axis=1)[:, None], 1e-100)
     try:
-        packed, denominator = factor_witness(matrix, vectors, magnitude)
+        if sparse:
+            from highs_turbo.ising_sparse import factor_witness as sparse_factor_witness
+            packed, denominator = sparse_factor_witness(matrix, vectors, magnitude)
+        else:
+            packed, denominator = factor_witness(matrix, vectors, magnitude)
         lower = _bound(source.cuts, source.multipliers, source.denominator,
-                       edges, weights, constant, packed, denominator)
-        candidate = replace(source, lower_bound=lower, gram_factor=packed, gram_denominator=denominator)
-        if not check_certificate(candidate, edges, weights, constant):
+                       edges, weights, constant, () if sparse else packed, denominator,
+                       packed if sparse else ())
+        candidate = replace(source, lower_bound=lower, gram_factor=() if sparse else packed,
+                            sparse_gram_factor=packed if sparse else (), gram_denominator=denominator)
+        # _bound already checked the sparse arithmetic and factor structure;
+        # solve_ising independently checks the assembled certificate at return.
+        if not sparse and not check_certificate(candidate, edges, weights, constant):
             raise RuntimeError("Sum-of-squares certificate failed exact verification")
         if lower > proof.lower_bound:
             proof = candidate
-    except (ValueError, OverflowError, np.linalg.LinAlgError):
+    except (ValueError, OverflowError, np.linalg.LinAlgError, RuntimeError):
         return proof
     if geometry and n >= 32 and time.perf_counter()+.75 < geometry_deadline:
         from highs_turbo.ising_geometry import strengthen_geometry

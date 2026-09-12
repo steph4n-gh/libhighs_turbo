@@ -117,8 +117,10 @@ Gram residual. The same exact checker accepts earlier certificate versions.
 A numerical eigenvalue calculation or a successful Cholesky factorization is
 never treated as proof. The final rational witness determines acceptance.
 
-The 2,048-vertex limit bounds dense factorization memory. Larger inputs use the
-existing sparse cuts. Deadline checks are cooperative: final factorization,
+The 2,048-vertex limit bounds this dense geometric implementation's memory.
+The subsequent sparse Gram implementation extends the basic global bound to
+8,192 vertices; the measurements in this document predate that change.
+Deadline checks are cooperative: final factorization,
 verification, or native solver work can exceed a short requested limit.
 
 ## Relation to published work

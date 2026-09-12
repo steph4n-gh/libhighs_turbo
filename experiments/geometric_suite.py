@@ -24,14 +24,22 @@ from dwave.graphs import pegasus_graph
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def generate(directory):
+def generate(directory, suite="geometric"):
     directory.mkdir(parents=True, exist_ok=True)
     cases = []
-    for seed, damaged in [(4101, False), (4102, True)]:
+    seeds = (
+        [(4101, False), (4102, True)]
+        if suite == "geometric"
+        else [(6111, False), (6112, True)]
+    )
+    size = 8 if suite == "geometric" else 16
+    for seed, damaged in seeds:
         rng = np.random.default_rng(seed)
-        graph = pegasus_graph(8)
+        graph = pegasus_graph(size)
         if damaged:
-            graph.remove_nodes_from(rng.choice(sorted(graph), 70, replace=False))
+            graph.remove_nodes_from(
+                rng.choice(sorted(graph), 70 if size == 8 else 280, replace=False)
+            )
         labels = {node: i for i, node in enumerate(sorted(graph))}
         fields = (rng.integers(-3, 4, len(labels)) / 8).tolist()
         edges = sorted(tuple(sorted((labels[u], labels[v]))) for u, v in graph.edges)
@@ -39,13 +47,14 @@ def generate(directory):
         cases.append(
             dict(
                 name=f"pegasus-{seed}",
+                size=size,
                 seed=seed,
                 damaged=damaged,
                 fields=fields,
                 couplings=[[u, v, float(w)] for (u, v), w in zip(edges, values) if w],
             )
         )
-    for name in ["G3", "G13"]:
+    for name in ["G3", "G13"] if suite == "geometric" else ["G55"]:
         url = f"https://web.stanford.edu/~yyye/yyye/Gset/{name}"
         raw = urllib.request.urlopen(url).read()
         lines = raw.decode().splitlines()
@@ -73,7 +82,7 @@ def generate(directory):
 
 
 def run(args):
-    paths = generate(args.directory)
+    paths = generate(args.directory, args.suite)
     env = {
         **os.environ,
         "VECLIB_MAXIMUM_THREADS": "1",
@@ -90,6 +99,11 @@ def run(args):
         budget=args.seconds,
         records=[],
         cases={p.stem: hashlib.sha256(p.read_bytes()).hexdigest() for p in paths},
+        suite=args.suite,
+        production_hashes={
+            str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in sorted((ROOT / "highs_turbo").glob("ising*.py"))
+        },
     )
     methods = [
         "previous_hybrid",
@@ -98,6 +112,8 @@ def run(args):
         "native_highs",
         "scipy_linprog",
     ]
+    if args.suite == "sparse":
+        methods.remove("scipy_linprog")
     for index, path in enumerate(paths):
         for method in methods[index:] + methods[:index]:
             command = [
@@ -140,4 +156,5 @@ if __name__ == "__main__":
     parser.add_argument("--directory", type=Path, required=True)
     parser.add_argument("--previous", type=Path, required=True)
     parser.add_argument("--seconds", type=float, default=5.0)
+    parser.add_argument("--suite", choices=["geometric", "sparse"], default="geometric")
     run(parser.parse_args())

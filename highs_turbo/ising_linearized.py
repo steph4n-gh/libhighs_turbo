@@ -15,6 +15,7 @@ import scipy.sparse as sp
 from scipy.optimize import Bounds, OptimizeResult
 
 from highs_turbo.ising import solve_ising, verify_ising_certificate, _downward
+from highs_turbo.ising_sparse import MAX_SPARSE_VERTICES
 from highs_turbo.lp_accelerator import _add_rows, _check_status
 
 
@@ -44,7 +45,7 @@ def binary_products(matrix, rhs, integrality):
     node_set = set(nodes)
     if (
         not products
-        or not 32 <= len(nodes) <= 2047
+        or not 32 <= len(nodes) < MAX_SPARSE_VERTICES
         or any(integrality[i] != 1 for i in nodes)
         or any(u not in node_set or v not in node_set for u, v in products.values())
     ):

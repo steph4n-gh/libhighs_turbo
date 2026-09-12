@@ -95,6 +95,11 @@ def worker(args):
             lower_bound=result.lower_bound,
             verified_bound=float(result.exact_cut_lower_bound),
             extra_edges=len(getattr(result.certificate, "extra_edges", ())),
+            sparse_factor_entries=(
+                len(result.certificate.sparse_gram_factor[2])
+                if getattr(result.certificate, "sparse_gram_factor", ())
+                else 0
+            ),
             status=result.status,
             progress=result.progress,
         )
