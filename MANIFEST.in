@@ -3,3 +3,4 @@ recursive-include highs_turbo/cpp_engine *.cpp *.hpp *.h CMakeLists.txt
 recursive-include benchmarks *.json
 recursive-include experiments *.py *.jl *.cxx *.md
 include examples/benchmark_geometric_ising.py
+include SPARSE_FOLLOWUP_RESULTS.md

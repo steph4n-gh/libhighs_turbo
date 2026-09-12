@@ -73,6 +73,10 @@ All inputs, production hashes, versions, and individual runs are recorded in
 [`benchmarks/sparse_geometric_results.json`](benchmarks/sparse_geometric_results.json).
 These are focused observations, not repeated trials or statistical estimates.
 
+Later [development experiments](SPARSE_FOLLOWUP_RESULTS.md) found another
+3.9% gap reduction on Pegasus with two geometric passes, but a regression on
+G55. That candidate remains outside the production default.
+
 ## Published basic Mixing comparison
 
 The authors' unmodified [2017 Mixing implementation](https://github.com/locuslab/mixing)
