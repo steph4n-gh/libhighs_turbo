@@ -1,0 +1,1794 @@
+{
+  "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "python": "3.13.5",
+  "numpy": "2.5.3",
+  "scipy": "1.18.1",
+  "highs": "1.15.1",
+  "budget": 10,
+  "repetitions": 3,
+  "source_hashes": {
+    "previous": {
+      "highs_turbo/ising.py": "78b7de680639e40fd31b5afe53ec2c454ee462c38524fb7d64ecef7e1823efbc",
+      "highs_turbo/ising_cuts.py": "b547214d650acf6ee3c66c8c6dc7806ed99a39cc0970cf558e040bc851589341",
+      "highs_turbo/ising_geometry.py": "66946294708ca578e520e79b99ee223bc2f830a21851d53ac3a975a4c0f10928",
+      "highs_turbo/ising_linearized.py": "5d66c66f7f10a654d59dee4774b917c2140bbde1c2d6b021dbb1512147afb04e",
+      "highs_turbo/ising_policy.py": "bd23e589584bde64a394442c5c1013589abfd49556f6d9fad6bee4ecf0f26574",
+      "highs_turbo/ising_sdp.py": "75e4a595c65e50ea7d798e84d7fa25905146c1154c1d8512c63362bfd16b6ecb",
+      "highs_turbo/ising_sparse.py": "a4afe30ed9a7650adbb7534127c19cd40fd938c0c91acdf6f6fe3f13001fd195"
+    },
+    "reuse": {
+      "highs_turbo/ising.py": "7fd5ba3a93f082c2898d4f90f1f75589c5450dc2c76db12cbe9abc222a42780e",
+      "highs_turbo/ising_cuts.py": "b547214d650acf6ee3c66c8c6dc7806ed99a39cc0970cf558e040bc851589341",
+      "highs_turbo/ising_geometry.py": "66946294708ca578e520e79b99ee223bc2f830a21851d53ac3a975a4c0f10928",
+      "highs_turbo/ising_linearized.py": "5d66c66f7f10a654d59dee4774b917c2140bbde1c2d6b021dbb1512147afb04e",
+      "highs_turbo/ising_policy.py": "bd23e589584bde64a394442c5c1013589abfd49556f6d9fad6bee4ecf0f26574",
+      "highs_turbo/ising_sdp.py": "75e4a595c65e50ea7d798e84d7fa25905146c1154c1d8512c63362bfd16b6ecb",
+      "highs_turbo/ising_sparse.py": "fe5b4775bc3fcd49a786aa79af9521a383edd9bf40f1c9c3b98f0d70bb315b41"
+    }
+  },
+  "previous_commit": "a1b300ff68b59ded1d1de3f2474a77a504c9edc0",
+  "records": [
+    {
+      "energy": -9408.375,
+      "lower_bound": -11050.125,
+      "verified_bound": -11050.125,
+      "extra_edges": 3404,
+      "sparse_factor_entries": 872060,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 8.242628833046183,
+          "lower_bound": -11050.125,
+          "energy": -9408.375,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.728835124988109,
+          "lower_bound": -11050.125,
+          "energy": -9408.375,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-7111",
+      "method": "auto",
+      "seconds": 10.731406125007197,
+      "budget": 10.0,
+      "nodes": 5640,
+      "edges": 38063,
+      "implementation": "previous",
+      "repeat": 0,
+      "case_sha256": "24f4d841fd52ddc61b72dff8d5ae3ede306aa6ad11d06c0564f863f73b522991",
+      "independent_check_passed": true
+    },
+    {
+      "energy": -9408.375,
+      "lower_bound": -11050.125,
+      "verified_bound": -11050.125,
+      "extra_edges": 3404,
+      "sparse_factor_entries": 872063,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 8.263045458937995,
+          "lower_bound": -11050.125,
+          "energy": -9408.375,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.297629833919927,
+          "lower_bound": -11050.125,
+          "energy": -9408.375,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-7111",
+      "method": "auto",
+      "seconds": 10.300524916965514,
+      "budget": 10.0,
+      "nodes": 5640,
+      "edges": 38063,
+      "implementation": "reuse",
+      "repeat": 0,
+      "case_sha256": "24f4d841fd52ddc61b72dff8d5ae3ede306aa6ad11d06c0564f863f73b522991",
+      "independent_check_passed": true
+    },
+    {
+      "energy": -8635.875,
+      "lower_bound": -10145.125,
+      "verified_bound": -10145.125,
+      "extra_edges": 3354,
+      "sparse_factor_entries": 721569,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 7.793456000043079,
+          "lower_bound": -10145.125,
+          "energy": -8635.875,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.196980125037953,
+          "lower_bound": -10145.125,
+          "energy": -8635.875,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-7112",
+      "method": "auto",
+      "seconds": 10.205231791944243,
+      "budget": 10.0,
+      "nodes": 5360,
+      "edges": 34306,
+      "implementation": "reuse",
+      "repeat": 0,
+      "case_sha256": "e1bc44ffe5c88bc7e01811fe924e208f7f0c0026393a28c9e2e155b485b26324",
+      "independent_check_passed": true
+    },
+    {
+      "energy": -8635.875,
+      "lower_bound": -10145.125,
+      "verified_bound": -10145.125,
+      "extra_edges": 3354,
+      "sparse_factor_entries": 721561,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 7.80275204195641,
+          "lower_bound": -10145.125,
+          "energy": -8635.875,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.548569084028713,
+          "lower_bound": -10145.125,
+          "energy": -8635.875,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-7112",
+      "method": "auto",
+      "seconds": 10.557120333076455,
+      "budget": 10.0,
+      "nodes": 5360,
+      "edges": 34306,
+      "implementation": "previous",
+      "repeat": 0,
+      "case_sha256": "e1bc44ffe5c88bc7e01811fe924e208f7f0c0026393a28c9e2e155b485b26324",
+      "independent_check_passed": true
+    },
+    {
+      "energy": -7914.0,
+      "lower_bound": -9538.0,
+      "verified_bound": -9538.0,
+      "extra_edges": 4535,
+      "sparse_factor_entries": 1391516,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 9.734666457981803,
+          "lower_bound": -9538.0,
+          "energy": -7914.0,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 12.537707917043008,
+          "lower_bound": -9538.0,
+          "energy": -7914.0,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "G56",
+      "method": "auto",
+      "seconds": 12.538879374973476,
+      "budget": 10.0,
+      "nodes": 5000,
+      "edges": 12498,
+      "implementation": "previous",
+      "repeat": 0,
+      "case_sha256": "fbace648de224a91805bd73332c6b061ead10b197576cc621bc2bf13c6fa42c4",
+      "independent_check_passed": true
+    },
+    {
+      "energy": -7914.0,
+      "lower_bound": -9538.0,
+      "verified_bound": -9538.0,
+      "extra_edges": 4535,
+      "sparse_factor_entries": 1391516,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 9.687359167030081,
+          "lower_bound": -9538.0,
+          "energy": -7914.0,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.204137291992083,
+          "lower_bound": -9538.0,
+          "energy": -7914.0,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "G56",
+      "method": "auto",
+      "seconds": 10.20530166698154,
+      "budget": 10.0,
+      "nodes": 5000,
+      "edges": 12498,
+      "implementation": "reuse",
+      "repeat": 0,
+      "case_sha256": "fbace648de224a91805bd73332c6b061ead10b197576cc621bc2bf13c6fa42c4",
+      "independent_check_passed": true
+    },
+    {
+      "energy": -9408.375,
+      "lower_bound": -11050.125,
+      "verified_bound": -11050.125,
+      "extra_edges": 3404,
+      "sparse_factor_entries": 872058,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 8.318188540986739,
+          "lower_bound": -11050.125,
+          "energy": -9408.375,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.3531023330288,
+          "lower_bound": -11050.125,
+          "energy": -9408.375,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-7111",
+      "method": "auto",
+      "seconds": 10.355657791020349,
+      "budget": 10.0,
+      "nodes": 5640,
+      "edges": 38063,
+      "implementation": "reuse",
+      "repeat": 1,
+      "case_sha256": "24f4d841fd52ddc61b72dff8d5ae3ede306aa6ad11d06c0564f863f73b522991",
+      "independent_check_passed": true
+    },
+    {
+      "energy": -9408.375,
+      "lower_bound": -11050.125,
+      "verified_bound": -11050.125,
+      "extra_edges": 3404,
+      "sparse_factor_entries": 872059,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 8.283066583098844,
+          "lower_bound": -11050.125,
+          "energy": -9408.375,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.770301000098698,
+          "lower_bound": -11050.125,
+          "energy": -9408.375,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-7111",
+      "method": "auto",
+      "seconds": 10.772677875007503,
+      "budget": 10.0,
+      "nodes": 5640,
+      "edges": 38063,
+      "implementation": "previous",
+      "repeat": 1,
+      "case_sha256": "24f4d841fd52ddc61b72dff8d5ae3ede306aa6ad11d06c0564f863f73b522991",
+      "independent_check_passed": true
+    },
+    {
+      "energy": -8635.875,
+      "lower_bound": -10145.125,
+      "verified_bound": -10145.125,
+      "extra_edges": 3354,
+      "sparse_factor_entries": 721564,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 7.793024459038861,
+          "lower_bound": -10145.125,
+          "energy": -8635.875,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.570186541997828,
+          "lower_bound": -10145.125,
+          "energy": -8635.875,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-7112",
+      "method": "auto",
+      "seconds": 10.582045458024368,
+      "budget": 10.0,
+      "nodes": 5360,
+      "edges": 34306,
+      "implementation": "previous",
+      "repeat": 1,
+      "case_sha256": "e1bc44ffe5c88bc7e01811fe924e208f7f0c0026393a28c9e2e155b485b26324",
+      "independent_check_passed": true
+    },
+    {
+      "energy": -8635.875,
+      "lower_bound": -10145.125,
+      "verified_bound": -10145.125,
+      "extra_edges": 3354,
+      "sparse_factor_entries": 721569,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 7.81202262500301,
+          "lower_bound": -10145.125,
+          "energy": -8635.875,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.198810625006445,
+          "lower_bound": -10145.125,
+          "energy": -8635.875,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-7112",
+      "method": "auto",
+      "seconds": 10.207062208093703,
+      "budget": 10.0,
+      "nodes": 5360,
+      "edges": 34306,
+      "implementation": "reuse",
+      "repeat": 1,
+      "case_sha256": "e1bc44ffe5c88bc7e01811fe924e208f7f0c0026393a28c9e2e155b485b26324",
+      "independent_check_passed": true
+    },
+    {
+      "energy": -7914.0,
+      "lower_bound": -9538.0,
+      "verified_bound": -9538.0,
+      "extra_edges": 4535,
+      "sparse_factor_entries": 1391516,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 9.818454332998954,
+          "lower_bound": -9538.0,
+          "energy": -7914.0,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.246104666031897,
+          "lower_bound": -9538.0,
+          "energy": -7914.0,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "G56",
+      "method": "auto",
+      "seconds": 10.247303792042658,
+      "budget": 10.0,
+      "nodes": 5000,
+      "edges": 12498,
+      "implementation": "reuse",
+      "repeat": 1,
+      "case_sha256": "fbace648de224a91805bd73332c6b061ead10b197576cc621bc2bf13c6fa42c4",
+      "independent_check_passed": true
+    },
+    {
+      "energy": -7914.0,
+      "lower_bound": -9538.0,
+      "verified_bound": -9538.0,
+      "extra_edges": 4535,
+      "sparse_factor_entries": 1391516,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 9.721622459008358,
+          "lower_bound": -9538.0,
+          "energy": -7914.0,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 12.65470795892179,
+          "lower_bound": -9538.0,
+          "energy": -7914.0,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "G56",
+      "method": "auto",
+      "seconds": 12.655804208945483,
+      "budget": 10.0,
+      "nodes": 5000,
+      "edges": 12498,
+      "implementation": "previous",
+      "repeat": 1,
+      "case_sha256": "fbace648de224a91805bd73332c6b061ead10b197576cc621bc2bf13c6fa42c4",
+      "independent_check_passed": true
+    },
+    {
+      "energy": -9408.375,
+      "lower_bound": -11050.125,
+      "verified_bound": -11050.125,
+      "extra_edges": 3404,
+      "sparse_factor_entries": 872066,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 8.271646542008966,
+          "lower_bound": -11050.125,
+          "energy": -9408.375,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.745176208089106,
+          "lower_bound": -11050.125,
+          "energy": -9408.375,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-7111",
+      "method": "auto",
+      "seconds": 10.747438124963082,
+      "budget": 10.0,
+      "nodes": 5640,
+      "edges": 38063,
+      "implementation": "previous",
+      "repeat": 2,
+      "case_sha256": "24f4d841fd52ddc61b72dff8d5ae3ede306aa6ad11d06c0564f863f73b522991",
+      "independent_check_passed": true
+    },
+    {
+      "energy": -9408.375,
+      "lower_bound": -11050.125,
+      "verified_bound": -11050.125,
+      "extra_edges": 3404,
+      "sparse_factor_entries": 872066,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 8.268504541018046,
+          "lower_bound": -11050.125,
+          "energy": -9408.375,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.280521083041094,
+          "lower_bound": -11050.125,
+          "energy": -9408.375,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-7111",
+      "method": "auto",
+      "seconds": 10.283309832913801,
+      "budget": 10.0,
+      "nodes": 5640,
+      "edges": 38063,
+      "implementation": "reuse",
+      "repeat": 2,
+      "case_sha256": "24f4d841fd52ddc61b72dff8d5ae3ede306aa6ad11d06c0564f863f73b522991",
+      "independent_check_passed": true
+    },
+    {
+      "energy": -8635.875,
+      "lower_bound": -10145.125,
+      "verified_bound": -10145.125,
+      "extra_edges": 3354,
+      "sparse_factor_entries": 721568,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 7.791234917007387,
+          "lower_bound": -10145.125,
+          "energy": -8635.875,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.199755875044502,
+          "lower_bound": -10145.125,
+          "energy": -8635.875,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-7112",
+      "method": "auto",
+      "seconds": 10.20815404097084,
+      "budget": 10.0,
+      "nodes": 5360,
+      "edges": 34306,
+      "implementation": "reuse",
+      "repeat": 2,
+      "case_sha256": "e1bc44ffe5c88bc7e01811fe924e208f7f0c0026393a28c9e2e155b485b26324",
+      "independent_check_passed": true
+    },
+    {
+      "energy": -8635.875,
+      "lower_bound": -10144.875,
+      "verified_bound": -10144.875,
+      "extra_edges": 3354,
+      "sparse_factor_entries": 721653,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 7.770015124930069,
+          "lower_bound": -10144.875,
+          "energy": -8635.875,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.553151916945353,
+          "lower_bound": -10144.875,
+          "energy": -8635.875,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-7112",
+      "method": "auto",
+      "seconds": 10.561963042011485,
+      "budget": 10.0,
+      "nodes": 5360,
+      "edges": 34306,
+      "implementation": "previous",
+      "repeat": 2,
+      "case_sha256": "e1bc44ffe5c88bc7e01811fe924e208f7f0c0026393a28c9e2e155b485b26324",
+      "independent_check_passed": true
+    },
+    {
+      "energy": -7914.0,
+      "lower_bound": -9538.0,
+      "verified_bound": -9538.0,
+      "extra_edges": 4535,
+      "sparse_factor_entries": 1391516,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 9.677825584076345,
+          "lower_bound": -9538.0,
+          "energy": -7914.0,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 12.573643209063448,
+          "lower_bound": -9538.0,
+          "energy": -7914.0,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "G56",
+      "method": "auto",
+      "seconds": 12.57471750001423,
+      "budget": 10.0,
+      "nodes": 5000,
+      "edges": 12498,
+      "implementation": "previous",
+      "repeat": 2,
+      "case_sha256": "fbace648de224a91805bd73332c6b061ead10b197576cc621bc2bf13c6fa42c4",
+      "independent_check_passed": true
+    },
+    {
+      "energy": -7914.0,
+      "lower_bound": -9538.0,
+      "verified_bound": -9538.0,
+      "extra_edges": 4535,
+      "sparse_factor_entries": 1391516,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 9.691173291997984,
+          "lower_bound": -9538.0,
+          "energy": -7914.0,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 10.20474266691599,
+          "lower_bound": -9538.0,
+          "energy": -7914.0,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "G56",
+      "method": "auto",
+      "seconds": 10.205950792063959,
+      "budget": 10.0,
+      "nodes": 5000,
+      "edges": 12498,
+      "implementation": "reuse",
+      "repeat": 2,
+      "case_sha256": "fbace648de224a91805bd73332c6b061ead10b197576cc621bc2bf13c6fa42c4",
+      "independent_check_passed": true
+    }
+  ],
+  "development": {
+    "capture": {
+      "case": "G55",
+      "mode": "two",
+      "constant": "0",
+      "magnitude": 1.0,
+      "numerical_vector_proposal": -9473.250498640744,
+      "returned_bound": -9580.0,
+      "elapsed": 11.652231707936153,
+      "feasible_energy": -7932.0,
+      "candidate_error": "Sparse Gram expansion exceeds the work budget",
+      "raw_factor_entries": 1751727,
+      "raw_gram_work": 2011505451,
+      "gram_work_limit": 2000000000,
+      "capture_hashes": {
+        "source.json": "acd1ebd3e068c6b4bd52f31e2561cb7d5d61231260824dc6a3b7e95c9fbbde33",
+        "matrix.npz": "60eb9f97789b7c3a057031a126ef5d7deb7099ffa4d257b0ba59bb44e165c9f7",
+        "vectors.npy": "016dddd6ad1e021720b1b1d343115bc7750c2e6d825306adbdaddc195b85522b",
+        "factor.npz": "435ea598c67cc5ed01f413737ecca739846614906f51b918cf95017becff24c2"
+      }
+    },
+    "compression": {
+      "mild": {
+        "bound": -9498.0,
+        "valid": true,
+        "factor_seconds": 1.695053790928796,
+        "compression_seconds": 0.1890690840082243,
+        "bound_seconds": 3.2525906659429893,
+        "check_seconds": 3.269319250015542,
+        "previous_numerical": -9473.250498640744,
+        "nnz": 1701618,
+        "work": 1891501694,
+        "threshold": 4,
+        "denominator": 8388608
+      },
+      "half_budget": {
+        "bound": -9564.0,
+        "valid": true,
+        "compression_seconds": 0.1549513339996338,
+        "bound_seconds": 1.8404697910882533,
+        "check_seconds": 1.8587800419190899,
+        "elapsed": 3.854201167006977,
+        "nnz": 1256439,
+        "work": 999733925,
+        "threshold": 965,
+        "threshold_float": 0.0001150369644165039
+      },
+      "weighted_half_budget": {
+        "bound": -9572.0,
+        "valid": true,
+        "compression_seconds": 0.23703520896378905,
+        "bound_seconds": 1.8495910830097273,
+        "check_seconds": 1.863463249988854,
+        "elapsed": 3.9500895419623703,
+        "nnz": 1251492,
+        "work": 999997198,
+        "threshold": 31587820.601488497,
+        "score": "absolute entry times column mean absolute entry"
+      }
+    },
+    "reuse_diagnostic": {
+      "bound": -9498.0,
+      "valid": true,
+      "initial_seconds": 3.4515408750157803,
+      "reused_check_seconds": 0.22806512494571507,
+      "cache": {
+        "hits": 1,
+        "misses": 1,
+        "maxsize": 1,
+        "currsize": 1
+      },
+      "cache_cleared": true,
+      "malformed_rejected": true,
+      "peak_rss": 442531840,
+      "uncached_serialized_check_seconds": 3.4225095830624923,
+      "uncached_serialized_valid": true
+    },
+    "development_records": [
+      {
+        "case": "G55",
+        "mode": "production",
+        "budget": 10,
+        "elapsed": 12.694052916951478,
+        "energy": -7932.0,
+        "verified_bound": -9544.0,
+        "extra_edges": 4525,
+        "factor_entries": 1435168,
+        "cache": null,
+        "independent_seconds": 2.621363374986686,
+        "independent_valid": true,
+        "peak_rss": 562233344,
+        "case_sha256": "1470390078b098afb73ad4521f06e4950471698cae7f9be0d894f829082fce7e",
+        "factor_records": [],
+        "phases": []
+      },
+      {
+        "case": "G55",
+        "mode": "reuse",
+        "budget": 10,
+        "elapsed": 10.654667458031327,
+        "energy": -7932.0,
+        "verified_bound": -9544.0,
+        "extra_edges": 4525,
+        "factor_entries": 1435168,
+        "cache": {
+          "hits": 1,
+          "misses": 2,
+          "maxsize": 1,
+          "currsize": 1
+        },
+        "independent_seconds": 2.67774674994871,
+        "independent_valid": true,
+        "peak_rss": 563068928,
+        "case_sha256": "1470390078b098afb73ad4521f06e4950471698cae7f9be0d894f829082fce7e",
+        "factor_records": [],
+        "phases": []
+      },
+      {
+        "case": "G55",
+        "mode": "two",
+        "budget": 10,
+        "elapsed": 13.52210066607222,
+        "energy": -7932.0,
+        "verified_bound": -9576.0,
+        "extra_edges": 8496,
+        "factor_entries": 1692187,
+        "cache": {
+          "hits": 1,
+          "misses": 2,
+          "maxsize": 1,
+          "currsize": 1
+        },
+        "independent_seconds": 3.3254893749253824,
+        "independent_valid": true,
+        "peak_rss": 722059264,
+        "case_sha256": "1470390078b098afb73ad4521f06e4950471698cae7f9be0d894f829082fce7e",
+        "factor_records": [
+          {
+            "factor_seconds": 1.7943096249364316,
+            "compression_seconds": 0.21730154193937778,
+            "original_work": 1966990961,
+            "work": 1893091033,
+            "threshold": 2,
+            "denominator": 8388608,
+            "entries": 1692187
+          }
+        ],
+        "phases": [
+          {
+            "phase": "adaptive_geometry",
+            "stage": 0,
+            "seconds": 2.2337196249281988,
+            "cuts": 2048,
+            "calls": 12,
+            "search": {
+              "seconds": 0.5082276249304414,
+              "candidates": 76932
+            }
+          },
+          {
+            "phase": "adaptive_geometry",
+            "stage": 1,
+            "seconds": 2.0475168329430744,
+            "cuts": 4094,
+            "calls": 8,
+            "search": {
+              "seconds": 0.8132208340102807,
+              "candidates": 55183
+            }
+          },
+          {
+            "phase": "compact_factor",
+            "factor_seconds": 1.7943096249364316,
+            "compression_seconds": 0.21730154193937778,
+            "original_work": 1966990961,
+            "work": 1893091033,
+            "threshold": 2,
+            "denominator": 8388608,
+            "entries": 1692187
+          },
+          {
+            "phase": "candidate_bound",
+            "bound": -9576.0,
+            "base": -9580.0,
+            "factor_entries": 1692187
+          }
+        ]
+      },
+      {
+        "case": "pegasus-6111",
+        "mode": "production",
+        "budget": 10,
+        "elapsed": 10.82812816707883,
+        "energy": -9410.5,
+        "verified_bound": -11058.75,
+        "extra_edges": 3314,
+        "factor_entries": 913761,
+        "cache": null,
+        "independent_seconds": 0.7450616250280291,
+        "independent_valid": true,
+        "peak_rss": 661848064,
+        "case_sha256": "7671ebc81fbb1cbe5a55ad9d00d02093e4f028786533408a6f2d10ad3f100dea",
+        "factor_records": [],
+        "phases": []
+      },
+      {
+        "case": "pegasus-6111",
+        "mode": "reuse",
+        "budget": 10,
+        "elapsed": 10.397235958953388,
+        "energy": -9410.5,
+        "verified_bound": -11058.75,
+        "extra_edges": 3314,
+        "factor_entries": 913778,
+        "cache": {
+          "hits": 1,
+          "misses": 2,
+          "maxsize": 1,
+          "currsize": 1
+        },
+        "independent_seconds": 0.7494286670116708,
+        "independent_valid": true,
+        "peak_rss": 661159936,
+        "case_sha256": "7671ebc81fbb1cbe5a55ad9d00d02093e4f028786533408a6f2d10ad3f100dea",
+        "factor_records": [],
+        "phases": []
+      },
+      {
+        "case": "pegasus-6111",
+        "mode": "two",
+        "budget": 10,
+        "elapsed": 10.75806275010109,
+        "energy": -9410.5,
+        "verified_bound": -11009.25,
+        "extra_edges": 6365,
+        "factor_entries": 964339,
+        "cache": {
+          "hits": 1,
+          "misses": 2,
+          "maxsize": 1,
+          "currsize": 1
+        },
+        "independent_seconds": 0.8209464580286294,
+        "independent_valid": true,
+        "peak_rss": 776863744,
+        "case_sha256": "7671ebc81fbb1cbe5a55ad9d00d02093e4f028786533408a6f2d10ad3f100dea",
+        "factor_records": [
+          {
+            "factor_seconds": 0.580534250009805,
+            "compression_seconds": 0.016133542056195438,
+            "original_work": 276957963,
+            "work": 276957963,
+            "threshold": 0,
+            "denominator": 2097152,
+            "entries": 964339
+          }
+        ],
+        "phases": [
+          {
+            "phase": "adaptive_geometry",
+            "stage": 0,
+            "seconds": 2.564333667047322,
+            "cuts": 2048,
+            "calls": 6,
+            "search": {
+              "seconds": 0.8435540000209585,
+              "candidates": 145781
+            }
+          },
+          {
+            "phase": "adaptive_geometry",
+            "stage": 1,
+            "seconds": 2.3494360418990254,
+            "cuts": 4050,
+            "calls": 5,
+            "search": {
+              "seconds": 0.9724095000419766,
+              "candidates": 131772
+            }
+          },
+          {
+            "phase": "compact_factor",
+            "factor_seconds": 0.580534250009805,
+            "compression_seconds": 0.016133542056195438,
+            "original_work": 276957963,
+            "work": 276957963,
+            "threshold": 0,
+            "denominator": 2097152,
+            "entries": 964339
+          },
+          {
+            "phase": "candidate_bound",
+            "bound": -11009.25,
+            "base": -11287.75,
+            "factor_entries": 964339
+          }
+        ]
+      }
+    ],
+    "timed_prototype_hashes": {
+      "/tmp/libhighs-turbo-capture-certificate.py": "a6868892937f7a0d5ae735c1e4f394c22f83b5ae1724baf748bbea3228db6b3c",
+      "/tmp/libhighs-turbo-compact-proof.py": "28efc78c4170a80b0c2916f9b3463098906d178435848532f71b646e9a1d206f",
+      "/tmp/libhighs-turbo-compact-budget.py": "b85c8a7e1eaac19017d7729c82ea641314d822726bdb265036b5c2429d211dbd",
+      "/tmp/libhighs-turbo-compact-weighted.py": "a9f39c11704a38f28efbdafe064579c226b6a9f1c53a7ec5e73f4de1f44ee536",
+      "/tmp/libhighs-turbo-reuse-prototype.py": "8e1dfde8d17055d6620f804ec55097b77a8d582c2ea341db75b9c8f694c23806",
+      "/tmp/libhighs-turbo-reuse-worker.py": "c39cd9274d5439414681d4437ae40d3e2959c59fa99d082d44b28720a6c8b793"
+    }
+  },
+  "initial_implementation": {
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "python": "3.13.5",
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "highs": "1.15.1",
+    "budget": 10,
+    "repetitions": 3,
+    "source_hashes": {
+      "previous": {
+        "highs_turbo/ising.py": "78b7de680639e40fd31b5afe53ec2c454ee462c38524fb7d64ecef7e1823efbc",
+        "highs_turbo/ising_cuts.py": "b547214d650acf6ee3c66c8c6dc7806ed99a39cc0970cf558e040bc851589341",
+        "highs_turbo/ising_geometry.py": "66946294708ca578e520e79b99ee223bc2f830a21851d53ac3a975a4c0f10928",
+        "highs_turbo/ising_linearized.py": "5d66c66f7f10a654d59dee4774b917c2140bbde1c2d6b021dbb1512147afb04e",
+        "highs_turbo/ising_policy.py": "bd23e589584bde64a394442c5c1013589abfd49556f6d9fad6bee4ecf0f26574",
+        "highs_turbo/ising_sdp.py": "75e4a595c65e50ea7d798e84d7fa25905146c1154c1d8512c63362bfd16b6ecb",
+        "highs_turbo/ising_sparse.py": "a4afe30ed9a7650adbb7534127c19cd40fd938c0c91acdf6f6fe3f13001fd195"
+      },
+      "reuse": {
+        "highs_turbo/ising.py": "7fd5ba3a93f082c2898d4f90f1f75589c5450dc2c76db12cbe9abc222a42780e",
+        "highs_turbo/ising_cuts.py": "b547214d650acf6ee3c66c8c6dc7806ed99a39cc0970cf558e040bc851589341",
+        "highs_turbo/ising_geometry.py": "66946294708ca578e520e79b99ee223bc2f830a21851d53ac3a975a4c0f10928",
+        "highs_turbo/ising_linearized.py": "5d66c66f7f10a654d59dee4774b917c2140bbde1c2d6b021dbb1512147afb04e",
+        "highs_turbo/ising_policy.py": "bd23e589584bde64a394442c5c1013589abfd49556f6d9fad6bee4ecf0f26574",
+        "highs_turbo/ising_sdp.py": "75e4a595c65e50ea7d798e84d7fa25905146c1154c1d8512c63362bfd16b6ecb",
+        "highs_turbo/ising_sparse.py": "6913cd9f1a5ae88b37bfc306ba14b61607b6f60ccd79c905088e88ce2087f79a"
+      }
+    },
+    "previous_commit": "a1b300ff68b59ded1d1de3f2474a77a504c9edc0",
+    "records": [
+      {
+        "energy": -9408.375,
+        "lower_bound": -11042.625,
+        "verified_bound": -11042.625,
+        "extra_edges": 3404,
+        "sparse_factor_entries": 889951,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 8.078470000065863,
+            "lower_bound": -11042.625,
+            "energy": -9408.375,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 10.691840084036812,
+            "lower_bound": -11042.625,
+            "energy": -9408.375,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "pegasus-7111",
+        "method": "auto",
+        "seconds": 10.700580375036225,
+        "budget": 10.0,
+        "nodes": 5640,
+        "edges": 38063,
+        "implementation": "previous",
+        "repeat": 0,
+        "case_sha256": "24f4d841fd52ddc61b72dff8d5ae3ede306aa6ad11d06c0564f863f73b522991",
+        "independent_check_passed": true
+      },
+      {
+        "energy": -9408.375,
+        "lower_bound": -11050.125,
+        "verified_bound": -11050.125,
+        "extra_edges": 3404,
+        "sparse_factor_entries": 896692,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 8.345235624932684,
+            "lower_bound": -11050.125,
+            "energy": -9408.375,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 10.327907416969538,
+            "lower_bound": -11050.125,
+            "energy": -9408.375,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "pegasus-7111",
+        "method": "auto",
+        "seconds": 10.331033541006036,
+        "budget": 10.0,
+        "nodes": 5640,
+        "edges": 38063,
+        "implementation": "reuse",
+        "repeat": 0,
+        "case_sha256": "24f4d841fd52ddc61b72dff8d5ae3ede306aa6ad11d06c0564f863f73b522991",
+        "independent_check_passed": true
+      },
+      {
+        "energy": -8635.875,
+        "lower_bound": -10145.125,
+        "verified_bound": -10145.125,
+        "extra_edges": 3354,
+        "sparse_factor_entries": 721562,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 7.852398540941067,
+            "lower_bound": -10145.125,
+            "energy": -8635.875,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 10.192076790961437,
+            "lower_bound": -10145.125,
+            "energy": -8635.875,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "pegasus-7112",
+        "method": "auto",
+        "seconds": 10.19989095791243,
+        "budget": 10.0,
+        "nodes": 5360,
+        "edges": 34306,
+        "implementation": "reuse",
+        "repeat": 0,
+        "case_sha256": "e1bc44ffe5c88bc7e01811fe924e208f7f0c0026393a28c9e2e155b485b26324",
+        "independent_check_passed": true
+      },
+      {
+        "energy": -8635.875,
+        "lower_bound": -10144.875,
+        "verified_bound": -10144.875,
+        "extra_edges": 3354,
+        "sparse_factor_entries": 721657,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 7.755863542086445,
+            "lower_bound": -10144.875,
+            "energy": -8635.875,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 10.594973958097398,
+            "lower_bound": -10144.875,
+            "energy": -8635.875,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "pegasus-7112",
+        "method": "auto",
+        "seconds": 10.603827125043608,
+        "budget": 10.0,
+        "nodes": 5360,
+        "edges": 34306,
+        "implementation": "previous",
+        "repeat": 0,
+        "case_sha256": "e1bc44ffe5c88bc7e01811fe924e208f7f0c0026393a28c9e2e155b485b26324",
+        "independent_check_passed": true
+      },
+      {
+        "energy": -7914.0,
+        "lower_bound": -9538.0,
+        "verified_bound": -9538.0,
+        "extra_edges": 4535,
+        "sparse_factor_entries": 1391516,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 9.57713574997615,
+            "lower_bound": -9538.0,
+            "energy": -7914.0,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 12.509810791932978,
+            "lower_bound": -9538.0,
+            "energy": -7914.0,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "G56",
+        "method": "auto",
+        "seconds": 12.51097762491554,
+        "budget": 10.0,
+        "nodes": 5000,
+        "edges": 12498,
+        "implementation": "previous",
+        "repeat": 0,
+        "case_sha256": "fbace648de224a91805bd73332c6b061ead10b197576cc621bc2bf13c6fa42c4",
+        "independent_check_passed": true
+      },
+      {
+        "energy": -7914.0,
+        "lower_bound": -9538.0,
+        "verified_bound": -9538.0,
+        "extra_edges": 4535,
+        "sparse_factor_entries": 1391516,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 9.85042787506245,
+            "lower_bound": -9538.0,
+            "energy": -7914.0,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 10.262164375046268,
+            "lower_bound": -9538.0,
+            "energy": -7914.0,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "G56",
+        "method": "auto",
+        "seconds": 10.263278042082675,
+        "budget": 10.0,
+        "nodes": 5000,
+        "edges": 12498,
+        "implementation": "reuse",
+        "repeat": 0,
+        "case_sha256": "fbace648de224a91805bd73332c6b061ead10b197576cc621bc2bf13c6fa42c4",
+        "independent_check_passed": true
+      },
+      {
+        "energy": -9408.375,
+        "lower_bound": -11050.125,
+        "verified_bound": -11050.125,
+        "extra_edges": 3404,
+        "sparse_factor_entries": 872066,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 8.414042874937877,
+            "lower_bound": -11050.125,
+            "energy": -9408.375,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 10.420118582900614,
+            "lower_bound": -11050.125,
+            "energy": -9408.375,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "pegasus-7111",
+        "method": "auto",
+        "seconds": 10.422752458951436,
+        "budget": 10.0,
+        "nodes": 5640,
+        "edges": 38063,
+        "implementation": "reuse",
+        "repeat": 1,
+        "case_sha256": "24f4d841fd52ddc61b72dff8d5ae3ede306aa6ad11d06c0564f863f73b522991",
+        "independent_check_passed": true
+      },
+      {
+        "energy": -9408.375,
+        "lower_bound": -11050.125,
+        "verified_bound": -11050.125,
+        "extra_edges": 3404,
+        "sparse_factor_entries": 872072,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 8.265121208038181,
+            "lower_bound": -11050.125,
+            "energy": -9408.375,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 10.725414792075753,
+            "lower_bound": -11050.125,
+            "energy": -9408.375,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "pegasus-7111",
+        "method": "auto",
+        "seconds": 10.727743291994557,
+        "budget": 10.0,
+        "nodes": 5640,
+        "edges": 38063,
+        "implementation": "previous",
+        "repeat": 1,
+        "case_sha256": "24f4d841fd52ddc61b72dff8d5ae3ede306aa6ad11d06c0564f863f73b522991",
+        "independent_check_passed": true
+      },
+      {
+        "energy": -8635.875,
+        "lower_bound": -10144.875,
+        "verified_bound": -10144.875,
+        "extra_edges": 3354,
+        "sparse_factor_entries": 721643,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 7.777155625051819,
+            "lower_bound": -10144.875,
+            "energy": -8635.875,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 10.550713500007987,
+            "lower_bound": -10144.875,
+            "energy": -8635.875,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "pegasus-7112",
+        "method": "auto",
+        "seconds": 10.558530666050501,
+        "budget": 10.0,
+        "nodes": 5360,
+        "edges": 34306,
+        "implementation": "previous",
+        "repeat": 1,
+        "case_sha256": "e1bc44ffe5c88bc7e01811fe924e208f7f0c0026393a28c9e2e155b485b26324",
+        "independent_check_passed": true
+      },
+      {
+        "energy": -8635.875,
+        "lower_bound": -10145.125,
+        "verified_bound": -10145.125,
+        "extra_edges": 3354,
+        "sparse_factor_entries": 721563,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 7.88601458305493,
+            "lower_bound": -10145.125,
+            "energy": -8635.875,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 10.195026875007898,
+            "lower_bound": -10145.125,
+            "energy": -8635.875,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "pegasus-7112",
+        "method": "auto",
+        "seconds": 10.20320662506856,
+        "budget": 10.0,
+        "nodes": 5360,
+        "edges": 34306,
+        "implementation": "reuse",
+        "repeat": 1,
+        "case_sha256": "e1bc44ffe5c88bc7e01811fe924e208f7f0c0026393a28c9e2e155b485b26324",
+        "independent_check_passed": true
+      },
+      {
+        "energy": -7914.0,
+        "lower_bound": -9538.0,
+        "verified_bound": -9538.0,
+        "extra_edges": 4535,
+        "sparse_factor_entries": 1391516,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 9.877265249961056,
+            "lower_bound": -9538.0,
+            "energy": -7914.0,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 10.29323149996344,
+            "lower_bound": -9538.0,
+            "energy": -7914.0,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "G56",
+        "method": "auto",
+        "seconds": 10.294382874970324,
+        "budget": 10.0,
+        "nodes": 5000,
+        "edges": 12498,
+        "implementation": "reuse",
+        "repeat": 1,
+        "case_sha256": "fbace648de224a91805bd73332c6b061ead10b197576cc621bc2bf13c6fa42c4",
+        "independent_check_passed": true
+      },
+      {
+        "energy": -7914.0,
+        "lower_bound": -9538.0,
+        "verified_bound": -9538.0,
+        "extra_edges": 4535,
+        "sparse_factor_entries": 1391516,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 9.632392791914754,
+            "lower_bound": -9538.0,
+            "energy": -7914.0,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 12.509563291911036,
+            "lower_bound": -9538.0,
+            "energy": -7914.0,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "G56",
+        "method": "auto",
+        "seconds": 12.510616332991049,
+        "budget": 10.0,
+        "nodes": 5000,
+        "edges": 12498,
+        "implementation": "previous",
+        "repeat": 1,
+        "case_sha256": "fbace648de224a91805bd73332c6b061ead10b197576cc621bc2bf13c6fa42c4",
+        "independent_check_passed": true
+      },
+      {
+        "energy": -9408.375,
+        "lower_bound": -11050.125,
+        "verified_bound": -11050.125,
+        "extra_edges": 3404,
+        "sparse_factor_entries": 872063,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 8.262744958978146,
+            "lower_bound": -11050.125,
+            "energy": -9408.375,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 10.745703833992593,
+            "lower_bound": -11050.125,
+            "energy": -9408.375,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "pegasus-7111",
+        "method": "auto",
+        "seconds": 10.748142541968264,
+        "budget": 10.0,
+        "nodes": 5640,
+        "edges": 38063,
+        "implementation": "previous",
+        "repeat": 2,
+        "case_sha256": "24f4d841fd52ddc61b72dff8d5ae3ede306aa6ad11d06c0564f863f73b522991",
+        "independent_check_passed": true
+      },
+      {
+        "energy": -9408.375,
+        "lower_bound": -11050.125,
+        "verified_bound": -11050.125,
+        "extra_edges": 3404,
+        "sparse_factor_entries": 872058,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 8.396610333933495,
+            "lower_bound": -11050.125,
+            "energy": -9408.375,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 10.4024259588914,
+            "lower_bound": -11050.125,
+            "energy": -9408.375,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "pegasus-7111",
+        "method": "auto",
+        "seconds": 10.405175374937244,
+        "budget": 10.0,
+        "nodes": 5640,
+        "edges": 38063,
+        "implementation": "reuse",
+        "repeat": 2,
+        "case_sha256": "24f4d841fd52ddc61b72dff8d5ae3ede306aa6ad11d06c0564f863f73b522991",
+        "independent_check_passed": true
+      },
+      {
+        "energy": -8635.875,
+        "lower_bound": -10145.125,
+        "verified_bound": -10145.125,
+        "extra_edges": 3354,
+        "sparse_factor_entries": 721559,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 7.887994792079553,
+            "lower_bound": -10145.125,
+            "energy": -8635.875,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 10.193576125078835,
+            "lower_bound": -10145.125,
+            "energy": -8635.875,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "pegasus-7112",
+        "method": "auto",
+        "seconds": 10.20111475000158,
+        "budget": 10.0,
+        "nodes": 5360,
+        "edges": 34306,
+        "implementation": "reuse",
+        "repeat": 2,
+        "case_sha256": "e1bc44ffe5c88bc7e01811fe924e208f7f0c0026393a28c9e2e155b485b26324",
+        "independent_check_passed": true
+      },
+      {
+        "energy": -8635.875,
+        "lower_bound": -10144.875,
+        "verified_bound": -10144.875,
+        "extra_edges": 3354,
+        "sparse_factor_entries": 721653,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 7.7559909579576924,
+            "lower_bound": -10144.875,
+            "energy": -8635.875,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 10.552158790989779,
+            "lower_bound": -10144.875,
+            "energy": -8635.875,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "pegasus-7112",
+        "method": "auto",
+        "seconds": 10.560969459009357,
+        "budget": 10.0,
+        "nodes": 5360,
+        "edges": 34306,
+        "implementation": "previous",
+        "repeat": 2,
+        "case_sha256": "e1bc44ffe5c88bc7e01811fe924e208f7f0c0026393a28c9e2e155b485b26324",
+        "independent_check_passed": true
+      },
+      {
+        "energy": -7914.0,
+        "lower_bound": -9538.0,
+        "verified_bound": -9538.0,
+        "extra_edges": 4535,
+        "sparse_factor_entries": 1391516,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 9.61486995802261,
+            "lower_bound": -9538.0,
+            "energy": -7914.0,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 12.490587083040737,
+            "lower_bound": -9538.0,
+            "energy": -7914.0,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "G56",
+        "method": "auto",
+        "seconds": 12.491707958979532,
+        "budget": 10.0,
+        "nodes": 5000,
+        "edges": 12498,
+        "implementation": "previous",
+        "repeat": 2,
+        "case_sha256": "fbace648de224a91805bd73332c6b061ead10b197576cc621bc2bf13c6fa42c4",
+        "independent_check_passed": true
+      },
+      {
+        "energy": -7914.0,
+        "lower_bound": -9538.0,
+        "verified_bound": -9538.0,
+        "extra_edges": 4535,
+        "sparse_factor_entries": 1391516,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 9.855697957915254,
+            "lower_bound": -9538.0,
+            "energy": -7914.0,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 10.2711214160081,
+            "lower_bound": -9538.0,
+            "energy": -7914.0,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "G56",
+        "method": "auto",
+        "seconds": 10.272346999961883,
+        "budget": 10.0,
+        "nodes": 5000,
+        "edges": 12498,
+        "implementation": "reuse",
+        "repeat": 2,
+        "case_sha256": "fbace648de224a91805bd73332c6b061ead10b197576cc621bc2bf13c6fa42c4",
+        "independent_check_passed": true
+      }
+    ],
+    "protocol": "Three repeats on the existing sparse geometric validation cases; rotated sequential fresh processes; one BLAS thread; imports/loading excluded; full API time includes its checker; external fresh verification afterward is excluded for both implementations. Cases are previously studied, not new holdouts.",
+    "summary": [
+      {
+        "case": "pegasus-7111",
+        "median_seconds": {
+          "previous": 10.727743291994557,
+          "reuse": 10.405175374937244
+        },
+        "time_reduction_percent": 3.006857157907805,
+        "bound_ranges": {
+          "previous": [
+            -11050.125,
+            -11042.625
+          ],
+          "reuse": [
+            -11050.125,
+            -11050.125
+          ]
+        },
+        "median_bounds": {
+          "previous": -11050.125,
+          "reuse": -11050.125
+        },
+        "time_ranges": {
+          "previous": [
+            10.700580375036225,
+            10.748142541968264
+          ],
+          "reuse": [
+            10.331033541006036,
+            10.422752458951436
+          ]
+        }
+      },
+      {
+        "case": "pegasus-7112",
+        "median_seconds": {
+          "previous": 10.560969459009357,
+          "reuse": 10.20111475000158
+        },
+        "time_reduction_percent": 3.4074022314380614,
+        "bound_ranges": {
+          "previous": [
+            -10144.875,
+            -10144.875
+          ],
+          "reuse": [
+            -10145.125,
+            -10145.125
+          ]
+        },
+        "median_bounds": {
+          "previous": -10144.875,
+          "reuse": -10145.125
+        },
+        "time_ranges": {
+          "previous": [
+            10.558530666050501,
+            10.603827125043608
+          ],
+          "reuse": [
+            10.19989095791243,
+            10.20320662506856
+          ]
+        }
+      },
+      {
+        "case": "G56",
+        "median_seconds": {
+          "previous": 12.510616332991049,
+          "reuse": 10.272346999961883
+        },
+        "time_reduction_percent": 17.890959753331657,
+        "bound_ranges": {
+          "previous": [
+            -9538.0,
+            -9538.0
+          ],
+          "reuse": [
+            -9538.0,
+            -9538.0
+          ]
+        },
+        "median_bounds": {
+          "previous": -9538.0,
+          "reuse": -9538.0
+        },
+        "time_ranges": {
+          "previous": [
+            12.491707958979532,
+            12.51097762491554
+          ],
+          "reuse": [
+            10.263278042082675,
+            10.294382874970324
+          ]
+        }
+      }
+    ]
+  },
+  "protocol": "Three repeats on the existing sparse geometric validation cases; rotated sequential fresh processes; one BLAS thread; imports/loading excluded; full API time includes its checker; external fresh verification afterward is excluded for both implementations. Cases are previously studied, not new holdouts.",
+  "summary": [
+    {
+      "case": "pegasus-7111",
+      "median_seconds": {
+        "previous": 10.747438124963082,
+        "reuse": 10.300524916965514
+      },
+      "time_reduction_percent": 4.158323153864196,
+      "median_bounds": {
+        "previous": -11050.125,
+        "reuse": -11050.125
+      },
+      "bound_ranges": {
+        "previous": [
+          -11050.125,
+          -11050.125
+        ],
+        "reuse": [
+          -11050.125,
+          -11050.125
+        ]
+      },
+      "time_ranges": {
+        "previous": [
+          10.731406125007197,
+          10.772677875007503
+        ],
+        "reuse": [
+          10.283309832913801,
+          10.355657791020349
+        ]
+      }
+    },
+    {
+      "case": "pegasus-7112",
+      "median_seconds": {
+        "previous": 10.561963042011485,
+        "reuse": 10.207062208093703
+      },
+      "time_reduction_percent": 3.360178713995876,
+      "median_bounds": {
+        "previous": -10145.125,
+        "reuse": -10145.125
+      },
+      "bound_ranges": {
+        "previous": [
+          -10145.125,
+          -10144.875
+        ],
+        "reuse": [
+          -10145.125,
+          -10145.125
+        ]
+      },
+      "time_ranges": {
+        "previous": [
+          10.557120333076455,
+          10.582045458024368
+        ],
+        "reuse": [
+          10.205231791944243,
+          10.20815404097084
+        ]
+      }
+    },
+    {
+      "case": "G56",
+      "median_seconds": {
+        "previous": 12.57471750001423,
+        "reuse": 10.205950792063959
+      },
+      "time_reduction_percent": 18.837534186732952,
+      "median_bounds": {
+        "previous": -9538.0,
+        "reuse": -9538.0
+      },
+      "bound_ranges": {
+        "previous": [
+          -9538.0,
+          -9538.0
+        ],
+        "reuse": [
+          -9538.0,
+          -9538.0
+        ]
+      },
+      "time_ranges": {
+        "previous": [
+          12.538879374973476,
+          12.655804208945483
+        ],
+        "reuse": [
+          10.20530166698154,
+          10.247303792042658
+        ]
+      }
+    }
+  ]
+}

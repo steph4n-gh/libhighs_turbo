@@ -13,6 +13,7 @@ from highs_turbo.api import (
 from highs_turbo.detector import TopologyDetector, TopologyScanResult, detect_topology
 from highs_turbo.ising import IsingResult, solve_ising, verify_ising_certificate
 from highs_turbo.ising_cuts import IsingCertificate
+from highs_turbo.ising_linearized import verify_linprog_certificate
 
 __version__ = "0.1.0"
 
@@ -24,6 +25,7 @@ __all__ = [
     "IsingResult",
     "IsingCertificate",
     "verify_ising_certificate",
+    "verify_linprog_certificate",
     "TurboSolver",
     "MaxCutResult",
     "QuboResult",

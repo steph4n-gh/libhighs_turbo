@@ -19,6 +19,7 @@ from highs_turbo.ising_cuts import (
     optimize_dual, separate_cycles, separate_short_cycles, square_indices, subgraph_cut, triangle_indices, verify_cut,
 )
 from highs_turbo.ising_policy import cluster_candidates, rank_clusters
+from highs_turbo.ising_sparse import MAX_SPARSE_VERTICES, _reuse_gram_bounds
 
 
 @dataclass
@@ -64,10 +65,10 @@ def _normalize(h, J, offset):
     fields = dict(h) if hasattr(h, "items") else dict(enumerate(h))
     labels = dict.fromkeys(fields)
     quadratic = {}
-    constant = Fraction.from_float(float(offset))
+    constant = offset if isinstance(offset, Fraction) else Fraction.from_float(float(offset))
     for (u, v), value in J.items():
         labels[u] = labels[v] = None
-        value = Fraction.from_float(float(value))
+        value = value if isinstance(value, Fraction) else Fraction.from_float(float(value))
         if u == v:
             constant += value
         else:
@@ -76,7 +77,8 @@ def _normalize(h, J, offset):
             quadratic[key] = quadratic.get(key, Fraction()) + value
     labels = list(labels)
     index = {label: i for i, label in enumerate(labels)}
-    fields = [Fraction.from_float(float(fields.get(label, 0))) for label in labels]
+    fields = [value if isinstance(value, Fraction) else Fraction.from_float(float(value))
+              for label in labels for value in (fields.get(label, 0),)]
     couplings = {}
     for pair, value in quadratic.items():
         u, v = sorted(index[label] for label in pair)
@@ -222,7 +224,10 @@ def _sample_spins(n, edges, weights, seed, deadline):
             samples = improved
     if time.perf_counter() < deadline:
         samples = SteepestDescentSolver().sample_ising(h, J, initial_states=samples)
-    return np.asarray([samples.first.sample[i] for i in range(n)], dtype=int)
+    # Accessing .first materializes the whole sample. Do it once, rather
+    # than rebuilding an n-entry mapping for each of the n returned spins.
+    best_sample = samples.first.sample
+    return np.asarray([best_sample[i] for i in range(n)], dtype=int)
 
 
 def _adaptive_relaxation(graph, edges, weights, constant, energy, *, deadline, started,
@@ -255,8 +260,9 @@ def _adaptive_relaxation(graph, edges, weights, constant, energy, *, deadline, s
             cuts.extend(accepted)
         return len(accepted)
 
-    triangles = triangle_indices(graph, edges)
-    squares = square_indices(graph, edges)
+    pool_limit = max(4096, 64*len(graph))
+    triangles = triangle_indices(graph, edges, deadline, pool_limit)
+    squares = square_indices(graph, edges, deadline, pool_limit)
     preferred = (objective > 0).astype(float)
     initial = separate_short_cycles(triangles, preferred)+separate_short_cycles(squares, preferred)
     # Coordinate search cheaply combines the whole pool before simplex.
@@ -323,10 +329,13 @@ def _adaptive_relaxation(graph, edges, weights, constant, energy, *, deadline, s
         for additional in ((), cuts):
             source = make_certificate([], [], edges, weights, constant)
             proof = strengthen_certificate(source, edges, weights, constant,
-                                           deadline=deadline, seed=seed, cuts=additional)
+                                           deadline=deadline, seed=seed, cuts=additional,
+                                           geometry=bool(additional))
             if proof.lower_bound > best.lower_bound:
                 best = proof
         record_progress()
+        if best.gram_factor or best.sparse_gram_factor:
+            return cuts, best, rounds, tuple(progress)
     last_objective, cluster_points = None, {}
     rng = np.random.default_rng(seed)
     shuffled = rng.permutation(len(graph))
@@ -413,9 +422,10 @@ def _adaptive_relaxation(graph, edges, weights, constant, energy, *, deadline, s
     return cuts, best, rounds, tuple(progress)
 
 
+@_reuse_gram_bounds()
 def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
                 seed=0, accelerate=True, cut_policy="deterministic",
-                certified_gap=None, threads=0, relaxation="cuts"):
+                certified_gap=None, threads=0, relaxation="auto"):
     """Minimize offset + sum(h[i]*s[i]) + sum(J[i,j]*s[i]*s[j]), s in {-1,1}.
 
     h is a mapping or sequence; J maps pairs of arbitrary hashable labels to
@@ -426,9 +436,12 @@ def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
     retains the original one-pass acceleration for comparison. certified_gap
     is an optional absolute target checked against the rational certificate.
     threads=0 leaves the native runtime's thread count automatic.
-    relaxation="sdp" uses a global sum-of-squares bound; "hybrid" also tries
-    it on the residual left by adaptive cuts. These dense bounds support up
-    to 2048 vertices including the reference spin; larger inputs use cuts.
+    relaxation="auto" uses global and geometric bounds on problems with up
+    to 8192 vertices including the reference spin. Above 2048 vertices the
+    factors are sparse and subject to edge-count, storage, and work limits.
+    Inputs exceeding these limits retain the cut relaxation.
+    "cuts" selects only the sparse cut relaxation, "sdp" selects the basic
+    global bound, and "hybrid" explicitly selects the combined relaxation.
     """
     started = time.perf_counter()
     if time_limit is not None and (not math.isfinite(time_limit) or time_limit < 0):
@@ -441,9 +454,9 @@ def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
         raise ValueError("threads must be a nonnegative integer")
     if cut_policy not in ("deterministic", "learned", "static"):
         raise ValueError("cut_policy must be 'deterministic', 'learned', or 'static'")
-    if relaxation not in ("cuts", "sdp", "hybrid"):
-        raise ValueError("relaxation must be 'cuts', 'sdp', or 'hybrid'")
-    if relaxation != "cuts" and cut_policy == "static":
+    if relaxation not in ("auto", "cuts", "sdp", "hybrid"):
+        raise ValueError("relaxation must be 'auto', 'cuts', 'sdp', or 'hybrid'")
+    if relaxation not in ("auto", "cuts") and cut_policy == "static":
         raise ValueError("The static cut policy requires relaxation='cuts'")
     if isinstance(seed, bool) or not isinstance(seed, (int, np.integer)) or not 0 <= seed < 2**31:
         raise ValueError("seed must be an integer in [0, 2**31)")
@@ -458,6 +471,18 @@ def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
     weights.update({(i, n): value for i, value in enumerate(fields) if value})
     edges = sorted(weights)
     vertices = n + bool(any(fields))
+    geometric_direct = (relaxation in ("auto", "hybrid") and (
+        (vertices <= 2048 and len(edges) > 16*vertices)
+        or (2048 < vertices <= MAX_SPARSE_VERTICES and len(edges) <= 16*vertices)))
+    if relaxation == "auto":
+        relaxation = ("cuts" if cut_policy == "static" or vertices > MAX_SPARSE_VERTICES
+                      else "hybrid" if vertices <= 2048 else "sdp")
+    elif relaxation == "hybrid" and vertices > 2048:
+        relaxation = "sdp" if vertices <= MAX_SPARSE_VERTICES else "cuts"
+    if geometric_direct and cut_policy != "static":
+        # Go directly to vector fitting for dense objectives and large
+        # sparse inputs; their geometric pass chooses its own short cycles.
+        relaxation = "sdp"
     graph = nx.Graph()
     graph.add_nodes_from(range(vertices))
     graph.add_edges_from(edges)
@@ -488,19 +513,20 @@ def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
         return constant + sum((w * int(state[u] * state[v]) for (u, v), w in weights.items()), Fraction())
 
     energy = exact_energy(spins)
-    if relaxation == "sdp" and vertices > 2048:
+    if relaxation == "sdp" and vertices > MAX_SPARSE_VERTICES:
         relaxation = "cuts"
     if edges and accelerate and relaxation == "sdp" and time.perf_counter() < deadline:
         from highs_turbo.ising_sdp import strengthen_certificate
         proof = strengthen_certificate(proof, edges, weights, constant,
-                                       deadline=deadline, seed=seed)
+                                       deadline=deadline, seed=seed, geometry=geometric_direct)
         exact_lower = proof.lower_bound
         root_rounds = 1
         progress = ({"time": time.perf_counter()-started, "lower_bound": _downward(exact_lower),
                      "energy": float(energy), "cuts": len(rhs), "round": root_rounds},)
-    elif edges and accelerate and cut_policy != "static" and time.perf_counter() < deadline:
+    if (edges and accelerate and cut_policy != "static" and time.perf_counter() < deadline
+            and (relaxation != "sdp" or (vertices > 2048 and not proof.sparse_gram_factor))):
         root_deadline = deadline if certified_gap is not None else min(
-            deadline, started + (0.7*time_limit if time_limit else 3.0))
+            deadline, started + ((0.9 if relaxation == "hybrid" else 0.7)*time_limit if time_limit else 3.0))
         cuts, proof, root_rounds, progress = _adaptive_relaxation(
             graph, edges, weights, constant, energy, deadline=root_deadline, started=started,
             seed=seed, policy=cut_policy, threads=int(threads),
@@ -542,7 +568,7 @@ def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
             cuts_added = len(rhs)
         objective_constant = constant + sum(weights.values(), Fraction())
         _check_status(session.changeObjectiveOffset(float(objective_constant)))
-        if proof.gram_factor:
+        if proof.gram_factor or proof.sparse_gram_factor:
             # Install the independently proved objective bound so that HiGHS
             # can use the global relaxation during branch-and-bound as well.
             _add_rows(session, sp.csr_matrix(costs.reshape(1, -1)),

@@ -60,6 +60,28 @@ assert highs_turbo.verify_ising_certificate({}, complete, verified.certificate.t
 global_bound = highs_turbo.solve_ising({}, complete, relaxation="sdp", certified_gap=0, time_limit=5)
 assert global_bound.exact_gap == 0 and global_bound.certificate.gram_factor
 assert highs_turbo.verify_ising_certificate({}, complete, global_bound.certificate.to_dict())
+# Read the same square through the sparse on-disk format in the built wheel.
+sparse_receipt = global_bound.certificate.to_dict()
+rows = sparse_receipt["gram_factor"]
+starts = [0]
+for row in rows:
+    starts.append(starts[-1] + len(row))
+sparse_receipt.update(version=4, gram_factor=[], sparse_gram_factor=[
+    starts, [j for row in rows for j in range(len(row))], [x for row in rows for x in row]])
+assert highs_turbo.verify_ising_certificate({}, complete, sparse_receipt)
+
+# The drop-in product bridge and standalone checker must ship in the wheel.
+c = np.r_[np.ones(32), -3.]
+envelope = np.zeros((3, 33))
+envelope[0, [32, 0]] = [1, -1]
+envelope[1, [32, 1]] = [1, -1]
+envelope[2, [0, 1, 32]] = [1, 1, -1]
+product = highs_turbo.linprog(c, A_ub=envelope, b_ub=[0, 0, 1],
+                            bounds=(0, 1), integrality=np.r_[np.ones(32), 0])
+assert product.success and product.fun == -1 and product.turbo_equivalent_model
+assert highs_turbo.verify_linprog_certificate(
+    c, product.turbo_bound_certificate, A_ub=envelope, b_ub=[0, 0, 1],
+    bounds=(0, 1), integrality=np.r_[np.ones(32), 0])
 
 if "--require-native" in sys.argv:
     assert COMPILED_ENGINE_AVAILABLE

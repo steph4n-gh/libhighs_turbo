@@ -1,0 +1,122 @@
+[
+  {
+    "case": "pegasus-4101",
+    "settings": "default",
+    "budget": 5,
+    "method": "mixing",
+    "seconds": 5.917735209,
+    "numerical": -7066.838817876702,
+    "verified": -4970.875,
+    "certificate_seconds": 0.5724472081055865,
+    "exact": [
+      -39767,
+      8
+    ],
+    "repairs": {
+      "trivial": -4970.875,
+      "cuts": -4975.625,
+      "projection": -4975.625,
+      "coefficient_repair": -4975.625
+    }
+  },
+  {
+    "case": "pegasus-4101",
+    "settings": "tuned",
+    "budget": 5,
+    "method": "mixing",
+    "seconds": 6.077143334,
+    "numerical": -2282.3779464032514,
+    "verified": -2510.125,
+    "certificate_seconds": 0.6714911659946665,
+    "exact": [
+      -20081,
+      8
+    ],
+    "repairs": {
+      "trivial": -4970.875,
+      "cuts": -3819.875,
+      "projection": -2653.875,
+      "coefficient_repair": -2510.125
+    }
+  },
+  {
+    "case": "pegasus-4101",
+    "settings": "tuned",
+    "budget": 30,
+    "method": "mixing",
+    "seconds": 31.540366625,
+    "numerical": -2309.678644808782,
+    "verified": -2322.375,
+    "certificate_seconds": 0.6548297080444172,
+    "exact": [
+      -18579,
+      8
+    ],
+    "repairs": {
+      "trivial": -4970.875,
+      "cuts": -4244.625,
+      "projection": -2335.875,
+      "coefficient_repair": -2322.375
+    }
+  },
+  {
+    "case": "G3",
+    "settings": "default",
+    "budget": 5,
+    "method": "mixing",
+    "seconds": 5.278572,
+    "numerical": -4900.431405487877,
+    "verified": -4976.0,
+    "certificate_seconds": 0.30377845908515155,
+    "exact": [
+      -4976,
+      1
+    ],
+    "repairs": {
+      "trivial": -19176.0,
+      "cuts": -19668.0,
+      "projection": -5026.0,
+      "coefficient_repair": -4976.0
+    }
+  },
+  {
+    "case": "G3",
+    "settings": "tuned",
+    "budget": 5,
+    "method": "mixing",
+    "seconds": 5.369425,
+    "numerical": -4909.218803216241,
+    "verified": -4944.0,
+    "certificate_seconds": 0.30335149995516986,
+    "exact": [
+      -4944,
+      1
+    ],
+    "repairs": {
+      "trivial": -19176.0,
+      "cuts": -19660.0,
+      "projection": -4960.0,
+      "coefficient_repair": -4944.0
+    }
+  },
+  {
+    "case": "G3",
+    "settings": "tuned",
+    "budget": 30,
+    "method": "mixing",
+    "seconds": 30.40912125,
+    "numerical": -4911.519564626586,
+    "verified": -4912.0,
+    "certificate_seconds": 0.303427540929988,
+    "exact": [
+      -4912,
+      1
+    ],
+    "repairs": {
+      "trivial": -19176.0,
+      "cuts": -19660.0,
+      "projection": -4912.0,
+      "coefficient_repair": -4912.0
+    }
+  }
+]
