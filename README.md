@@ -41,7 +41,9 @@ also uses the fact that squared real numbers cannot be negative. Numerical
 optimization proposes a receipt; exact arithmetic checks what it actually
 proves, including rounding errors. A **higher-order** SOS method would also
 reason about products of switches, giving it a richer language for expressing
-their joint restrictions; that extension is currently research work.
+their joint restrictions; that extension is currently research work. The
+[cubic follow-up](CUBIC_SCHUR_RESULTS.md) records a candidate whose apparent
+gain disappeared against a stronger ordinary-cut control.
 
 A **sparse** proof stores the nonzero pieces of its square instead of a full
 table. This lets the global bound engine handle larger networks without

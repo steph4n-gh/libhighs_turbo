@@ -1,0 +1,567 @@
+{
+  "captured_at_utc": "2026-09-12T03:26:43.802584+00:00",
+  "production_commit": "0fcdba88b41bebac1b731ba64bb54f397fede093",
+  "decision": "Do not enable cubic Schur continuation in the public solver: the ordinary-cut control matches its rounded checked bound. Novelty is unestablished.",
+  "scope": "Single Pegasus development input, incremental work from a supplied checked certificate. No new holdout or published full-solver timing run.",
+  "environment": {
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "python": "3.13.5",
+    "versions": {
+      "numpy": "2.5.3",
+      "scipy": "1.18.1",
+      "cvxpy": "1.9.2",
+      "scs": "3.3.1"
+    },
+    "blas_threads": 1,
+    "sequential_processes": true
+  },
+  "preparation": {
+    "case": "pegasus-6111",
+    "n": 5641,
+    "constant": "-626114831/1048576",
+    "before": -11058.5,
+    "scalar_pentagonal_bound": -11054.75,
+    "warmup_seconds": 1.054699333035387,
+    "selection_seconds": 0.7792108749272302,
+    "fit_seconds": 5.82785941590555,
+    "check_seconds": 0.7515058749122545,
+    "selection": {
+      "seconds": 0.7780118330847472,
+      "candidates": 13992,
+      "queries": 4096,
+      "pairs": 275184,
+      "best": 0.25184584406220933
+    }
+  },
+  "inputs": [
+    {
+      "path": "/tmp/libhighs-turbo-sparse-final/pegasus-6111.json",
+      "sha256": "7671ebc81fbb1cbe5a55ad9d00d02093e4f028786533408a6f2d10ad3f100dea",
+      "bytes": 694700
+    },
+    {
+      "path": "/tmp/libhighs-turbo-cubic-input/input.json",
+      "sha256": "f802a11623c9578a63cd00950faf03191fb152024d57807e19bdb1a003e7eb0f",
+      "bytes": 886317
+    },
+    {
+      "path": "/tmp/libhighs-turbo-cubic-input/vectors.npy",
+      "sha256": "5b09317f7d437be864f07d3aa3cfbcefbad21f1820887b2a3d9450c0a2b7a11b",
+      "bytes": 1444224
+    },
+    {
+      "path": "/tmp/libhighs-turbo-cubic-input/source-proof.json.gz",
+      "sha256": "806b1c9e040b6f67dbd66c4041815ede6fed1fa4ce0d1c89e70daf9a175c25f7",
+      "bytes": 2628849
+    }
+  ],
+  "production_source": [
+    {
+      "path": "/Volumes/Storage/libhighs_t/highs_turbo/ising.py",
+      "sha256": "7fd5ba3a93f082c2898d4f90f1f75589c5450dc2c76db12cbe9abc222a42780e",
+      "bytes": 33630
+    },
+    {
+      "path": "/Volumes/Storage/libhighs_t/highs_turbo/ising_cuts.py",
+      "sha256": "b547214d650acf6ee3c66c8c6dc7806ed99a39cc0970cf558e040bc851589341",
+      "bytes": 22182
+    },
+    {
+      "path": "/Volumes/Storage/libhighs_t/highs_turbo/ising_geometry.py",
+      "sha256": "66946294708ca578e520e79b99ee223bc2f830a21851d53ac3a975a4c0f10928",
+      "bytes": 9347
+    },
+    {
+      "path": "/Volumes/Storage/libhighs_t/highs_turbo/ising_linearized.py",
+      "sha256": "5d66c66f7f10a654d59dee4774b917c2140bbde1c2d6b021dbb1512147afb04e",
+      "bytes": 12672
+    },
+    {
+      "path": "/Volumes/Storage/libhighs_t/highs_turbo/ising_policy.py",
+      "sha256": "bd23e589584bde64a394442c5c1013589abfd49556f6d9fad6bee4ecf0f26574",
+      "bytes": 4011
+    },
+    {
+      "path": "/Volumes/Storage/libhighs_t/highs_turbo/ising_sdp.py",
+      "sha256": "75e4a595c65e50ea7d798e84d7fa25905146c1154c1d8512c63362bfd16b6ecb",
+      "bytes": 11100
+    },
+    {
+      "path": "/Volumes/Storage/libhighs_t/highs_turbo/ising_sparse.py",
+      "sha256": "fe5b4775bc3fcd49a786aa79af9521a383edd9bf40f1c9c3b98f0d70bb315b41",
+      "bytes": 9023
+    }
+  ],
+  "prototype_sources_at_capture": [
+    {
+      "path": "/tmp/libhighs-turbo-sparse-cubic.py",
+      "sha256": "138aa427ed3d407ec9349ed8b3fdfe5c542a028dd9b388dec4f94d35ab013266",
+      "bytes": 6986
+    },
+    {
+      "path": "/tmp/libhighs-turbo-sparse-cubic-al.py",
+      "sha256": "ba786639385573f031257b3c7cc383bb445933e9bf8f53d57cc7149d19fbd079",
+      "bytes": 8361
+    },
+    {
+      "path": "/tmp/libhighs-turbo-cubic-template.py",
+      "sha256": "f08e9098289b356d9f5db100badfeb12c7ab4f179f05a4d6ea97c5e315e85c6b",
+      "bytes": 1774
+    },
+    {
+      "path": "/tmp/libhighs-turbo-cubic-schur.py",
+      "sha256": "799e12674fea05bf3cd83ae0e3bf429c0ab3ddfb120899d873cfe0ad6b0f40c9",
+      "bytes": 8515
+    },
+    {
+      "path": "/tmp/libhighs-turbo-cubic-schur-warm.py",
+      "sha256": "79931b181473a3a4a698304cd81daac82de4a11f13733be8db2f4585b73ea3db",
+      "bytes": 10383
+    },
+    {
+      "path": "/tmp/libhighs-turbo-cubic-schur-al.py",
+      "sha256": "d083da2126cb1cf5a91214f6429a5bb76a83252959beed5e35f2d41469ae31e7",
+      "bytes": 12898
+    },
+    {
+      "path": "/tmp/libhighs-turbo-cubic-schur-all-facets.py",
+      "sha256": "3acf0397b34fc5d362bc2cf90f3b0d6f97e4d01df99a17f5df799c458bcc28c2",
+      "bytes": 11140
+    },
+    {
+      "path": "/tmp/libhighs-turbo-cubic-schur-all-facets-accurate.py",
+      "sha256": "20adb25829038dc49f5c81e91815114e5005291737ba740b20de79ed83b57ec5",
+      "bytes": 11184
+    },
+    {
+      "path": "/tmp/libhighs-turbo-prepare-cubic.py",
+      "sha256": "9d46dab6686afe1f4802d0421b1739ddbefb2d7bb3c43d52e1d620bf2caffe33",
+      "bytes": 3905
+    }
+  ],
+  "prototype_caveat": "The local low-rank script was changed from a 1000 to a 10000 outer-iteration cap before the full-budget run; its captured hash is the latter version. Large timing runs predate consolidation into experiments/cubic_schur.py.",
+  "runs": [
+    {
+      "label": "global_lbfgs",
+      "source": {
+        "path": "/tmp/libhighs-turbo-cubic-lbfgs.json",
+        "sha256": "329b5d2ea2e2531f3457bad3068067702df45c4e255dfcb26bc8a92491490726",
+        "bytes": 708
+      },
+      "quarter_unit_bound": "-11055",
+      "observed": {
+        "bound": -11055.07927151004,
+        "exact": "-24310376410021441/2199023255552",
+        "numerical_proposal": -11052.127538021668,
+        "seconds": 5.607387333991937,
+        "setup": 0.14035587501712143,
+        "fit_done": 4.652375999954529,
+        "factor_done": 4.858357041957788,
+        "n": 5641,
+        "lifted_size": 5957,
+        "triples": 316,
+        "identity_groups": 481,
+        "equalities": 2900,
+        "calls": 9,
+        "edges": 49477,
+        "factor_entries": 1016449,
+        "identity_valid": true,
+        "mode": "lbfgs",
+        "starting_bound": -11054.75,
+        "template_seconds": 0.019954125047661364,
+        "solve_seconds": 5.607757624937221,
+        "independent_check_seconds": 0.7904822499258444,
+        "independent_valid": true,
+        "total_additional_seconds": 6.418193999910727
+      }
+    },
+    {
+      "label": "global_augmented_lagrangian",
+      "source": {
+        "path": "/tmp/libhighs-turbo-cubic-al.json",
+        "sha256": "24e00a53cb6f003f62c87db4afa5c09ac49f7600c3e8489b8a2fb56192fc08cb",
+        "bytes": 705
+      },
+      "quarter_unit_bound": "-11054",
+      "observed": {
+        "bound": -11054.014500846846,
+        "exact": "-48616069909142493/4398046511104",
+        "numerical_proposal": -11051.072097671198,
+        "seconds": 8.593720584060065,
+        "setup": 0.13792624999769032,
+        "fit_done": 7.690474167000502,
+        "factor_done": 7.886251125019044,
+        "n": 5641,
+        "lifted_size": 5957,
+        "triples": 316,
+        "identity_groups": 481,
+        "equalities": 2900,
+        "calls": 10,
+        "edges": 49477,
+        "factor_entries": 994004,
+        "identity_valid": true,
+        "mode": "al",
+        "starting_bound": -11054.75,
+        "template_seconds": 0.01955099997576326,
+        "solve_seconds": 8.594073457992636,
+        "independent_check_seconds": 0.7910220000194386,
+        "independent_valid": true,
+        "total_additional_seconds": 9.404646457987837
+      }
+    },
+    {
+      "label": "cold_scalar_15",
+      "source": {
+        "path": "/tmp/libhighs-turbo-schur-scalar.json",
+        "sha256": "95e9e89d0e0357389e9126131f25ed28753a70f2b5a47d3a5c52ad9afab2a9ae",
+        "bytes": 607
+      },
+      "quarter_unit_bound": "-22107/2",
+      "observed": {
+        "mode": "scalar",
+        "starting_bound": -11054.75,
+        "bound": -11053.590776040139,
+        "exact": "-12153551586933673/1099511627776",
+        "setup": 1.4504974579904228,
+        "solve_done": 14.335146082914434,
+        "factor_done": 14.549545332905836,
+        "seconds": 15.25169741595164,
+        "independent_seconds": 0.7597098749829456,
+        "total_additional_seconds": 16.011407290934585,
+        "n": 5641,
+        "lifted_size": 5641,
+        "schur_size": 150,
+        "variables": 32,
+        "status": "optimal",
+        "iterations": 7125,
+        "local_shift": 0.0001464653788324763,
+        "factor_entries": 968666,
+        "identity_valid": true,
+        "independent_valid": true
+      }
+    },
+    {
+      "label": "cold_cubic_15",
+      "source": {
+        "path": "/tmp/libhighs-turbo-schur-cubic.json",
+        "sha256": "96357fd02b31ac1c73a7f7dbe0c73ea8a041d980c809e15713616580aa727e94",
+        "bytes": 617
+      },
+      "quarter_unit_bound": "-44257/4",
+      "observed": {
+        "mode": "cubic",
+        "starting_bound": -11054.75,
+        "bound": -11064.297635043798,
+        "exact": "-24330647805810309/2199023255552",
+        "setup": 1.541398916975595,
+        "solve_done": 16.992678666952997,
+        "factor_done": 17.237433666945435,
+        "seconds": 17.993940457934514,
+        "independent_seconds": 0.8005402500275522,
+        "total_additional_seconds": 18.794480707962066,
+        "n": 5641,
+        "lifted_size": 5957,
+        "schur_size": 466,
+        "variables": 2900,
+        "status": "optimal_inaccurate",
+        "iterations": 950,
+        "local_shift": 0.03352280305328232,
+        "factor_entries": 1054863,
+        "identity_valid": true,
+        "independent_valid": true
+      }
+    },
+    {
+      "label": "warm_scalar_15",
+      "source": {
+        "path": "/tmp/libhighs-turbo-schur-warm-scalar-15.json",
+        "sha256": "8311f7bf500fa90bd973e5b81b6e028179654a193a9fc17d41f7d58ec33df960",
+        "bytes": 738
+      },
+      "quarter_unit_bound": "-22107/2",
+      "observed": {
+        "mode": "scalar",
+        "warm_start": true,
+        "initial_minimum": 0.004806474680407461,
+        "initial_bound": -11054.958819315445,
+        "solver_seconds": 15.0,
+        "starting_bound": -11054.75,
+        "bound": -11053.590257084994,
+        "exact": "-24307102032672911/2199023255552",
+        "setup": 1.4525245839031413,
+        "solve_done": 13.914830041932873,
+        "factor_done": 14.14194283389952,
+        "seconds": 14.850373708992265,
+        "independent_seconds": 0.7539468329632655,
+        "total_additional_seconds": 15.60432054195553,
+        "n": 5641,
+        "lifted_size": 5641,
+        "schur_size": 150,
+        "variables": 32,
+        "status": "optimal",
+        "iterations": 7325,
+        "local_shift": 0.00014232873607336675,
+        "factor_entries": 968665,
+        "identity_valid": true,
+        "independent_valid": true
+      }
+    },
+    {
+      "label": "warm_cubic_15",
+      "source": {
+        "path": "/tmp/libhighs-turbo-schur-warm-cubic-15.json",
+        "sha256": "ce6789ec247430e52886ed656b0c501588320a415d299b304db43248909baddb",
+        "bytes": 749
+      },
+      "quarter_unit_bound": "-44257/4",
+      "observed": {
+        "mode": "cubic",
+        "warm_start": true,
+        "initial_minimum": -2.745423550998349e-16,
+        "initial_bound": -11054.958819315443,
+        "solver_seconds": 15.0,
+        "starting_bound": -11054.75,
+        "bound": -11064.255301625764,
+        "exact": "-24330554713639565/2199023255552",
+        "setup": 1.5998152919346467,
+        "solve_done": 16.67964279197622,
+        "factor_done": 16.93727883300744,
+        "seconds": 17.698253416921943,
+        "independent_seconds": 0.8058318749535829,
+        "total_additional_seconds": 18.504085291875526,
+        "n": 5641,
+        "lifted_size": 5957,
+        "schur_size": 466,
+        "variables": 2900,
+        "status": "optimal_inaccurate",
+        "iterations": 950,
+        "local_shift": 0.03341036485527438,
+        "factor_entries": 1054865,
+        "identity_valid": true,
+        "independent_valid": true
+      }
+    },
+    {
+      "label": "warm_cubic_60",
+      "source": {
+        "path": "/tmp/libhighs-turbo-schur-warm-cubic-60.json",
+        "sha256": "7342cdfbaf75e8cc3515dc25ce6fd7e8405a61e53be4733fe40cf0e31935d8ce",
+        "bytes": 749
+      },
+      "quarter_unit_bound": "-22109/2",
+      "observed": {
+        "mode": "cubic",
+        "warm_start": true,
+        "initial_minimum": -2.745423550998349e-16,
+        "initial_bound": -11054.958819315443,
+        "solver_seconds": 60.0,
+        "starting_bound": -11054.75,
+        "bound": -11054.510944545422,
+        "exact": "-48618253291618973/4398046511104",
+        "setup": 1.6062670419923961,
+        "solve_done": 62.01841287501156,
+        "factor_done": 62.27362458303105,
+        "seconds": 63.052433499949984,
+        "independent_seconds": 0.823767791967839,
+        "total_additional_seconds": 63.87620129191782,
+        "n": 5641,
+        "lifted_size": 5957,
+        "schur_size": 466,
+        "variables": 2900,
+        "status": "optimal_inaccurate",
+        "iterations": 3250,
+        "local_shift": 0.004787089493837917,
+        "factor_entries": 1054874,
+        "identity_valid": true,
+        "independent_valid": true
+      }
+    },
+    {
+      "label": "local_mixing_1000_cap",
+      "source": {
+        "path": "/tmp/libhighs-turbo-schur-al-cubic-15.json",
+        "sha256": "57b0f2df97f45f3a2a0ffe6b7763a501d05613c5830f52db646ff36189e5ecb2",
+        "bytes": 741
+      },
+      "quarter_unit_bound": "-44215/4",
+      "observed": {
+        "mode": "cubic",
+        "warm_start": true,
+        "initial_minimum": -2.745423550998349e-16,
+        "initial_bound": -11054.958819315443,
+        "solver_seconds": 15.0,
+        "starting_bound": -11054.75,
+        "bound": -11053.935256411107,
+        "exact": "-24307860694214183/2199023255552",
+        "setup": 1.6435315409908071,
+        "solve_done": 5.624135124962777,
+        "factor_done": 5.847727790940553,
+        "seconds": 6.6213496659183875,
+        "independent_seconds": 0.8328985829139128,
+        "total_additional_seconds": 7.4542482488323,
+        "n": 5641,
+        "lifted_size": 5957,
+        "schur_size": 466,
+        "variables": 2900,
+        "status": "research_al",
+        "iterations": 1000,
+        "local_shift": 0.002038925291658367,
+        "factor_entries": 1054870,
+        "identity_valid": true,
+        "independent_valid": true
+      }
+    },
+    {
+      "label": "local_mixing_full_budget",
+      "source": {
+        "path": "/tmp/libhighs-turbo-schur-al-full-cubic-15.json",
+        "sha256": "f36f8df3cd1ab7a8acf9f807c87d953508c40eecd2d73400bdb382f383339a03",
+        "bytes": 810
+      },
+      "quarter_unit_bound": "-44211/4",
+      "observed": {
+        "mode": "cubic",
+        "warm_start": true,
+        "initial_minimum": -2.745423550998349e-16,
+        "initial_bound": -11054.958819315443,
+        "solver_seconds": 15.0,
+        "starting_bound": -11054.75,
+        "bound": -11052.986340310435,
+        "exact": "-12152887002820619/1099511627776",
+        "setup": 1.6197131250519305,
+        "solve_done": 16.621334583032876,
+        "factor_done": 16.85101833299268,
+        "seconds": 17.622222542064264,
+        "independent_seconds": 0.8797523330431432,
+        "total_additional_seconds": 18.501974875107408,
+        "n": 5641,
+        "lifted_size": 5957,
+        "schur_size": 466,
+        "variables": 2900,
+        "status": "research_al",
+        "iterations": 6366,
+        "local_shift": 2.7200485650717997e-06,
+        "factor_entries": 1054728,
+        "identity_valid": true,
+        "independent_valid": true,
+        "max_moment_violation": 6.279094628108828e-06,
+        "rank": 32
+      }
+    },
+    {
+      "label": "all_signed_cuts_1e5",
+      "source": {
+        "path": "/tmp/libhighs-turbo-schur-all-facets-scalar-15.json",
+        "sha256": "ed136e1b05b282a22bb798be50c13a6809c4dcc6cafac119bbbb901ec5a7cf19",
+        "bytes": 784
+      },
+      "quarter_unit_bound": "-11053",
+      "observed": {
+        "mode": "scalar",
+        "all_signed_triangles_and_pentagons": true,
+        "warm_start": true,
+        "initial_minimum": 0.004806474680407461,
+        "initial_bound": -11054.958819315445,
+        "solver_seconds": 15.0,
+        "starting_bound": -11054.75,
+        "bound": -11053.028002602212,
+        "exact": "-3038233202748717/274877906944",
+        "setup": 1.4956270409747958,
+        "solve_done": 10.507254333002493,
+        "factor_done": 10.741742333048023,
+        "seconds": 11.460384082980454,
+        "independent_seconds": 0.7979892919538543,
+        "total_additional_seconds": 12.258373374934308,
+        "n": 5641,
+        "lifted_size": 5641,
+        "schur_size": 150,
+        "variables": 1776,
+        "status": "optimal",
+        "iterations": 5375,
+        "local_shift": 0.000358606182540747,
+        "factor_entries": 968665,
+        "identity_valid": true,
+        "independent_valid": true
+      }
+    },
+    {
+      "label": "all_signed_cuts_1e6",
+      "source": {
+        "path": "/tmp/libhighs-turbo-schur-all-facets-accurate-scalar-15.json",
+        "sha256": "be0fd81af9c7686c45b26ed9d731e331351bdc101f428901c9c8bbcc7eb17927",
+        "bytes": 834
+      },
+      "quarter_unit_bound": "-44211/4",
+      "observed": {
+        "mode": "scalar",
+        "all_signed_triangles_and_pentagons": true,
+        "eps_abs": 1e-06,
+        "eps_rel": 1e-06,
+        "warm_start": true,
+        "initial_minimum": 0.004806474680407461,
+        "initial_bound": -11054.958819315445,
+        "solver_seconds": 15.0,
+        "starting_bound": -11054.75,
+        "bound": -11052.988666096224,
+        "exact": "-48611558240196555/4398046511104",
+        "setup": 1.541428791009821,
+        "solve_done": 16.585175957996398,
+        "factor_done": 16.828808833030052,
+        "seconds": 17.5506332910154,
+        "independent_seconds": 0.8011454159859568,
+        "total_additional_seconds": 18.35177870700136,
+        "n": 5641,
+        "lifted_size": 5641,
+        "schur_size": 150,
+        "variables": 1776,
+        "status": "optimal_inaccurate",
+        "iterations": 8575,
+        "local_shift": 7.741979066864084e-05,
+        "factor_entries": 968666,
+        "identity_valid": true,
+        "independent_valid": true
+      }
+    }
+  ],
+  "consolidated_control": {
+    "status": "passed",
+    "identity_oracle": true,
+    "exact_template": true,
+    "exact_seed_cancellation": true,
+    "enumerated_optimum": "-25/8",
+    "branches": [
+      {
+        "mode": "scalar",
+        "optimizer": "scs",
+        "all_cuts": false,
+        "bound": -5.124999969656415
+      },
+      {
+        "mode": "scalar",
+        "optimizer": "scs",
+        "all_cuts": true,
+        "bound": -5.125000302019963
+      },
+      {
+        "mode": "cubic",
+        "optimizer": "mixing",
+        "all_cuts": false,
+        "bound": -5.125947918421755
+      },
+      {
+        "mode": "cubic",
+        "optimizer": "scs",
+        "all_cuts": false,
+        "bound": -5.1250141523130495
+      }
+    ]
+  },
+  "consolidated_runner": {
+    "path": "experiments/cubic_schur.py",
+    "sha256": "fab2608d8081d05ab57de4a70bc8a4dbd50764c81744831dbebebd9db1c24bde",
+    "large_timings_repeated_after_consolidation": false,
+    "syntax": true,
+    "lint": true,
+    "cli": true
+  }
+}
