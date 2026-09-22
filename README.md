@@ -1,14 +1,42 @@
-# highs_turbo: Transparent LP Acceleration for HiGHS & SciPy
+# highs_turbo
+
+SciPy-compatible LP acceleration and independently checkable Ising, QUBO,
+and Max-Cut bounds with HiGHS.
 
 [![Tests](https://github.com/steph4n-gh/libhighs_turbo/actions/workflows/tests.yml/badge.svg)](https://github.com/steph4n-gh/libhighs_turbo/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 
+[Quickstart](#quickstart) · [API contract](API_CONTRACT.md) ·
+[Validation results](STABILIZATION_RESULTS.md) · [Changelog](CHANGELOG.md) ·
+[Releases](https://github.com/steph4n-gh/libhighs_turbo/releases) ·
+[Contributing](CONTRIBUTING.md) ·
+[Issues](https://github.com/steph4n-gh/libhighs_turbo/issues)
+
 `highs_turbo.linprog` solves the supplied linear program using conic optimality
 checks, smaller working sets, and competing HiGHS methods where these help. It preserves
 the original problem and returns SciPy-style solutions, slacks, and marginals.
-The package also provides Max-Cut and QUBO solvers and a C++20 cutting-plane
-engine with rational verification.
+The package also provides Ising, Max-Cut, and QUBO solvers with independently
+verifiable rational bound certificates, plus an optional C++20 cutting-plane
+engine. Performance depends on the workload; see the recorded validation results.
+
+## When to use it
+
+- **Check an answer you already have.** Bound how far an external heuristic's
+  Ising, QUBO, or Max-Cut answer could be from optimal. The
+  [external-answer example](examples/certify_external_answer.py) demonstrates
+  the Ising workflow with a separate verification process; QUBO and Max-Cut
+  witnesses use the equivalent Ising objective described in the
+  [API contract](API_CONTRACT.md).
+- **Solve a binary problem with a checkable quality bound.** Obtain a feasible
+  answer and a rational bound, then inspect the checked gap even when the search
+  stops before optimality is established.
+- **Evaluate an existing SciPy LP workload.** Change the optimizer import and
+  [benchmark the same models](examples/benchmark_linprog.py). Speedups depend on
+  the input and are not guaranteed.
+
+[Current validation](STABILIZATION_RESULTS.md) covers mathematical and public
+benchmarks. A customer-specific application has not yet been demonstrated.
 
 ## Plain English: what this does and why it is useful
 
