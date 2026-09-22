@@ -59,7 +59,7 @@ ext_modules = [
 
 setup(
     name="highs-turbo",
-    version="0.2.0",
+    version="0.2.1",
     description="LP acceleration and checkable Ising, QUBO, and Max-Cut bounds with HiGHS",
     long_description=open(os.path.join(BASE_DIR, "README.md"), encoding="utf-8").read() if os.path.exists(os.path.join(BASE_DIR, "README.md")) else "",
     long_description_content_type="text/markdown",

@@ -1,22 +1,11 @@
-"""Large-scale combinatorial benchmark suite and solver integration engine.
+"""Research comparison of multi-row separation and compiled surrogate cuts.
 
-Fulfills requirements R1, R2, R3, R4, R5 for the Neural-Surrogate Cutting Plane Engine:
-- Topologies:
-  * Chimera Ising spin glass hardware graphs: C_{12,12,4} (1,152 nodes, 3,360 edges),
-    C_{16,16,4} (2,048 nodes, 6,016 edges), bimodal +/-1 couplings, and embedded logical K5 cliques.
-  * Pegasus Ising spin glass hardware graphs: P_8 (1,288 nodes, 8,804 edges) with rich
-    native triangular frustrated structures.
-  * G-set Max-Cut instances: G11 (800 nodes), G43 (1,000 nodes, 9,990 edges),
-    G51 (1,000 nodes, 5,909 edges), and G22 (2,000 nodes, 19,990 edges).
-  * Planted 1,000-node K5 cluster instance (200 K5 cliques, target IP = 1,399).
-  * Canonical baseline instances: Experiment 87 (8 cells) and Experiment 91 (12 cells).
-- Solver & Engine Integration:
-  * Native C++ engine: CompiledBitGraph, CompiledCutEngine, CompiledRationalVerifier.
-  * Compares standard multi-row cutting plane separation against 1-row compiled surrogate cut.
-  * Memory scalability: strictly < 50 MB RAM for 1,000+ nodes using sparse matrix representations.
-  * Speedup >= 2x and simplex iteration reduction >= 70% on large dense instances.
-  * 100% exact rational verification with SHA-256 certificate receipts.
-  * Zero relabeling variance (|Delta Z| <= 10^-6) on paired isomorphic graphs (G_A, G_B).
+The suite measures elapsed time, memory, iterations, objective agreement and
+cut verification on generated graph families. G-set-shaped cases are seeded
+synthetic graphs, not the published Stanford benchmark data. Measurements are
+specific to the fixtures and host; no minimum speedup or memory use is promised.
+Rational cut verification checks a cut combination, while a SHA-256 digest is
+only a receipt. Numerical relaxation objectives are not exact optimality proofs.
 """
 
 from __future__ import annotations
@@ -47,10 +36,6 @@ from highs_turbo.compiled_engine import (
     CompiledSolverCallbackBridge,
     solve_with_compiled_surrogate,
 )
-try:
-    from highs_turbo.surrogate_model import EdgeEquivariantSurrogateGNN
-except ImportError:
-    EdgeEquivariantSurrogateGNN = None
 from highs_turbo.exact_solver import ExactMaxCutSolver, LPSolution
 from highs_turbo.graph_generator import (
     GraphInstance,
@@ -166,7 +151,7 @@ def generate_gset_instance(
     name: str = "G43",
     seed: int = 42,
 ) -> GraphInstance:
-    """Generates canonical G-set benchmark instances (G11, G43, G51, G22)."""
+    """Generate synthetic G-set-shaped graphs (not the published datasets)."""
     return _base_gset(name=name, seed=seed)
 
 
@@ -404,7 +389,7 @@ class LargeScaleBenchmarkSuite:
         max_cuts: int = 1000,
         gnn_model: Optional[Any] = None,
     ) -> Tuple[Dict[str, Any], VerificationCertificate, List[Any]]:
-        """Solves LP using compiled surrogate cutting planes with 100% exact rational verification."""
+        """Solve a numerical LP using rationally verified surrogate cuts."""
         t0 = time.perf_counter()
         m = graph.num_edges
         c = np.array([-graph.weights.get(e, 1.0) for e in graph.edges], dtype=np.float64)
@@ -973,7 +958,7 @@ class LargeScaleBenchmarkSuite:
         results.extend([r_a, r_b])
 
         # 4. G-set G43 (1,000 nodes, 9,990 edges)
-        print("Evaluating G-set G43 (1,000 nodes, 9,990 edges)...")
+        print("Evaluating synthetic G43-shaped graph (1,000 nodes, 9,990 edges)...")
         g43 = generate_gset_instance("G43", seed=43)
         r_a, r_b = self.evaluate_instance_pair(g43, seed=44)
         results.extend([r_a, r_b])

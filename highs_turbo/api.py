@@ -147,7 +147,7 @@ class QuboResult:
 
 
 class TurboSolver:
-    """High-performance Neural-Surrogate Cutting Plane solver engine and HiGHS orchestrator."""
+    """HiGHS solver wrapper with LP acceleration and certified discrete bounds."""
 
     def __init__(
         self,
@@ -288,11 +288,12 @@ class TurboSolver:
         Supports 3-tuple unpacking: cut_val, partition, cert = solve_maxcut(G).
         """
         t0 = time.perf_counter()
-        graph = self.detector._coerce_to_graph_instance(graph_or_adj, np.empty(0))
-        n = graph.num_nodes
-        m = graph.num_edges
+        from highs_turbo._models import normalize_maxcut
 
-        if n == 0 or m == 0:
+        labels, weights = normalize_maxcut(graph_or_adj)
+        n = len(labels)
+
+        if not weights:
             return MaxCutResult(
                 cut_value=0.0,
                 partition=np.zeros(n, dtype=int),
@@ -310,7 +311,6 @@ class TurboSolver:
 
         options = dict(kwargs)
         options.setdefault("time_limit", None if n <= 200 else 5.)
-        weights = {edge: Fraction(float(graph.weights.get(edge, 1.))) for edge in graph.edges}
         if options["time_limit"] is not None and options["time_limit"] >= 0:
             options["time_limit"] = max(0., options["time_limit"]-(time.perf_counter()-t0))
         result = solve_ising(dict.fromkeys(range(n), 0), weights, **options)
@@ -452,7 +452,7 @@ def linprog(
     integrality: Optional[Sequence[int]] = None,
     **kwargs: Any,
 ) -> OptimizeResult:
-    """Exact 3-line drop-in replacement for scipy.optimize.linprog with Neural-Surrogate acceleration."""
+    """SciPy-compatible linprog wrapper with acceleration for eligible inequality systems."""
     return _DEFAULT_SOLVER.linprog(
         c=c,
         A_ub=A_ub,
