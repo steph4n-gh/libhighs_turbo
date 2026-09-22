@@ -1,0 +1,155 @@
+{
+  "schema": 1,
+  "frozen_date": "2026-09-22",
+  "baseline_revision": "35b54e6863dfdd8e17c6a76e9b0569b10a14181f",
+  "purpose": "Maintenance regression evidence; no time-to-target or market-superiority claim.",
+  "repetitions": 3,
+  "process_policy": "Fresh sequential solver and verification processes; rotate methods by repetition and case; imports and input decoding excluded from API time.",
+  "thread_environment": {
+    "VECLIB_MAXIMUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  },
+  "lp_methods": [
+    "baseline",
+    "candidate",
+    "native-simplex",
+    "native-ipm"
+  ],
+  "ising_methods": [
+    "baseline",
+    "candidate",
+    "sdp"
+  ],
+  "qubo_methods": [
+    "baseline",
+    "candidate"
+  ],
+  "review_gates": {
+    "nontrivial_seconds": 0.1,
+    "median_runtime_regression_fraction": 0.2,
+    "all_saved_certificates_verify": true,
+    "weaker_checked_bounds_require_explanation": true,
+    "memory_growth_requires_explanation": true
+  },
+  "cases": [
+    {
+      "name": "lp-dense-92101",
+      "kind": "lp",
+      "generator": "dense",
+      "seed": 92101,
+      "variables": 80,
+      "constraints": 200,
+      "seconds": null,
+      "provenance": "fresh deterministic synthetic regression case",
+      "watchdog_seconds": 180
+    },
+    {
+      "name": "lp-sparse-92102",
+      "kind": "lp",
+      "generator": "sparse",
+      "seed": 92102,
+      "variables": 1200,
+      "constraints": 1800,
+      "density": 0.02,
+      "seconds": null,
+      "provenance": "fresh deterministic synthetic regression case; sized to exercise existing two-method portfolio threshold",
+      "watchdog_seconds": 180
+    },
+    {
+      "name": "lp-redundant-92103",
+      "kind": "lp",
+      "generator": "redundant",
+      "seed": 92103,
+      "variables": 120,
+      "constraints": 1200,
+      "seconds": null,
+      "provenance": "fresh deterministic synthetic regression case",
+      "watchdog_seconds": 180
+    },
+    {
+      "name": "ising-dense-oracle-92104",
+      "kind": "ising",
+      "generator": "dense",
+      "seed": 92104,
+      "variables": 12,
+      "seconds": 2,
+      "exact_oracle": true,
+      "provenance": "fresh exhaustive-oracle regression case"
+    },
+    {
+      "name": "ising-sparse-oracle-92105",
+      "kind": "ising",
+      "generator": "sparse",
+      "seed": 92105,
+      "variables": 14,
+      "seconds": 2,
+      "exact_oracle": true,
+      "provenance": "fresh exhaustive-oracle regression case"
+    },
+    {
+      "name": "ising-dense-92106",
+      "kind": "ising",
+      "generator": "dense",
+      "seed": 92106,
+      "variables": 72,
+      "seconds": 3,
+      "provenance": "fresh deterministic synthetic regression case"
+    },
+    {
+      "name": "qubo-csr-92107",
+      "kind": "qubo",
+      "generator": "ring",
+      "seed": 92107,
+      "variables": 1024,
+      "seconds": 3,
+      "provenance": "fresh sparse QUBO API regression case"
+    },
+    {
+      "name": "pegasus-92108",
+      "kind": "ising",
+      "generator": "pegasus",
+      "seed": 92108,
+      "size": 16,
+      "damaged_nodes": 0,
+      "seconds": 5,
+      "provenance": "previously unused P16 seed; fresh model, familiar problem family"
+    },
+    {
+      "name": "pegasus-damaged-92109",
+      "kind": "ising",
+      "generator": "pegasus",
+      "seed": 92109,
+      "size": 8,
+      "damaged_nodes": 70,
+      "seconds": 5,
+      "provenance": "previously unused damaged P8 seed; fresh model, familiar problem family"
+    },
+    {
+      "name": "G57",
+      "kind": "ising",
+      "generator": "gset",
+      "source": "https://web.stanford.edu/~yyye/yyye/Gset/G57",
+      "seconds": 5,
+      "provenance": "canonical Gset input absent from existing repository benchmark reports; download and SHA-256 retained"
+    }
+  ],
+  "published_mixing": {
+    "optional_binary": "/tmp/libhighs-turbo-original-mixing/mixing",
+    "available_at_freeze": false,
+    "disposition": "Omitted: previously documented executable is absent and no research runtime will be installed. This limits comparative positioning, not correctness evidence."
+  },
+  "measurement_notes": [
+    "Wall time includes the whole public API call, including its built-in certificate checks. Separate-process verification time is recorded separately.",
+    "Requested time limits are cooperative. Record actual overrun; process watchdog is not a solver deadline.",
+    "Peak RSS is process high-water memory including imported dependencies. CPU seconds include solver worker and its exited child workers during the API call.",
+    "LP native controls use highspy simplex and ipm from the identical linked HiGHS version; numerical objectives and feasibility tolerances are checked, not represented as exact proofs.",
+    "Basic SDP uses the same current public solver with relaxation=sdp; this is an internal baseline, not an independent published solver.",
+    "Existing diagnostic fields are recorded verbatim. Missing fallback telemetry is null, never inferred as no fallback.",
+    "Exhaustive-oracle and heuristic energies are independently recomputed from saved inputs and binary assignments. Exact bounds/gaps are retained as rational strings.",
+    "Generated synthetic inputs and Pegasus couplings are frozen in the corpus before measured runs; downloaded G57 is hashed. Candidate source hashes identify the actual measured files.",
+    "Pre-run code inspection found explicit LP budgets bypass acceleration. LP comparisons therefore run without solver deadlines, with a 180-second process watchdog, allowing portfolio/row-recovery behavior to be measured. LP budgets are null and overruns are not applicable.",
+    "Pre-measurement review replaced SciPy LP controls with highspy native controls to remove bundled-HiGHS version differences. No performance observations preceded this change."
+  ]
+}

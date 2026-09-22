@@ -1,6 +1,7 @@
 """Run with `python -I tests/smoke_installed.py` after installing a built wheel."""
 
 import sys
+from importlib.metadata import version
 from importlib.resources import files
 from pathlib import Path
 
@@ -9,13 +10,17 @@ import numpy as np
 import highs_turbo
 from highs_turbo.api import _DEFAULT_SOLVER
 from highs_turbo.compiled_engine import COMPILED_ENGINE_AVAILABLE
-from highs_turbo.large_scale_benchmarks import generate_chimera_instance
 
 
 source_package = Path(__file__).resolve().parents[1] / "highs_turbo"
 assert Path(highs_turbo.__file__).resolve().parent != source_package
+assert highs_turbo.__version__ == version("highs-turbo")
 assert files("highs_turbo").joinpath("default_weights.pt").is_file()
-assert generate_chimera_instance(1).num_nodes == 8
+assert files("highs_turbo").joinpath("ising_policy.json").is_file()
+# Load the ranking resource directly: a solved instance may never need it.
+from highs_turbo.ising_policy import FEATURE_NAMES, rank_clusters
+
+assert rank_clusters(np.zeros((1, len(FEATURE_NAMES))), "learned").tolist() == [0]
 assert highs_turbo.linprog([-1.0], bounds=(0, 1)).fun == -1.0
 # Exercise both acceleration paths from the installed package, including when
 # the optional C++ cut engine is absent.
@@ -60,6 +65,36 @@ assert highs_turbo.verify_ising_certificate({}, complete, verified.certificate.t
 global_bound = highs_turbo.solve_ising({}, complete, relaxation="sdp", certified_gap=0, time_limit=5)
 assert global_bound.exact_gap == 0 and global_bound.certificate.gram_factor
 assert highs_turbo.verify_ising_certificate({}, complete, global_bound.certificate.to_dict())
+# Read the same square through the sparse on-disk format in the built wheel.
+sparse_receipt = global_bound.certificate.to_dict()
+rows = sparse_receipt["gram_factor"]
+starts = [0]
+for row in rows:
+    starts.append(starts[-1] + len(row))
+sparse_receipt.update(version=4, gram_factor=[], sparse_gram_factor=[
+    starts, [j for row in rows for j in range(len(row))], [x for row in rows for x in row]])
+assert highs_turbo.verify_ising_certificate({}, complete, sparse_receipt)
+
+# The drop-in product bridge and standalone checker must ship in the wheel.
+c = np.r_[np.ones(32), -3.]
+envelope = np.zeros((3, 33))
+envelope[0, [32, 0]] = [1, -1]
+envelope[1, [32, 1]] = [1, -1]
+envelope[2, [0, 1, 32]] = [1, 1, -1]
+product = highs_turbo.linprog(c, A_ub=envelope, b_ub=[0, 0, 1],
+                            bounds=(0, 1), integrality=np.r_[np.ones(32), 0])
+assert product.success and product.fun == -1 and product.turbo_equivalent_model
+assert highs_turbo.verify_linprog_certificate(
+    c, product.turbo_bound_certificate, A_ub=envelope, b_ub=[0, 0, 1],
+    bounds=(0, 1), integrality=np.r_[np.ones(32), 0])
+
+assert "torch" not in sys.modules, "Ordinary solver calls must not load PyTorch"
+
+# Research helpers may load optional neural modules; check them only after the
+# ordinary solver import contract above has been verified.
+from highs_turbo.large_scale_benchmarks import generate_chimera_instance
+
+assert generate_chimera_instance(1).num_nodes == 8
 
 if "--require-native" in sys.argv:
     assert COMPILED_ENGINE_AVAILABLE

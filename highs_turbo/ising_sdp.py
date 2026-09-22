@@ -15,6 +15,7 @@ from scipy.linalg import cholesky, eigh
 from scipy.optimize import minimize
 
 from highs_turbo.ising_cuts import _bound, check_certificate, cut_matrix, make_certificate
+from highs_turbo.ising_sparse import MAX_SPARSE_VERTICES
 
 
 MAX_GRAM_VERTICES = 2048
@@ -60,16 +61,46 @@ def gram_lower_bound(edges, residual, scale, factor, denominator):
     return Fraction(numerator, common)
 
 
-def strengthen_certificate(proof, edges, weights, constant, *, deadline, seed=0, cuts=()):
+def factor_witness(matrix, vectors, magnitude=1.):
+    """Construct a dyadic Gram proposal; validity is decided by the checker."""
+    n = len(vectors)
+    slack = matrix.toarray()
+    slack.flat[::n+1] -= np.sum(vectors*(matrix @ vectors), axis=1)
+    smallest = eigh(slack, subset_by_index=[0, 0], eigvals_only=True, check_finite=False)[0]
+    slack.flat[::n+1] += max(0., -smallest)+1e-7
+    factor = np.tril(cholesky(slack, lower=True, check_finite=False))*np.sqrt(magnitude)
+    largest = float(np.max(np.abs(factor)))
+    if not np.isfinite(largest) or largest <= 0:
+        raise ValueError("Invalid numerical Gram factor")
+    bits = min(20, int(np.floor(np.log2(np.sqrt((2**52)/n)/largest))))
+    if bits < 0:
+        raise ValueError("Gram factor exceeds the exact integer range")
+    denominator = 2**bits
+    integers = np.rint(factor*denominator).astype(np.int64)
+    return tuple(tuple(map(int, integers[i, :i+1])) for i in range(n)), denominator
+
+
+def strengthen_certificate(proof, edges, weights, constant, *, deadline, seed=0, cuts=(),
+                           geometry=False, certificate_fallbacks=None):
     """Try a low-rank vector relaxation, retaining the stronger valid witness.
 
-    The dense factor and eigenvalue work are limited to 2048 vertices. Larger
-    inputs retain their existing certificate. The cooperative deadline can
-    overrun by the final factorization and exact check.
+    Dense factors are limited to 2048 vertices. Larger problems use sparse
+    factors up to 8192 vertices, subject to work and storage limits. The
+    cooperative deadline can overrun by final factorization and exact checks.
     """
     n = max((max(e) for e in edges), default=-1)+1
-    if not 1 < n <= MAX_GRAM_VERTICES or time.perf_counter() >= deadline:
+    if not 1 < n <= MAX_SPARSE_VERTICES or time.perf_counter() >= deadline:
         return proof
+    sparse = n > MAX_GRAM_VERTICES
+    if sparse:
+        if len(edges) > 16*n:
+            return proof
+        # Reserve part of the budget for factorization and exact checking.
+        remaining = deadline-time.perf_counter()
+        deadline -= min(2., .2*remaining) if np.isfinite(remaining) else 0.
+    geometry_deadline = deadline
+    if geometry and n >= 32:
+        deadline = min(deadline, time.perf_counter()+max(.3, .4*(deadline-time.perf_counter())))
     residual = dict(weights)
     for cut, numerator in zip(proof.cuts, proof.multipliers):
         multiplier = Fraction(numerator, proof.denominator)
@@ -83,16 +114,24 @@ def strengthen_certificate(proof, edges, weights, constant, *, deadline, seed=0,
     # witness is rescaled before exact checking against the original input.
     magnitude = float(np.max(np.abs(values)))
     rng = np.random.default_rng(seed)
-    initial = rng.normal(size=(n, min(16, n)))
+    initial = rng.normal(size=(n, min(32 if sparse else 16, n)))
     initial /= np.linalg.norm(initial, axis=1)[:, None]
     latest = initial.ravel()
     original = 2*values/magnitude
     matrix = None
+    if sparse:
+        from highs_turbo.ising_sparse import independent_groups, fit_vectors
+        groups = independent_groups(edges, n)
 
     def fit(edge_values, iterations):
         nonlocal latest, matrix
         matrix = sp.csr_matrix((np.r_[edge_values, edge_values]/2,
                                (np.r_[u, v], np.r_[v, u])), shape=(n, n))
+        if sparse:
+            vectors = fit_vectors(matrix, latest.reshape(n, -1), groups,
+                                  deadline=deadline, iterations=iterations)
+            latest = vectors.ravel()
+            return float(np.sum(vectors*(matrix @ vectors)))
 
         def objective(flat):
             vectors = flat.reshape(n, -1)
@@ -163,33 +202,36 @@ def strengthen_certificate(proof, edges, weights, constant, *, deadline, seed=0,
         source = combined
     else:
         source = proof
-    fit(original, 150)
+    # A useful cut-only witness survives a failed numerical factor proposal.
+    if source.lower_bound > proof.lower_bound and check_certificate(source, edges, weights, constant):
+        proof = source
+    fit(original, 700 if sparse else 150)
     vectors = latest.reshape(n, -1)
     vectors /= np.maximum(np.linalg.norm(vectors, axis=1)[:, None], 1e-100)
-    diagonal = np.sum(vectors*(matrix @ vectors), axis=1)
-    slack = matrix.toarray()
-    slack.flat[::n+1] -= diagonal
     try:
-        smallest = eigh(slack, subset_by_index=[0, 0], eigvals_only=True, check_finite=False)[0]
-        slack.flat[::n+1] += max(0., -smallest)+1e-7
-        factor = cholesky(slack, lower=True, check_finite=False)*np.sqrt(magnitude)
-        # Choose a dyadic scale that keeps integer dot products exact.
-        largest = float(np.max(np.abs(factor)))
-        if not np.isfinite(largest) or largest <= 0:
-            return proof
-        bits = min(20, int(np.floor(np.log2(np.sqrt((2**52)/n)/largest))))
-        if bits < 0:
-            return proof
-        denominator = 2**bits
-        integers = np.rint(factor*denominator).astype(np.int64)
-        packed = tuple(tuple(map(int, integers[i, :i+1])) for i in range(n))
+        if sparse:
+            from highs_turbo.ising_sparse import factor_witness as sparse_factor_witness
+            packed, denominator = sparse_factor_witness(matrix, vectors, magnitude)
+        else:
+            packed, denominator = factor_witness(matrix, vectors, magnitude)
         lower = _bound(source.cuts, source.multipliers, source.denominator,
-                       edges, weights, constant, packed, denominator)
-        if lower <= proof.lower_bound:
-            return proof
-        candidate = replace(source, lower_bound=lower, gram_factor=packed, gram_denominator=denominator)
-        if not check_certificate(candidate, edges, weights, constant):
+                       edges, weights, constant, () if sparse else packed, denominator,
+                       packed if sparse else ())
+        candidate = replace(source, lower_bound=lower, gram_factor=() if sparse else packed,
+                            sparse_gram_factor=packed if sparse else (), gram_denominator=denominator)
+        # _bound already checked the sparse arithmetic and factor structure;
+        # solve_ising independently checks the assembled certificate at return.
+        if not sparse and not check_certificate(candidate, edges, weights, constant):
             raise RuntimeError("Sum-of-squares certificate failed exact verification")
-        return candidate
-    except (ValueError, OverflowError, np.linalg.LinAlgError):
+        if lower > proof.lower_bound:
+            proof = candidate
+    except (ValueError, OverflowError, np.linalg.LinAlgError, RuntimeError) as error:
+        if certificate_fallbacks is not None:
+            certificate_fallbacks.append({"stage": "sdp_factor", "reason": str(error)})
         return proof
+    if geometry and n >= 32 and time.perf_counter()+.75 < geometry_deadline:
+        from highs_turbo.ising_geometry import strengthen_geometry
+        proof = strengthen_geometry(proof, edges, weights, constant, vectors,
+                                    deadline=geometry_deadline, seed=seed,
+                                    certificate_fallbacks=certificate_fallbacks)
+    return proof

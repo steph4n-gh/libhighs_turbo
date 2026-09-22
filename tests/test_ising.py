@@ -121,7 +121,7 @@ def test_adaptive_subgraph_cut_closes_gap_beyond_cycle_relaxation():
     # The uniform K6 cycle relaxation has x=2/3 and energy -5; the true
     # maximum cut is 9 edges, and its Ising energy is -3.
     J = {edge: 1 for edge in nx.complete_graph(6).edges}
-    result = solve_ising({}, J, certified_gap=0, time_limit=5)
+    result = solve_ising({}, J, certified_gap=0, time_limit=5, relaxation='cuts')
     assert result.exact_energy == result.exact_cut_lower_bound == -3
     assert result.subgraph_cuts >= 1
     assert verify_ising_certificate({}, J, result.certificate.to_dict())
@@ -219,6 +219,58 @@ def test_gram_bound_matches_exact_dense_arithmetic_and_all_spin_states():
                for s in product([-1, 1], repeat=5))
 
 
+def test_nonlocal_certificate_checks_original_energy_and_rejects_false_edges(monkeypatch):
+    import copy
+    from dataclasses import replace
+    from highs_turbo import verify_ising_certificate
+    from highs_turbo.ising_cuts import IsingCut, make_certificate, problem_digest, _bound
+    import highs_turbo.ising_sdp as sdp
+
+    edges = [(0, 1), (0, 3), (1, 2), (2, 3)]
+    weights = dict.fromkeys(edges, Fraction(1))
+    expanded = edges+[(0, 2)]
+    extended_weights = {**weights, (0, 2): Fraction()}
+    constant = Fraction(1, 8)
+    cut = IsingCut((0, 2, 4), (1, 1, 1), 2, 'cycle')
+    source = make_certificate([cut], [-Fraction(1, 3)], expanded, extended_weights, constant)
+    factor = ((1,), (-2, 1), (1, 0, 2), (0, 1, -1, 2))
+    bound = _bound(source.cuts, source.multipliers, source.denominator,
+                   expanded, extended_weights, constant, factor, 16)
+    proof = replace(source, problem_digest=problem_digest(edges, weights, constant),
+                    lower_bound=bound, gram_factor=factor, gram_denominator=16,
+                    extra_edges=((0, 2),))
+    assert all(bound <= constant+sum(w*s[u]*s[v] for (u,v),w in weights.items())
+               for s in product([-1, 1], repeat=4))
+    for name in ['eigh', 'minimize', 'cholesky']:
+        monkeypatch.setattr(sdp, name, lambda *a, **k: pytest.fail('Checker must not optimize'))
+    h = dict.fromkeys(range(4), 0)
+    witness = proof.to_dict()
+    assert witness['version'] == 3
+    assert verify_ising_certificate(h, weights, witness, offset=.125)
+    for extra in [[[-1, 2]], [[0, 4]], [[0, 1]], [[2, 0]], [[0, 2], [0, 2]], [[0, 2.0]]]:
+        altered = copy.deepcopy(witness)
+        altered['extra_edges'] = extra
+        assert not verify_ising_certificate(h, weights, altered, offset=.125)
+    altered = copy.deepcopy(witness)
+    altered['cuts'][0]['rhs'] = 1
+    assert not verify_ising_certificate(h, weights, altered, offset=.125)
+
+
+def test_geometric_search_separates_impossible_vectors_but_not_a_spin_state():
+    from highs_turbo.ising_geometry import geometric_triangles, triangle_rows
+    from highs_turbo.ising_cuts import verify_cut
+    vectors = np.array([[1., 0.], [-.5, np.sqrt(3)/2], [-.5, -np.sqrt(3)/2]])
+    triangles, _ = geometric_triangles(vectors, [(0, 1)])
+    assert triangles
+    edges, cuts = triangle_rows(triangles, [(0, 1)])
+    assert all(verify_cut(cut, edges) for cut in cuts)
+    assert any(sum(c*x for c,x in zip(cut.coefficients,
+               [(1-vectors[edges[i][0]]@vectors[edges[i][1]])/2 for i in cut.indices])) > cut.rhs
+               for cut in cuts)
+    exact_spin = np.array([[1., 0.], [-1., 0.], [1., 0.]])
+    assert geometric_triangles(exact_spin, [(0, 1)])[0] == []
+
+
 @pytest.mark.parametrize('relaxation', ['sdp', 'hybrid'])
 def test_global_relaxation_certificate_on_weighted_original_problem(relaxation, monkeypatch):
     import copy
@@ -244,3 +296,116 @@ def test_global_relaxation_certificate_on_weighted_original_problem(relaxation, 
         assert not verify_ising_certificate(h, J, altered, offset=.1)
     witness['lower_bound'] = [123, 1]
     assert not verify_ising_certificate(h, J, witness, offset=.1)
+
+
+def test_sdp_factor_failure_keeps_improved_checked_cut_bound(monkeypatch):
+    from types import SimpleNamespace
+    import highs_turbo.ising_sdp as sdp
+    from highs_turbo.ising_cuts import make_certificate, check_certificate
+    from highs_turbo.ising_geometry import triangle_rows
+
+    weights = {(0, 1): Fraction(1), (0, 2): Fraction(1), (1, 2): Fraction(2)}
+    edges = sorted(weights)
+    source = make_certificate([], [], edges, weights, Fraction())
+    _, cuts = triangle_rows([((0, 1), (1, 1), (2, 1))], edges)
+    monkeypatch.setattr(sdp, "minimize", lambda fn, x, **kw:
+                        SimpleNamespace(x=np.ones_like(x) if "bounds" in kw else x))
+
+    def fail_factor(*args):
+        raise ValueError("Injected factor budget failure")
+
+    monkeypatch.setattr(sdp, "factor_witness", fail_factor)
+    diagnostics = []
+    result = sdp.strengthen_certificate(source, edges, weights, Fraction(), deadline=float("inf"),
+                                       cuts=cuts, certificate_fallbacks=diagnostics)
+    assert result.lower_bound == -2 > source.lower_bound
+    assert check_certificate(result, edges, weights, Fraction())
+    assert diagnostics == [{"stage": "sdp_factor", "reason": "Injected factor budget failure"}]
+
+
+@pytest.mark.parametrize("failure", ["factor", "deadline"])
+def test_geometric_failure_retains_checked_nonlocal_cut_gain(failure, monkeypatch):
+    from types import SimpleNamespace
+    import highs_turbo.ising_geometry as geometry
+    from highs_turbo.ising_cuts import make_certificate, check_certificate
+
+    weights = {(0, 1): Fraction(1), (0, 3): Fraction(-1),
+               (1, 2): Fraction(1), (2, 3): Fraction(1)}
+    edges = sorted(weights)
+    source = make_certificate([], [], edges, weights, Fraction())
+    triangles = [((0, 1), (1, 1), (2, 1)), ((0, 1), (2, -1), (3, -1))]
+    monkeypatch.setattr(geometry, "geometric_triangles", lambda *a, **k: (triangles, {}))
+
+    def minimize(fn, x, **kwargs):
+        if "bounds" in kwargs:
+            return SimpleNamespace(x=np.ones_like(x))
+        if failure == "deadline":
+            raise StopIteration
+        return SimpleNamespace(x=x)
+
+    def fail_factor(*args):
+        raise ValueError("Injected factor budget failure")
+
+    monkeypatch.setattr(geometry, "minimize", minimize)
+    monkeypatch.setattr(geometry, "factor_witness", fail_factor)
+    diagnostics = []
+    result = geometry.strengthen_geometry(
+        source, edges, weights, Fraction(), np.tile([1., 0.], (4, 1)),
+        deadline=float("inf"), certificate_fallbacks=diagnostics)
+    assert result.lower_bound == -2 > source.lower_bound
+    assert result.extra_edges == ((0, 2),)
+    assert check_certificate(result, edges, weights, Fraction())
+    assert diagnostics[0]["stage"] == ("geometry_refit" if failure == "deadline" else "geometry_factor")
+
+
+def test_sparse_cut_fallback_does_not_replace_a_stronger_checked_bound(monkeypatch):
+    import highspy
+    import highs_turbo.ising as ising
+    import highs_turbo.ising_sdp as sdp
+    from highs_turbo.ising_cuts import make_certificate
+    from highs_turbo.ising_geometry import triangle_rows
+
+    fields = dict.fromkeys(range(2049), 0)
+    weights = {(0, 1): Fraction(1), (0, 2): Fraction(1), (1, 2): Fraction(2)}
+    edges = sorted(weights)
+    _, cuts = triangle_rows([((0, 1), (1, 1), (2, 1))], edges)
+    weak = make_certificate([], [], edges, weights, Fraction())
+    strong = make_certificate(cuts, [-Fraction(1)], edges, weights, Fraction())
+    monkeypatch.setattr(ising, "_sample_spins", lambda n, *a: np.ones(n, dtype=int))
+    def strengthen(*args, certificate_fallbacks, **kwargs):
+        certificate_fallbacks.append({"stage": "sdp_factor", "reason": "Injected work limit"})
+        return strong
+
+    monkeypatch.setattr(sdp, "strengthen_certificate", strengthen)
+    monkeypatch.setattr(ising, "_adaptive_relaxation", lambda *a, **k:
+                        ([], weak, 1, ({"time": 0., "lower_bound": float(weak.lower_bound),
+                                      "energy": 4., "cuts": 0, "round": 1},)))
+    monkeypatch.setattr(highspy.Highs, "run", lambda self: pytest.fail("Certified gap already reached"))
+    result = solve_ising(fields, weights, time_limit=5, certified_gap=6)
+    assert result.exact_cut_lower_bound == strong.lower_bound
+    assert result.exact_gap == 6
+    assert result.certificate_fallbacks == ({"stage": "sdp_factor", "reason": "Injected work limit"},)
+    assert all(p["lower_bound"] >= float(strong.lower_bound) for p in result.progress)
+    assert ising.verify_ising_certificate(fields, weights, result.certificate.to_dict())
+
+
+@pytest.mark.parametrize("failure", ["status", "exception"])
+def test_native_run_error_returns_feasible_spins_and_checked_bound(failure, monkeypatch):
+    import highspy
+    from highs_turbo import verify_ising_certificate
+
+    def run(session):
+        if failure == "exception":
+            raise RuntimeError("Injected native failure")
+        return highspy.HighsStatus.kError
+
+    monkeypatch.setattr(highspy.Highs, "run", run)
+    monkeypatch.setattr(highspy.Highs, "getInfo", lambda self: pytest.fail("Failed solve has no trusted info"))
+    weights = {(0, 1): 1., (0, 2): 1., (1, 2): 1.}
+    result = solve_ising({}, weights, accelerate=False)
+    assert result.status == "SOLVER_ERROR" and not result.success
+    assert not result.is_rationally_certified
+    assert result.exact_energy == energy({}, weights, result.spins)
+    assert result.exact_cut_lower_bound <= -1 <= result.exact_energy
+    assert result.lower_bound == float(result.exact_cut_lower_bound)
+    assert verify_ising_certificate({}, weights, result.certificate.to_dict())

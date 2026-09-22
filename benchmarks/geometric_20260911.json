@@ -1,0 +1,685 @@
+{
+  "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "python": "3.13.5",
+  "numpy": "2.5.3",
+  "scipy": "1.18.1",
+  "highs": "1.15.1",
+  "networkx": "3.6.1",
+  "budget": 5.0,
+  "records": [
+    {
+      "energy": -2112.125,
+      "lower_bound": -2350.375,
+      "verified_bound": -2350.375,
+      "extra_edges": 0,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.9459844999946654,
+          "lower_bound": -2801.875,
+          "energy": -2112.125,
+          "cuts": 31219,
+          "round": 0
+        },
+        {
+          "time": 1.5775723749538884,
+          "lower_bound": -2801.875,
+          "energy": -2112.125,
+          "cuts": 31731,
+          "round": 0
+        },
+        {
+          "time": 3.4377083339495584,
+          "lower_bound": -2350.375,
+          "energy": -2112.125,
+          "cuts": 31731,
+          "round": 0
+        },
+        {
+          "time": 3.607641291921027,
+          "lower_bound": -2350.375,
+          "energy": -2112.125,
+          "cuts": 31731,
+          "round": 1
+        },
+        {
+          "time": 5.103394874953665,
+          "lower_bound": -2350.375,
+          "energy": -2112.125,
+          "cuts": 31731,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-4101",
+      "method": "previous_hybrid",
+      "seconds": 5.10495325003285,
+      "budget": 5.0,
+      "nodes": 1288,
+      "edges": 8309
+    },
+    {
+      "energy": -2112.125,
+      "lower_bound": -2323.375,
+      "verified_bound": -2323.375,
+      "extra_edges": 4073,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.9516727080335841,
+          "lower_bound": -2801.875,
+          "energy": -2112.125,
+          "cuts": 31219,
+          "round": 0
+        },
+        {
+          "time": 1.580133790965192,
+          "lower_bound": -2801.875,
+          "energy": -2112.125,
+          "cuts": 31731,
+          "round": 0
+        },
+        {
+          "time": 4.723594957962632,
+          "lower_bound": -2323.375,
+          "energy": -2112.125,
+          "cuts": 31731,
+          "round": 0
+        },
+        {
+          "time": 5.209384500049055,
+          "lower_bound": -2323.375,
+          "energy": -2112.125,
+          "cuts": 31731,
+          "round": 0
+        }
+      ],
+      "case": "pegasus-4101",
+      "method": "auto",
+      "seconds": 5.2109329589875415,
+      "budget": 5.0,
+      "nodes": 1288,
+      "edges": 8309
+    },
+    {
+      "lower_bound": -2323.125,
+      "verified_bound": -2323.125,
+      "status": "Time limit reached. (HiGHS Status 13: Time limit reached)",
+      "strategy": "ising_certificate",
+      "energy": -2112.125,
+      "case": "pegasus-4101",
+      "method": "turbo_linprog",
+      "seconds": 5.260178833035752,
+      "budget": 5.0,
+      "nodes": 1288,
+      "edges": 8309
+    },
+    {
+      "lower_bound": -4562.875,
+      "verified_bound": null,
+      "status": "Time limit reached",
+      "strategy": "original_highspy_model",
+      "energy": -7.625,
+      "case": "pegasus-4101",
+      "method": "native_highs",
+      "seconds": 5.1584330829791725,
+      "budget": 5.0,
+      "nodes": 1288,
+      "edges": 8309
+    },
+    {
+      "lower_bound": -4562.875,
+      "verified_bound": null,
+      "status": "Time limit reached. (HiGHS Status 13: Time limit reached)",
+      "strategy": "scipy",
+      "energy": -7.625,
+      "case": "pegasus-4101",
+      "method": "scipy_linprog",
+      "seconds": 5.173269041930325,
+      "budget": 5.0,
+      "nodes": 1288,
+      "edges": 8309
+    },
+    {
+      "energy": -1937.75,
+      "lower_bound": -2104.75,
+      "verified_bound": -2104.75,
+      "extra_edges": 3939,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.8525944160064682,
+          "lower_bound": -2536.5,
+          "energy": -1937.75,
+          "cuts": 25988,
+          "round": 0
+        },
+        {
+          "time": 1.4625294581055641,
+          "lower_bound": -2536.5,
+          "energy": -1937.75,
+          "cuts": 26508,
+          "round": 0
+        },
+        {
+          "time": 4.633180291042663,
+          "lower_bound": -2104.75,
+          "energy": -1937.75,
+          "cuts": 26508,
+          "round": 0
+        },
+        {
+          "time": 5.099640291067772,
+          "lower_bound": -2104.75,
+          "energy": -1937.75,
+          "cuts": 26508,
+          "round": 0
+        }
+      ],
+      "case": "pegasus-4102",
+      "method": "auto",
+      "seconds": 5.100944082951173,
+      "budget": 5.0,
+      "nodes": 1218,
+      "edges": 7445
+    },
+    {
+      "lower_bound": -2105.75,
+      "verified_bound": -2105.75,
+      "status": "Time limit reached. (HiGHS Status 13: Time limit reached)",
+      "strategy": "ising_certificate",
+      "energy": -1937.75,
+      "case": "pegasus-4102",
+      "method": "turbo_linprog",
+      "seconds": 5.123557499959134,
+      "budget": 5.0,
+      "nodes": 1218,
+      "edges": 7445
+    },
+    {
+      "lower_bound": -4078.75,
+      "verified_bound": null,
+      "status": "Time limit reached",
+      "strategy": "original_highspy_model",
+      "energy": -173.75,
+      "case": "pegasus-4102",
+      "method": "native_highs",
+      "seconds": 5.003518374986015,
+      "budget": 5.0,
+      "nodes": 1218,
+      "edges": 7445
+    },
+    {
+      "lower_bound": -4078.75,
+      "verified_bound": null,
+      "status": "Time limit reached. (HiGHS Status 13: Time limit reached)",
+      "strategy": "scipy",
+      "energy": -173.75,
+      "case": "pegasus-4102",
+      "method": "scipy_linprog",
+      "seconds": 5.044809665996581,
+      "budget": 5.0,
+      "nodes": 1218,
+      "edges": 7445
+    },
+    {
+      "energy": -1937.75,
+      "lower_bound": -2136.75,
+      "verified_bound": -2136.75,
+      "extra_edges": 0,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.8533855830319226,
+          "lower_bound": -2536.5,
+          "energy": -1937.75,
+          "cuts": 25988,
+          "round": 0
+        },
+        {
+          "time": 1.4597665830515325,
+          "lower_bound": -2520.25,
+          "energy": -1937.75,
+          "cuts": 26508,
+          "round": 0
+        },
+        {
+          "time": 3.1975427080178633,
+          "lower_bound": -2136.75,
+          "energy": -1937.75,
+          "cuts": 26508,
+          "round": 0
+        },
+        {
+          "time": 3.597258000052534,
+          "lower_bound": -2136.75,
+          "energy": -1937.75,
+          "cuts": 26508,
+          "round": 1
+        },
+        {
+          "time": 5.096307458006777,
+          "lower_bound": -2136.75,
+          "energy": -1937.75,
+          "cuts": 26508,
+          "round": 1
+        }
+      ],
+      "case": "pegasus-4102",
+      "method": "previous_hybrid",
+      "seconds": 5.097634332953021,
+      "budget": 5.0,
+      "nodes": 1218,
+      "edges": 7445
+    },
+    {
+      "lower_bound": -4944.0,
+      "verified_bound": -4944.0,
+      "status": "Time limit reached. (HiGHS Status 13: Time limit reached)",
+      "strategy": "ising_certificate",
+      "energy": -4058.0,
+      "case": "G3",
+      "method": "turbo_linprog",
+      "seconds": 5.220168708008714,
+      "budget": 5.0,
+      "nodes": 800,
+      "edges": 19176
+    },
+    {
+      "lower_bound": -19128.0,
+      "verified_bound": null,
+      "status": "Time limit reached",
+      "strategy": "original_highspy_model",
+      "energy": -40.0,
+      "case": "G3",
+      "method": "native_highs",
+      "seconds": 5.017092166934162,
+      "budget": 5.0,
+      "nodes": 800,
+      "edges": 19176
+    },
+    {
+      "lower_bound": -19120.0,
+      "verified_bound": null,
+      "status": "Time limit reached. (HiGHS Status 13: Time limit reached)",
+      "strategy": "scipy",
+      "energy": -40.0,
+      "case": "G3",
+      "method": "scipy_linprog",
+      "seconds": 5.1082679169485345,
+      "budget": 5.0,
+      "nodes": 800,
+      "edges": 19176
+    },
+    {
+      "energy": -4058.0,
+      "lower_bound": -4984.0,
+      "verified_bound": -4984.0,
+      "extra_edges": 0,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 1.2348324579652399,
+          "lower_bound": -8996.0,
+          "energy": -4058.0,
+          "cuts": 18413,
+          "round": 0
+        },
+        {
+          "time": 1.634525749948807,
+          "lower_bound": -8902.0,
+          "energy": -4058.0,
+          "cuts": 18933,
+          "round": 0
+        },
+        {
+          "time": 1.8801410830346867,
+          "lower_bound": -8902.0,
+          "energy": -4058.0,
+          "cuts": 19445,
+          "round": 0
+        },
+        {
+          "time": 2.73142841598019,
+          "lower_bound": -4984.0,
+          "energy": -4058.0,
+          "cuts": 19445,
+          "round": 0
+        },
+        {
+          "time": 3.5773570409510285,
+          "lower_bound": -4984.0,
+          "energy": -4058.0,
+          "cuts": 19445,
+          "round": 1
+        },
+        {
+          "time": 5.078285958035849,
+          "lower_bound": -4984.0,
+          "energy": -4058.0,
+          "cuts": 19445,
+          "round": 1
+        }
+      ],
+      "case": "G3",
+      "method": "previous_hybrid",
+      "seconds": 5.0795102920383215,
+      "budget": 5.0,
+      "nodes": 800,
+      "edges": 19176
+    },
+    {
+      "energy": -4058.0,
+      "lower_bound": -4944.0,
+      "verified_bound": -4944.0,
+      "extra_edges": 4136,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 2.1229447500081733,
+          "lower_bound": -4944.0,
+          "energy": -4058.0,
+          "cuts": 0,
+          "round": 1
+        },
+        {
+          "time": 5.084358833963051,
+          "lower_bound": -4944.0,
+          "energy": -4058.0,
+          "cuts": 0,
+          "round": 1
+        }
+      ],
+      "case": "G3",
+      "method": "auto",
+      "seconds": 5.085189290926792,
+      "budget": 5.0,
+      "nodes": 800,
+      "edges": 19176
+    },
+    {
+      "lower_bound": -1326.0,
+      "verified_bound": null,
+      "status": "Time limit reached",
+      "strategy": "original_highspy_model",
+      "energy": -970.0,
+      "case": "G13",
+      "method": "native_highs",
+      "seconds": 5.0032726660138,
+      "budget": 5.0,
+      "nodes": 800,
+      "edges": 1600
+    },
+    {
+      "lower_bound": -1326.0,
+      "verified_bound": null,
+      "status": "Time limit reached. (HiGHS Status 13: Time limit reached)",
+      "strategy": "scipy",
+      "energy": -938.0,
+      "case": "G13",
+      "method": "scipy_linprog",
+      "seconds": 5.008591125020757,
+      "budget": 5.0,
+      "nodes": 800,
+      "edges": 1600
+    },
+    {
+      "energy": -1118.0,
+      "lower_bound": -1133.0198416989344,
+      "verified_bound": -1134.0,
+      "extra_edges": 0,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.24544358300045133,
+          "lower_bound": -1150.0,
+          "energy": -1118.0,
+          "cuts": 384,
+          "round": 0
+        },
+        {
+          "time": 0.2654180829413235,
+          "lower_bound": -1144.0,
+          "energy": -1118.0,
+          "cuts": 604,
+          "round": 0
+        },
+        {
+          "time": 0.2835601669503376,
+          "lower_bound": -1144.0,
+          "energy": -1118.0,
+          "cuts": 625,
+          "round": 0
+        },
+        {
+          "time": 0.7577160829678178,
+          "lower_bound": -1144.0,
+          "energy": -1118.0,
+          "cuts": 625,
+          "round": 0
+        },
+        {
+          "time": 0.7625215830048546,
+          "lower_bound": -1142.0,
+          "energy": -1118.0,
+          "cuts": 625,
+          "round": 1
+        },
+        {
+          "time": 0.8042797920061275,
+          "lower_bound": -1142.0,
+          "energy": -1118.0,
+          "cuts": 707,
+          "round": 2
+        },
+        {
+          "time": 0.8466885830275714,
+          "lower_bound": -1142.0,
+          "energy": -1118.0,
+          "cuts": 767,
+          "round": 3
+        },
+        {
+          "time": 0.8829397920053452,
+          "lower_bound": -1138.0,
+          "energy": -1118.0,
+          "cuts": 839,
+          "round": 4
+        },
+        {
+          "time": 0.9231247080024332,
+          "lower_bound": -1136.0,
+          "energy": -1118.0,
+          "cuts": 921,
+          "round": 5
+        },
+        {
+          "time": 0.9671816249610856,
+          "lower_bound": -1134.0,
+          "energy": -1118.0,
+          "cuts": 992,
+          "round": 6
+        },
+        {
+          "time": 1.0130620000418276,
+          "lower_bound": -1134.0,
+          "energy": -1118.0,
+          "cuts": 1038,
+          "round": 7
+        },
+        {
+          "time": 1.0579166669631377,
+          "lower_bound": -1134.0,
+          "energy": -1118.0,
+          "cuts": 1082,
+          "round": 8
+        },
+        {
+          "time": 1.1063610420096666,
+          "lower_bound": -1134.0,
+          "energy": -1118.0,
+          "cuts": 1125,
+          "round": 9
+        },
+        {
+          "time": 1.1594114169711247,
+          "lower_bound": -1134.0,
+          "energy": -1118.0,
+          "cuts": 1168,
+          "round": 10
+        },
+        {
+          "time": 5.0087803329806775,
+          "lower_bound": -1134.0,
+          "energy": -1118.0,
+          "cuts": 1224,
+          "round": 10
+        }
+      ],
+      "case": "G13",
+      "method": "previous_hybrid",
+      "seconds": 5.00906125002075,
+      "budget": 5.0,
+      "nodes": 800,
+      "edges": 1600
+    },
+    {
+      "energy": -1118.0,
+      "lower_bound": -1134.0,
+      "verified_bound": -1134.0,
+      "extra_edges": 0,
+      "status": "TIME_LIMIT",
+      "progress": [
+        {
+          "time": 0.2494045839412138,
+          "lower_bound": -1150.0,
+          "energy": -1118.0,
+          "cuts": 384,
+          "round": 0
+        },
+        {
+          "time": 0.2695206250064075,
+          "lower_bound": -1144.0,
+          "energy": -1118.0,
+          "cuts": 604,
+          "round": 0
+        },
+        {
+          "time": 0.28830204193945974,
+          "lower_bound": -1144.0,
+          "energy": -1118.0,
+          "cuts": 625,
+          "round": 0
+        },
+        {
+          "time": 2.5976450839079916,
+          "lower_bound": -1144.0,
+          "energy": -1118.0,
+          "cuts": 625,
+          "round": 0
+        },
+        {
+          "time": 2.6029811250045896,
+          "lower_bound": -1142.0,
+          "energy": -1118.0,
+          "cuts": 625,
+          "round": 1
+        },
+        {
+          "time": 2.644735625013709,
+          "lower_bound": -1142.0,
+          "energy": -1118.0,
+          "cuts": 707,
+          "round": 2
+        },
+        {
+          "time": 2.6894717919640243,
+          "lower_bound": -1142.0,
+          "energy": -1118.0,
+          "cuts": 767,
+          "round": 3
+        },
+        {
+          "time": 2.726764208986424,
+          "lower_bound": -1138.0,
+          "energy": -1118.0,
+          "cuts": 839,
+          "round": 4
+        },
+        {
+          "time": 2.768049499951303,
+          "lower_bound": -1136.0,
+          "energy": -1118.0,
+          "cuts": 921,
+          "round": 5
+        },
+        {
+          "time": 2.8134379169205204,
+          "lower_bound": -1134.0,
+          "energy": -1118.0,
+          "cuts": 992,
+          "round": 6
+        },
+        {
+          "time": 2.8602480839472264,
+          "lower_bound": -1134.0,
+          "energy": -1118.0,
+          "cuts": 1038,
+          "round": 7
+        },
+        {
+          "time": 2.9044027919881046,
+          "lower_bound": -1134.0,
+          "energy": -1118.0,
+          "cuts": 1082,
+          "round": 8
+        },
+        {
+          "time": 2.9517373339040205,
+          "lower_bound": -1134.0,
+          "energy": -1118.0,
+          "cuts": 1125,
+          "round": 9
+        },
+        {
+          "time": 3.0041141249239445,
+          "lower_bound": -1134.0,
+          "energy": -1118.0,
+          "cuts": 1168,
+          "round": 10
+        },
+        {
+          "time": 5.027130874921568,
+          "lower_bound": -1134.0,
+          "energy": -1118.0,
+          "cuts": 1224,
+          "round": 10
+        }
+      ],
+      "case": "G13",
+      "method": "auto",
+      "seconds": 5.02739850000944,
+      "budget": 5.0,
+      "nodes": 800,
+      "edges": 1600
+    },
+    {
+      "lower_bound": -1134.0,
+      "verified_bound": -1134.0,
+      "status": "Time limit reached. (HiGHS Status 13: Time limit reached)",
+      "strategy": "ising_certificate",
+      "energy": -1118.0,
+      "case": "G13",
+      "method": "turbo_linprog",
+      "seconds": 5.011603374965489,
+      "budget": 5.0,
+      "nodes": 800,
+      "edges": 1600
+    }
+  ],
+  "cases": {
+    "pegasus-4101": "9d4817059461efc96ba96ee81824931fe8b861c0c59073de368ed0652316c90e",
+    "pegasus-4102": "7a5a5e0b55cb3fd528130797f9a60d530d05e350ecff07062efe88a2e80cc09a",
+    "G3": "ec306b421f248bb6e9811ba18480c2554734ead2373253ca5eb8867667514514",
+    "G13": "218a5aae2e983c6adac74ca7c40e6fbbec609053b0aeb7b2e5cb3ce3d677bfe7"
+  }
+}

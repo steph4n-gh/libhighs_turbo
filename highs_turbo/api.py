@@ -11,11 +11,11 @@ Provides:
 
 from __future__ import annotations
 
-import math
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from fractions import Fraction
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from numbers import Real
+from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
@@ -24,7 +24,7 @@ try:
 except ImportError:
     sp = None
 
-from scipy.optimize import Bounds, LinearConstraint, OptimizeResult, linprog as scipy_linprog, milp as scipy_milp
+from scipy.optimize import Bounds, OptimizeResult, linprog as scipy_linprog
 
 # Import compiled engine components with graceful fallback
 from highs_turbo.compiled_engine import (
@@ -32,7 +32,6 @@ from highs_turbo.compiled_engine import (
     CompiledBitGraph,
     CompiledCutEngine,
     CompiledRationalVerifier,
-    CompiledSolverCallbackBridge,
 )
 
 from highs_turbo.detector import TopologyDetector, TopologyScanResult, detect_topology
@@ -43,7 +42,12 @@ from highs_turbo.rational_verifier import VerificationCertificate
 
 @dataclass
 class MaxCutResult:
-    """Result of solve_maxcut, unpackable as (cut_value, partition, certificate)."""
+    """Result unpackable as (cut_value, partition, certificate).
+
+    The legacy certification flag describes the bound, not exact optimality.
+    ``certificate`` is a receipt digest; ``bound_certificate`` is the witness.
+    ``to_dict()`` preserves the legacy summary format, without the full witness.
+    """
 
     cut_value: float
     partition: np.ndarray
@@ -55,6 +59,7 @@ class MaxCutResult:
     status: str = "OPTIMAL"
     exact_rational_bound: Optional[Fraction] = None
     num_active_supports: int = 0
+    bound_certificate: Any = None
 
     def __iter__(self):
         """Enables 3-element tuple unpacking: cut_val, partition, cert = solve_maxcut(G)."""
@@ -90,7 +95,12 @@ class MaxCutResult:
 
 @dataclass
 class QuboResult:
-    """Result of solve_qubo, unpackable as (energy, solution, certificate)."""
+    """Result unpackable as (energy, solution, certificate).
+
+    The legacy certification flag describes the bound, not exact optimality.
+    ``certificate`` is a receipt digest; ``bound_certificate`` is the witness.
+    ``to_dict()`` preserves the legacy summary format, without the full witness.
+    """
 
     energy: float
     solution: np.ndarray
@@ -102,6 +112,7 @@ class QuboResult:
     status: str = "OPTIMAL"
     exact_rational_bound: Optional[Fraction] = None
     num_active_supports: int = 0
+    bound_certificate: Any = None
 
     def __iter__(self):
         """Enables 3-element tuple unpacking: energy, solution, cert = solve_qubo(Q)."""
@@ -233,8 +244,15 @@ class TurboSolver:
         use_turbo = method_clean in ("highs", "turbo", "highs_turbo")
         scipy_method = "highs" if use_turbo else method
         fallback_reason = None
+        attempt_started = time.perf_counter()
         if use_turbo and callback is None and x0 is None:
             try:
+                if integrality is not None and np.any(integrality):
+                    from highs_turbo.ising_linearized import solve_linearized_binary
+                    result = solve_linearized_binary(c, A_ub, b_ub, A_eq, b_eq, bounds,
+                                                     integrality, dict(options or {}))
+                    if result is not None:
+                        return result
                 from highs_turbo.lp_accelerator import solve_reduced_lp
 
                 result = solve_reduced_lp(c, A_ub, b_ub, A_eq, b_eq, bounds,
@@ -247,6 +265,11 @@ class TurboSolver:
                 fallback_reason = str(exc)
                 if self.verbose:
                     print(f"[highs_turbo] Fallback to SciPy: {exc}")
+            # Both a declined model and a failed attempt consume preparation
+            # time. Ordinary SciPy receives only the remaining caller budget.
+            limit = (options or {}).get("time_limit")
+            if isinstance(limit, Real) and np.isfinite(limit) and limit >= 0:
+                options = {**options, "time_limit": max(0., limit-(time.perf_counter()-attempt_started))}
         result = scipy_linprog(
             c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=bounds,
             method=scipy_method, callback=callback, options=options, x0=x0,
@@ -276,73 +299,34 @@ class TurboSolver:
                 certificate="0" * 64,
                 is_rationally_certified=True,
                 upper_bound=0.0,
+                exact_rational_bound=Fraction(),
                 simplex_iterations=0,
                 solve_time_ms=(time.perf_counter() - t0) * 1000.0,
             )
 
-        # 1. Compute high-quality integer partition and cut value
-        if n <= 200:
-            # Solve exact integer Max-Cut via HiGHS MILP
-            cut_val, partition = self.exact_solver.solve_integer_maxcut(graph)
-        else:
-            # Randomized hyperplane rounding + greedy 1-flip descent on relaxation
-            partition = self._compute_approximate_partition(graph)
-            cut_val = self._evaluate_cut_value(graph, partition)
+        from hashlib import sha256
+        import json
+        from highs_turbo.ising import solve_ising, _downward
 
-        # 2. Compute certified dual upper bound and cryptographic SHA-256 certificate
-        cbg = CompiledBitGraph.from_graph_instance(graph) if COMPILED_ENGINE_AVAILABLE else None
-        c_weights = np.array([-graph.weights.get(e, 1.0) for e in graph.edges], dtype=np.float64)
-
-        # Unconstrained root solve
-        x_base = np.where(c_weights < 0.0, 1.0, 0.0)
-
-        # Separate violated cuts
-        if cbg is not None and self.cut_engine is not None:
-            k5_violated = self.cut_engine.separate_violated_k5(cbg, graph.edges, list(x_base), threshold=1e-4, max_cuts=self.max_cuts)
-            tri_violated = self.cut_engine.separate_violated_triangles(cbg, graph.edges, list(x_base), threshold=1e-4, max_cuts=self.max_cuts)
-            c4_violated = self.cut_engine.separate_violated_4cycles(cbg, graph.edges, list(x_base), threshold=1e-4, max_cuts=self.max_cuts)
-
-            if k5_violated:
-                cuts = k5_violated
-            elif tri_violated:
-                cuts = tri_violated
-            elif c4_violated:
-                cuts = c4_violated
-            else:
-                cuts = self.bench_suite._separate_bipartite_4cycles(graph, x_base, limit=self.max_cuts)
-        else:
-            cuts = self.bench_suite._separate_bipartite_4cycles(graph, x_base, limit=self.max_cuts)
-
-        cert, a_surr, b_surr = self.bench_suite._certify_and_build_surrogate(graph, cbg, cuts, gnn_model=self.gnn_model)
-
-        # Solve surrogate LP in 0-1 pivots
-        if cbg is not None and COMPILED_ENGINE_AVAILABLE:
-            bridge = CompiledSolverCallbackBridge(m)
-            nz = np.nonzero(a_surr)[0]
-            bridge.add_cut_row(b_surr, nz, a_surr[nz], "certified_surrogate")
-            A_surr, b_arr = bridge.get_sparse_constraints()
-        else:
-            A_surr = a_surr.reshape(1, -1)
-            b_arr = np.array([b_surr], dtype=np.float64)
-
-        bounds = [(0.0, 1.0)] * m
-        res_lp = scipy_linprog(c_weights, A_ub=A_surr, b_ub=b_arr, bounds=bounds, method="highs")
-        upper_bound = -float(res_lp.fun) if res_lp.success else float("inf")
-        iters = res_lp.nit if hasattr(res_lp, "nit") else 0
-
-        solve_time_ms = (time.perf_counter() - t0) * 1000.0
-
+        options = dict(kwargs)
+        options.setdefault("time_limit", None if n <= 200 else 5.)
+        weights = {edge: Fraction(float(graph.weights.get(edge, 1.))) for edge in graph.edges}
+        if options["time_limit"] is not None and options["time_limit"] >= 0:
+            options["time_limit"] = max(0., options["time_limit"]-(time.perf_counter()-t0))
+        result = solve_ising(dict.fromkeys(range(n), 0), weights, **options)
+        partition = np.asarray([(1-result.spins[i])//2 for i in range(n)])
+        total = sum(weights.values(), Fraction())
+        cut_value = (total-result.exact_energy)/2
+        upper = (total-result.exact_cut_lower_bound)/2
+        receipt = sha256(json.dumps(result.certificate.to_dict(), sort_keys=True,
+                                    separators=(",", ":")).encode()).hexdigest()
         return MaxCutResult(
-            cut_value=float(cut_val),
-            partition=partition,
-            certificate=cert.sha256_hash,
-            is_rationally_certified=cert.is_valid,
-            upper_bound=upper_bound,
-            simplex_iterations=iters,
-            solve_time_ms=solve_time_ms,
-            exact_rational_bound=cert.exact_rhs,
-            num_active_supports=cert.num_active_supports,
-            status="OPTIMAL" if n <= 200 else "HEURISTIC",
+            cut_value=float(cut_value), partition=partition, certificate=receipt,
+            is_rationally_certified=True, upper_bound=-_downward(-upper),
+            solve_time_ms=(time.perf_counter()-t0)*1000,
+            exact_rational_bound=upper, num_active_supports=len(result.certificate.cuts),
+            status="OPTIMAL" if result.status == "OPTIMAL" else "HEURISTIC",
+            bound_certificate=result.certificate,
         )
 
     def solve_qubo(self, Q: Any, **kwargs: Any) -> QuboResult:
@@ -354,52 +338,81 @@ class TurboSolver:
         """
         t0 = time.perf_counter()
 
-        # Parse and symmetrize Q
+        # Iterate stored coefficients without densifying sparse inputs. Sparse
+        # duplicates and opposite orientations are added as exact fractions;
+        # floating-point sparse canonicalization can change the objective.
         if isinstance(Q, dict):
-            max_idx = max((max(i, j) for i, j in Q.keys()), default=-1)
-            n = max_idx + 1
-            Q_mat = np.zeros((n, n), dtype=np.float64)
-            for (i, j), v in Q.items():
-                Q_mat[i, j] += float(v)
+            for key in Q:
+                if (not isinstance(key, tuple) or len(key) != 2
+                        or any(isinstance(i, (bool, np.bool_))
+                               or not isinstance(i, (int, np.integer)) or i < 0
+                               for i in key)):
+                    raise ValueError("Q dictionary keys must be pairs of nonnegative integer indices")
+            n = 1 + max((int(i) for key in Q for i in key), default=-1)
+            coefficients = ((int(i), int(j), value) for (i, j), value in Q.items())
         elif sp is not None and sp.issparse(Q):
-            Q_mat = Q.toarray()
-            n = Q_mat.shape[0]
+            if Q.ndim != 2 or Q.shape[0] != Q.shape[1]:
+                raise ValueError("Q must be a square matrix")
+            n = Q.shape[0]
+            stored = Q.tocoo(copy=False)
+            if np.iscomplexobj(stored.data):
+                raise ValueError("Q must contain only finite real values")
+            coefficients = zip(stored.row, stored.col, stored.data)
         else:
+            if np.iscomplexobj(Q):
+                raise ValueError("Q must contain only finite real values")
             Q_mat = np.asarray(Q, dtype=np.float64)
-            n = Q_mat.shape[0] if Q_mat.ndim > 0 else 0
+            if Q_mat.ndim != 2 or Q_mat.shape[0] != Q_mat.shape[1]:
+                raise ValueError("Q must be a square matrix")
+            n = Q_mat.shape[0]
+            rows, columns = np.nonzero(Q_mat)
+            coefficients = zip(rows, columns, Q_mat[rows, columns])
 
-        if Q_mat.ndim != 2 or Q_mat.shape[0] != Q_mat.shape[1]:
-            raise ValueError("Q must be a square matrix")
-        if not np.isfinite(Q_mat).all():
-            raise ValueError("Q must contain only finite values")
+        from hashlib import sha256
+        import json
+        from highs_turbo.ising import solve_ising, _downward
 
-        Q_sym = 0.5 * (Q_mat + Q_mat.T)
-        np.fill_diagonal(Q_sym, np.diag(Q_mat))
-
-        # Solve integer problem
-        if n <= 100:
-            energy, solution = self._solve_qubo_exact_milp(Q_sym, n)
-        else:
-            solution = self._solve_qubo_heuristic(Q_sym, n)
-            energy = float(solution @ Q_sym @ solution)
-
-        # Derive certified lower bound & SHA-256 proof receipt
-        cert = self._certify_qubo_lower_bound(Q_mat, n)
-        lower_bound = float(cert.exact_rhs) if cert.is_valid else float("-inf")
-
-        solve_time_ms = (time.perf_counter() - t0) * 1000.0
-
+        fields = dict.fromkeys(range(n), Fraction())
+        constant = Fraction()
+        couplings = {}
+        for i, j, coefficient in coefficients:
+            if np.iscomplexobj(coefficient):
+                raise ValueError("Q must contain only finite real values")
+            try:
+                value = float(coefficient)
+            except (TypeError, ValueError, OverflowError) as exc:
+                raise ValueError("Q must contain only finite real values") from exc
+            if not np.isfinite(value):
+                raise ValueError("Q must contain only finite real values")
+            value = Fraction(value)
+            i, j = int(i), int(j)
+            if i == j:
+                fields[i] += value/2
+                constant += value/2
+            elif value:
+                pair = (min(i, j), max(i, j))
+                couplings[pair] = couplings.get(pair, Fraction()) + value/4
+        couplings = {pair: value for pair, value in sorted(couplings.items()) if value}
+        for (i, j), value in couplings.items():
+            fields[i] += value
+            fields[j] += value
+            constant += value
+        options = dict(kwargs)
+        options.setdefault("time_limit", None if n <= 18 else 5.)
+        if options["time_limit"] is not None and options["time_limit"] >= 0:
+            options["time_limit"] = max(0., options["time_limit"]-(time.perf_counter()-t0))
+        result = solve_ising(fields, couplings, offset=constant, **options)
+        solution = np.asarray([(1+result.spins[i])//2 for i in range(n)], dtype=int)
+        receipt = sha256(json.dumps(result.certificate.to_dict(), sort_keys=True,
+                                    separators=(",", ":")).encode()).hexdigest()
         return QuboResult(
-            energy=energy,
-            solution=solution,
-            certificate=cert.sha256_hash,
-            is_rationally_certified=cert.is_valid,
-            lower_bound=lower_bound,
-            simplex_iterations=0,
-            solve_time_ms=solve_time_ms,
-            exact_rational_bound=cert.exact_rhs,
-            num_active_supports=cert.num_active_supports,
-            status="OPTIMAL" if n <= 18 else "HEURISTIC",
+            energy=float(result.exact_energy), solution=solution, certificate=receipt,
+            is_rationally_certified=True, lower_bound=_downward(result.exact_cut_lower_bound),
+            solve_time_ms=(time.perf_counter()-t0)*1000,
+            exact_rational_bound=result.exact_cut_lower_bound,
+            num_active_supports=len(result.certificate.cuts),
+            status="OPTIMAL" if result.status == "OPTIMAL" else "HEURISTIC",
+            bound_certificate=result.certificate,
         )
 
     def solve_ising(self, h, J, **kwargs):
@@ -419,127 +432,6 @@ class TurboSolver:
             return self.verifier.verify_clique_conic_combination(graph, multipliers, rhs)
         return self.bench_suite.verifier.verify_clique_conic_combination(graph, multipliers, rhs)
 
-    def _compute_approximate_partition(self, graph: GraphInstance) -> np.ndarray:
-        """Fast greedy 1-flip local search for finding cut partitions on large graphs."""
-        n = graph.num_nodes
-        rng = np.random.default_rng(42)
-        s = rng.integers(0, 2, size=n, dtype=int)
-
-        # Build adjacency
-        adj: List[List[Tuple[int, float]]] = [[] for _ in range(n)]
-        for (u, v), w in graph.weights.items():
-            adj[u].append((v, w))
-            adj[v].append((u, w))
-
-        # 2 passes of greedy 1-flip descent
-        for _ in range(2):
-            improved = False
-            for u in range(n):
-                # Net gain if flipping s[u]
-                gain = 0.0
-                curr_spin = s[u]
-                for v, w in adj[u]:
-                    if s[v] == curr_spin:
-                        gain += w
-                    else:
-                        gain -= w
-                if gain > 1e-6:
-                    s[u] = 1 - curr_spin
-                    improved = True
-            if not improved:
-                break
-        return s
-
-    def _evaluate_cut_value(self, graph: GraphInstance, partition: np.ndarray) -> float:
-        cut = 0.0
-        for (u, v), w in graph.weights.items():
-            if partition[u] != partition[v]:
-                cut += w
-        return cut
-
-    def _solve_qubo_exact_milp(self, Q: np.ndarray, n: int) -> Tuple[float, np.ndarray]:
-        """Solves exact QUBO via exact bit enumeration (n <= 18) or multi-start local search."""
-        if n <= 18:
-            num_configs = 1 << n
-            best_energy = float("inf")
-            best_x = np.zeros(n, dtype=int)
-            for mask in range(num_configs):
-                x_vec = np.array([(mask >> k) & 1 for k in range(n)], dtype=np.float64)
-                e = float(x_vec @ Q @ x_vec)
-                if e < best_energy:
-                    best_energy = e
-                    best_x = x_vec.astype(int)
-            return best_energy, best_x
-
-        # For larger n, use multi-start local search
-        best_energy = float("inf")
-        best_x = np.zeros(n, dtype=int)
-        for seed in range(20):
-            rng = np.random.default_rng(seed)
-            x_cand = rng.integers(0, 2, size=n, dtype=int)
-            for _ in range(10):
-                improved = False
-                for i in range(n):
-                    curr = x_cand[i]
-                    new = 1 - curr
-                    delta = (new - curr) * (Q[i, i] + 2.0 * np.dot(Q[i], x_cand) - 2.0 * Q[i, i] * curr)
-                    if delta < -1e-6:
-                        x_cand[i] = new
-                        improved = True
-                if not improved:
-                    break
-            e = float(x_cand @ Q @ x_cand)
-            if e < best_energy:
-                best_energy = e
-                best_x = x_cand.copy()
-
-        return best_energy, best_x
-
-    def _solve_qubo_heuristic(self, Q: np.ndarray, n: int) -> np.ndarray:
-        """Fast 1-flip local search for finding low-energy QUBO states on large matrices."""
-        rng = np.random.default_rng(42)
-        x = rng.integers(0, 2, size=n, dtype=int)
-        for _ in range(10):
-            improved = False
-            for i in range(n):
-                curr = x[i]
-                new = 1 - curr
-                delta = (new - curr) * (Q[i, i] + 2.0 * np.dot(Q[i], x) - 2.0 * Q[i, i] * curr)
-                if delta < -1e-6:
-                    x[i] = new
-                    improved = True
-            if not improved:
-                break
-        return x
-
-    def _certify_qubo_lower_bound(self, Q: np.ndarray, n: int) -> VerificationCertificate:
-        """Bound each binary monomial using its exact input coefficient.
-
-        x^T Q x = sum Q_ii x_i + sum_{i<j} (Q_ij + Q_ji) x_i x_j.
-        Each monomial is in {0, 1}, so its contribution is at least
-        min(0, coefficient). Do not round coefficients toward zero.
-        """
-        coefficients = {}
-        for i in range(n):
-            coefficients[(i, i)] = Fraction.from_float(float(Q[i, i]))
-            for j in range(i + 1, n):
-                coefficients[(i, j)] = (
-                    Fraction.from_float(float(Q[i, j]))
-                    + Fraction.from_float(float(Q[j, i]))
-                )
-        coefficients = {key: value for key, value in coefficients.items() if value}
-        trivial_lb = sum((min(Fraction(0), value) for value in coefficients.values()), Fraction(0))
-        cert = VerificationCertificate(
-            is_valid=True,
-            status="CERTIFIED_DIAGONAL_BOUND" if all(i == j for i, j in coefficients) else "CERTIFIED_TRIVIAL_LOWER_BOUND",
-            rejection_reason=None,
-            num_active_supports=0,
-            exact_coefficients=coefficients,
-            exact_rhs=trivial_lb,
-            sha256_hash="0" * 64,
-        )
-        cert.compute_sha256()
-        return cert
 
 
 # Global default solver instance

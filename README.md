@@ -1,18 +1,108 @@
-# highs_turbo: Transparent LP Acceleration for HiGHS & SciPy
+# highs_turbo
+
+SciPy-compatible LP acceleration and independently checkable Ising, QUBO,
+and Max-Cut bounds with HiGHS.
 
 [![Tests](https://github.com/steph4n-gh/libhighs_turbo/actions/workflows/tests.yml/badge.svg)](https://github.com/steph4n-gh/libhighs_turbo/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 
+[Quickstart](#quickstart) · [API contract](API_CONTRACT.md) ·
+[Validation results](STABILIZATION_RESULTS.md) · [Changelog](CHANGELOG.md) ·
+[Releases](https://github.com/steph4n-gh/libhighs_turbo/releases) ·
+[Contributing](CONTRIBUTING.md) ·
+[Issues](https://github.com/steph4n-gh/libhighs_turbo/issues)
+
 `highs_turbo.linprog` solves the supplied linear program using conic optimality
 checks, smaller working sets, and competing HiGHS methods where these help. It preserves
 the original problem and returns SciPy-style solutions, slacks, and marginals.
-The package also provides Max-Cut and QUBO solvers and a C++20 cutting-plane
-engine with rational verification.
+The package also provides Ising, Max-Cut, and QUBO solvers with independently
+verifiable rational bound certificates, plus an optional C++20 cutting-plane
+engine. Performance depends on the workload; see the recorded validation results.
+
+## When to use it
+
+- **Check an answer you already have.** Bound how far an external heuristic's
+  Ising, QUBO, or Max-Cut answer could be from optimal. The
+  [external-answer example](examples/certify_external_answer.py) demonstrates
+  the Ising workflow with a separate verification process; QUBO and Max-Cut
+  witnesses use the equivalent Ising objective described in the
+  [API contract](API_CONTRACT.md).
+- **Solve a binary problem with a checkable quality bound.** Obtain a feasible
+  answer and a rational bound, then inspect the checked gap even when the search
+  stops before optimality is established.
+- **Evaluate an existing SciPy LP workload.** Change the optimizer import and
+  [benchmark the same models](examples/benchmark_linprog.py). Speedups depend on
+  the input and are not guaranteed.
+
+[Current validation](STABILIZATION_RESULTS.md) covers mathematical and public
+benchmarks. A customer-specific application has not yet been demonstrated.
+
+## Plain English: what this does and why it is useful
+
+Imagine thousands of switches, each pointing up or down. Some pairs prefer to
+agree; others prefer to disagree. An **Ising problem** asks which settings give
+the lowest total penalty, called the **energy**. A **QUBO** expresses a similar
+problem using zero/one switches. **Max-Cut** asks how to split a network into two
+groups so that the connections crossing between them have the greatest total
+weight. These are closely related ways to describe difficult discrete choices.
+
+Finding a good answer and proving how good it is are separate jobs. The best
+answer found so far is the **incumbent**. A **lower bound** is a floor below which
+no possible answer can fall. The **gap** is the distance between that floor and
+the incumbent's energy. For example, an answer with energy -100 and a proven
+floor of -103 is at most 3 energy units from the best possible answer. When an
+exactly checked gap reaches zero, the answer is proven optimal.
+
+A **relaxation** makes the problem easier by temporarily allowing more choices.
+Its answer can be too optimistic, but that makes it useful as a bound. A **cut**
+is a rule that removes impossible relaxed choices while keeping every real
+switch setting. A **semidefinite program (SDP)** lets switches become vectors
+and checks their relationships together. The default solver combines
+that global view with cuts to raise the proven floor. It also looks for groups
+of three vectors whose relationships cannot come from real switch settings,
+even when those switches have no direct connection in the input.
+
+A **certificate** is a mathematical receipt that a separate checker can verify.
+Our Ising certificates use exact fractions. A **sum of squares (SOS)** certificate
+also uses the fact that squared real numbers cannot be negative. Numerical
+optimization proposes a receipt; exact arithmetic checks what it actually
+proves, including rounding errors. A **higher-order** SOS method would also
+reason about products of switches, giving it a richer language for expressing
+their joint restrictions; that extension is currently research work. The
+[cubic follow-up](CUBIC_SCHUR_RESULTS.md) records a candidate whose apparent
+gain disappeared against a stronger ordinary-cut control.
+
+A **sparse** proof stores the nonzero pieces of its square instead of a full
+table. This lets the global bound engine handle larger networks without
+requiring a dense proof. The checker first proves that its integer arithmetic
+fits exactly, then checks the complete receipt, including connections created
+by the square that were absent from the input.
+
+The useful part is confidence: a better bound can tell you sooner that your
+answer is good enough, and can help the integer solver discard fruitless search.
+On six weighted Pegasus examples, the current hybrid option reduced the
+remaining certified gap by 61–65% versus our earlier cut-based engine at the
+same five-second budget. **Pegasus** is a particular sparse connection layout,
+not a claim of quantum computation. These results are specific comparisons,
+not evidence that every problem is faster or that the method is scientifically
+new. See [the measurements and their limits](SDP_ISING_RESULTS.md).
+
+**Drop-in** means existing application code can keep its optimizer calls and
+result handling after switching its `linprog` import to `highs_turbo`. A speedup
+inside that shared solver can therefore benefit many applications without
+rewriting each one. The documented LP acceleration already uses this path.
+The improved bound engine now runs automatically in `solve_ising`, `solve_qubo`,
+and `solve_maxcut`. It also recognizes compatible binary-product models in
+`linprog`: common linear formulations of products such as `y = x1*x2`. Any
+additional application constraints stay in the solve. Other integer models keep
+SciPy execution. Benefits depend on the problem structure and how much of an
+application's runtime is spent solving it. See [the integration and fresh
+comparisons](GEOMETRIC_ISING_RESULTS.md).
 
 ## Installation
 
-Python 3.10 or newer is required. NumPy, SciPy (1.9 or newer, for `milp`),
+Python 3.10 or newer is required. NumPy (2.0 or newer), SciPy (1.13 or newer),
 NetworkX, and the official HiGHS Python package (`highspy`) are installed
 automatically. LP acceleration runs on Linux, macOS, and Windows without
 compiling this project's C++ extension.
@@ -48,9 +138,11 @@ To use the bundled neural weights or train models, install the optional extra:
 python -m pip install '.[ml]'
 ```
 
-The weights are shipped inside the installed package. Max-Cut uses geometric
-weights when PyTorch is unavailable. Ordinary `linprog` calls do not load PyTorch
-or require a trained model.
+This extra requires PyTorch 2.4.1 or newer for NumPy 2 interoperability.
+
+The weights are shipped inside the installed package for the optional neural
+components. Ordinary `linprog`, `solve_maxcut`, `solve_qubo`, and `solve_ising`
+calls do not load PyTorch or require a trained model.
 
 ## Quickstart
 
@@ -93,8 +185,21 @@ numerical tolerances. Graph hints never authorize adding constraints that change
 the supplied LP. The LP conic check uses floating-point tolerances; it is not an
 exact rational certificate of the LP optimum.
 
-Integer models, explicit time/iteration/node budgets, other solver methods, and
-unsupported options retain ordinary SciPy execution. Small continuous LPs use
+Compatible binary-product integer models use the checked Ising engine. All
+variables must have bounds `[0, 1]`, with 32–8,191 binary base variables and
+complete, exact rows `y-xu <= 0`, `y-xv <= 0`, `xu+xv-y <= 1` for each product.
+Products may be continuous or binary. If these are all the constraints, the
+model is converted exactly, solved, and its solution checked against every
+original row. Additional inequalities and equalities stay in the original
+HiGHS model, strengthened by the proven objective bound. The supported options
+are `time_limit`, `mip_rel_gap`, and the defaults `presolve=True`, `disp=False`.
+These results expose `turbo_strategy="ising_certificate"`,
+`turbo_bound_certificate`, and `turbo_exact_lower_bound`; MIP marginals use
+SciPy's zero-array convention. `verify_linprog_certificate(c, certificate,
+A_ub=..., b_ub=..., bounds=..., integrality=...)` checks the bound without solving.
+
+Other integer models, explicit continuous-LP time/iteration/node budgets, other
+solver methods, and unsupported options retain ordinary SciPy execution. Small continuous LPs use
 the direct native path. An explicit simplex edge-weight strategy also keeps a
 single native method. Use `method="highs-ds"` to retain SciPy's simplex path.
 Successful native results expose `turbo_strategy`, `turbo_rows_used`,
@@ -123,8 +228,11 @@ print(cut_value, partition, result.upper_bound, result.status)
 ```
 
 Inputs may be a `GraphInstance`, NetworkX graph, dense adjacency matrix, or SciPy
-sparse matrix. Graphs with at most 200 nodes use a MILP for the integer solution;
-larger graphs use local search and report `status="HEURISTIC"`.
+sparse matrix. All sizes use the shared Ising engine, including its checked
+global bounds. The default time limit is unlimited up to 200 nodes and five
+seconds above that; pass `time_limit` explicitly to change it. Unfinished solves
+retain `status="HEURISTIC"` and a valid upper bound. `bound_certificate` contains
+the full mathematical witness; the unpacked `receipt` remains its SHA-256 digest.
 
 ### QUBO
 
@@ -136,10 +244,12 @@ print(energy, state, result.lower_bound, result.status)
 
 This minimizes `x.T @ Q @ x` for binary `x`. Inputs may be a square dense or
 sparse matrix, or a dictionary mapping `(i, j)` to coefficients. Up to 18
-variables are enumerated exactly. Larger problems use local search and report
-`status="HEURISTIC"`. The lower bound sums the minimum contribution of each
-binary monomial using exact rational representations of the input floats,
-including both off-diagonal entries `Q[i, j] + Q[j, i]`.
+variables have no default time limit; larger problems default to five seconds.
+All sizes use an exact objective conversion to the shared Ising engine, retaining
+both off-diagonal entries `Q[i, j] + Q[j, i]` without rounding their sum. Pass
+`time_limit` explicitly to change the budget. Unfinished solves retain
+`status="HEURISTIC"` and a checked lower bound. The tuple layout is unchanged;
+`bound_certificate` also exposes the full witness.
 
 ### Ising and genuine Pegasus subgraphs
 
@@ -160,8 +270,9 @@ This is a complete sparse integer solve using the public HiGHS library, availabl
 on all supported platforms. Labels can be arbitrary hashable objects; `h` can
 also be a sequence. Both orientations of a coupling add together. Self-couplings
 and the optional `offset` contribute to the constant energy.
-Coefficients are interpreted as finite binary64 numbers; the returned rational
-values preserve those input values exactly.
+Ordinary coefficients are interpreted as finite binary64 numbers; `Fraction`
+inputs retain their exact rational values. Returned rational bounds preserve
+those input values.
 
 The accelerated path repeatedly separates violated cycle inequalities and
 stronger inequalities on supports of up to 12 vertices. Each small-support
@@ -182,15 +293,29 @@ has no role in proof acceptance. `"static"` retains the original one-pass
 algorithm for comparison. The fast multiplier kernel uses the optional macOS
 extension; a slower Python implementation is available on other platforms.
 
-For a stronger global bound, use `relaxation="hybrid"`. It combines the cuts
-with a low-rank semidefinite relaxation and optimizes their multipliers together.
-`relaxation="sdp"` runs the global relaxation alone; `"cuts"` remains the default.
-Both new modes return an exact sum-of-squares certificate and install its
-objective bound in HiGHS. They use the existing NumPy/SciPy dependencies and
-support up to 2,048 vertices including the reference spin; larger inputs fall
-back to cuts. The dense witness needs quadratic memory, and final factorization
-and checking can overrun a short time limit. The static policy requires
-`relaxation="cuts"`. See [global-bound results and derivation](SDP_ISING_RESULTS.md).
+The default `relaxation="auto"` combines a low-rank global semidefinite bound
+with local cuts and geometric separation of nonlocal triangle inequalities.
+Dense objectives skip enumeration of local cycles and start with the global
+bound. `"hybrid"` explicitly chooses the combined path; `"sdp"` uses the basic
+global bound and `"cuts"` selects the earlier sparse cut relaxation. The static
+policy also uses cuts. These use existing NumPy/SciPy dependencies. Problems
+up to 2,048 vertices including the reference spin use the combined dense path.
+From 2,049 through 8,192 vertices, automatic selection uses a sparse global
+bound with geometric cuts. Independent vertex groups make vector updates
+cheap enough to spend more time strengthening that bound. The binary-product
+`linprog` bridge accepts up to 8,191 base variables.
+Dense inputs and factors exceeding the sparse work/storage limits fall back
+to cuts. The dense witness needs quadratic memory. Final factorization, original-model
+validation, and exact checking can overrun a short time limit. See
+[the geometric algorithm and measurements](GEOMETRIC_ISING_RESULTS.md) and
+[the larger sparse geometric comparison](SPARSE_GEOMETRIC_RESULTS.md),
+[the initial sparse certificate comparison](SPARSE_ISING_RESULTS.md), and
+[the global-bound derivation](SDP_ISING_RESULTS.md).
+
+Within each solve, repeated checks of the same sparse witness reuse its exact
+Gram calculation after validating all certificate fields. The stored result
+is cleared when the solve ends; a subsequent independent verification
+recomputes it. See [proof-checking costs and measurements](SPARSE_PROOF_REUSE_RESULTS.md).
 
 ```python
 result = solve_ising(h, J, time_limit=5, relaxation="hybrid", certified_gap=2.0)
@@ -223,7 +348,13 @@ runs no optimizer or model and rejects altered problem coefficients, invalid
 cuts, negative multipliers, and incorrect bounds. Global witnesses include a
 quantized triangular Gram factor; their checker accounts for every residual
 entry, including fill-in on nonedges. It does not trust numerical eigenvalues
-or a Cholesky status. `progress` records checked bound/energy checkpoints with
+or a Cholesky status. Version 3 witnesses can include additional edges with
+zero objective weight to express nonlocal cuts; the checker binds them to the
+original problem and validates each inequality. Version 4 stores a sparse
+integer Gram factor as row pointers, column indices, and values. Its checker
+validates the structure, exact arithmetic range, and expansion size before
+numeric multiplication. Versions 1–3 remain readable.
+`progress` records checked bound/energy checkpoints with
 elapsed times; `root_rounds` counts root relaxation rounds.
 The older `cut_certificate` field is retained only for the static policy.
 `threads=0` leaves HiGHS' thread count automatic; use a consistent thread setting
@@ -260,10 +391,28 @@ in [ADAPTIVE_ISING_RESULTS.md](ADAPTIVE_ISING_RESULTS.md).
 
 ## Certificates and performance
 
+The [public API contract](API_CONTRACT.md) distinguishes numerical solver
+termination, exact optimality, checked positive-gap bounds, and receipt digests.
+It also documents serialization, cooperative time limits and fallback behavior.
+
+To check an external heuristic's Ising answer against a portable bound witness:
+
+```bash
+python examples/certify_external_answer.py --output /tmp/answer-proof.json
+python examples/certify_external_answer.py --verify /tmp/answer-proof.json
+```
+
+The first command writes the original model, candidate spins and full proof,
+then checks them in a separate process. The second verifies that artifact
+without solving again. Use `--input` with your own model and candidate; see
+the [example's input format](examples/certify_external_answer.py).
+
 A valid cut-combination receipt certifies that combination's coefficients and
 right-hand side. It does not, on its own, certify that a returned partition is
 optimal or that a floating-point LP objective is an exact dual bound. QUBO
-receipts include the objective coefficients and the conservative lower bound.
+receipts bind the converted objective and its checked lower bound. The legacy
+Max-Cut and QUBO `is_rationally_certified` flags mean that their bound is valid;
+check `status` or equality of bound and objective to assess optimality.
 
 Speedups and simplex iteration counts depend on the input, solver version, and
 hardware. There is no fixed speedup or pivot-count guarantee. One timing script

@@ -1,0 +1,431 @@
+{
+  "production_commit": "33e038f89206563c259575e0d636be2ec6c5f252",
+  "production_unchanged": true,
+  "decision": "Do not promote either candidate to the default path",
+  "sequential": true,
+  "blas_threads": 1,
+  "append_warmup_timed_separately": true,
+  "full_api_imports_and_input_loading_excluded": true,
+  "proof_verification_included": true,
+  "inputs_sha256": {
+    "/tmp/libhighs-turbo-sparse-final/pegasus-6111.json": "7671ebc81fbb1cbe5a55ad9d00d02093e4f028786533408a6f2d10ad3f100dea",
+    "/tmp/libhighs-turbo-sparse-final/pegasus-6111-colored-r32.npy": "3e9bfd87004c045cbb33ecfdade1404cdea7667e7b4d68730f6c6139cde9fc81",
+    "/tmp/libhighs-turbo-sparse-final/pegasus-6111-full32-eps4-colored-geometry.json.gz": "649ef863e23224f0fadb284e13b7052e8359946be8343d1a6eccd29e032ab42b",
+    "/tmp/libhighs-turbo-sparse-final/G55.json": "1470390078b098afb73ad4521f06e4950471698cae7f9be0d894f829082fce7e",
+    "/tmp/libhighs-turbo-sparse-final/G55-colored-r32.npy": "bedc21ff8af5ec357707c8e9b3f27948721fd616063bb43d77512ed9773afc8c",
+    "/tmp/libhighs-turbo-sparse-final/G55-full32-eps4-colored-geometry.json.gz": "7ec1dfbdbe993ebf25d354b7ce9f6e7b45a559ac2f35911262efd9ba2d5645d1"
+  },
+  "records": {
+    "pair-parity-pegasus-6111-three": [
+      {
+        "case": "pegasus-6111",
+        "phase": "warmup",
+        "seconds": 1.062913000001572,
+        "vector_objective": -10456.539496815294
+      },
+      {
+        "case": "pegasus-6111",
+        "phase": "search",
+        "mode": "three",
+        "seconds": 0.9707863749936223,
+        "candidates": 129984,
+        "kept": 2048
+      },
+      {
+        "case": "pegasus-6111",
+        "mode": "three",
+        "budget": 8.0,
+        "previous": -11058.5,
+        "bound": -10895.0,
+        "valid": true,
+        "solve_seconds": 7.6513472920050845,
+        "check_seconds": 0.7462755419546738,
+        "elapsed_seconds": 8.397622833959758,
+        "cuts": 3653,
+        "newcuts": 1926,
+        "extra_edges": 6401,
+        "factor_entries": 980084,
+        "search": {
+          "seconds": 0.9707863749936223,
+          "candidates": 129984,
+          "kept": 2048
+        }
+      }
+    ],
+    "pair-parity-pegasus-6111-five": [
+      {
+        "case": "pegasus-6111",
+        "phase": "warmup",
+        "seconds": 1.0593846250558272,
+        "vector_objective": -10456.539496815294
+      },
+      {
+        "case": "pegasus-6111",
+        "phase": "search",
+        "mode": "five",
+        "seconds": 0.761935833026655,
+        "candidates": 13920,
+        "queries": 4096,
+        "pairs": 275168,
+        "best": 0.23288694466904328,
+        "kept": 512
+      },
+      {
+        "case": "pegasus-6111",
+        "mode": "five",
+        "budget": 8.0,
+        "previous": -11058.5,
+        "bound": -11027.25,
+        "valid": true,
+        "solve_seconds": 7.5003236250486225,
+        "check_seconds": 0.64814729092177,
+        "elapsed_seconds": 8.148470915970393,
+        "cuts": 2299,
+        "newcuts": 506,
+        "extra_edges": 5997,
+        "factor_entries": 916946,
+        "search": {
+          "seconds": 0.761935833026655,
+          "candidates": 13920,
+          "queries": 4096,
+          "pairs": 275168,
+          "best": 0.23288694466904328,
+          "kept": 512
+        }
+      }
+    ],
+    "one-pass-pegasus-6111": [
+      {
+        "energy": -9410.5,
+        "lower_bound": -11058.75,
+        "verified_bound": -11058.75,
+        "extra_edges": 3314,
+        "sparse_factor_entries": 946605,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 8.132382082985714,
+            "lower_bound": -11058.75,
+            "energy": -9410.5,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 10.790891958051361,
+            "lower_bound": -11058.75,
+            "energy": -9410.5,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "pegasus-6111",
+        "method": "auto",
+        "seconds": 10.793508249917068,
+        "budget": 10.0,
+        "nodes": 5640,
+        "edges": 38070
+      }
+    ],
+    "two-pass-pegasus-6111": [
+      {
+        "phase": "adaptive_geometry",
+        "stage": 0,
+        "seconds": 2.6294202079297975,
+        "cuts": 2048,
+        "calls": 7,
+        "search": {
+          "seconds": 0.7544645000016317,
+          "candidates": 145781
+        }
+      },
+      {
+        "phase": "adaptive_geometry",
+        "stage": 1,
+        "seconds": 2.407521417015232,
+        "cuts": 4068,
+        "calls": 5,
+        "search": {
+          "seconds": 0.9428656660020351,
+          "candidates": 131796
+        }
+      },
+      {
+        "energy": -9410.5,
+        "lower_bound": -10994.75,
+        "verified_bound": -10994.75,
+        "extra_edges": 6389,
+        "sparse_factor_entries": 988846,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 9.098479667096399,
+            "lower_bound": -10994.75,
+            "energy": -9410.5,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 11.040186334052123,
+            "lower_bound": -10994.75,
+            "energy": -9410.5,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "pegasus-6111",
+        "method": "auto",
+        "seconds": 11.042460625059903,
+        "budget": 10.0,
+        "nodes": 5640,
+        "edges": 38070
+      }
+    ],
+    "pair-parity-G55-three": [
+      {
+        "case": "G55",
+        "phase": "warmup",
+        "seconds": 0.5840213330229744,
+        "vector_objective": -9260.003951929912
+      },
+      {
+        "case": "G55",
+        "phase": "search",
+        "mode": "three",
+        "seconds": 0.7574896670412272,
+        "candidates": 56713,
+        "kept": 2048
+      },
+      {
+        "case": "G55",
+        "mode": "three",
+        "budget": 8.0,
+        "previous": -9544.0,
+        "bound": -9498.0,
+        "valid": true,
+        "solve_seconds": 9.801362750004046,
+        "check_seconds": 3.3382052920060232,
+        "elapsed_seconds": 13.139568042010069,
+        "cuts": 3044,
+        "newcuts": 1664,
+        "extra_edges": 8548,
+        "factor_entries": 1728557,
+        "search": {
+          "seconds": 0.7574896670412272,
+          "candidates": 56713,
+          "kept": 2048
+        }
+      }
+    ],
+    "pair-parity-G55-five": [
+      {
+        "case": "G55",
+        "phase": "warmup",
+        "seconds": 0.577028000028804,
+        "vector_objective": -9260.003951929912
+      },
+      {
+        "case": "G55",
+        "phase": "search",
+        "mode": "five",
+        "seconds": 0.6500453338958323,
+        "candidates": 13881,
+        "queries": 4096,
+        "pairs": 148072,
+        "best": 0.5448844323581872,
+        "kept": 512
+      },
+      {
+        "case": "G55",
+        "mode": "five",
+        "budget": 8.0,
+        "previous": -9544.0,
+        "bound": -9540.0,
+        "valid": true,
+        "solve_seconds": 6.984152249991894,
+        "check_seconds": 3.150469582993537,
+        "elapsed_seconds": 10.134621832985431,
+        "cuts": 2068,
+        "newcuts": 512,
+        "extra_edges": 7941,
+        "factor_entries": 1661296,
+        "search": {
+          "seconds": 0.6500453338958323,
+          "candidates": 13881,
+          "queries": 4096,
+          "pairs": 148072,
+          "best": 0.5448844323581872,
+          "kept": 512
+        }
+      }
+    ],
+    "one-pass-G55": [
+      {
+        "energy": -7932.0,
+        "lower_bound": -9544.0,
+        "verified_bound": -9544.0,
+        "extra_edges": 4525,
+        "sparse_factor_entries": 1435168,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 9.730484541971236,
+            "lower_bound": -9544.0,
+            "energy": -7932.0,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 12.569781792000867,
+            "lower_bound": -9544.0,
+            "energy": -7932.0,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "G55",
+        "method": "auto",
+        "seconds": 12.570889541995712,
+        "budget": 10.0,
+        "nodes": 5000,
+        "edges": 12498
+      }
+    ],
+    "two-pass-G55": [
+      {
+        "phase": "adaptive_geometry",
+        "stage": 0,
+        "seconds": 2.3403357500210404,
+        "cuts": 2048,
+        "calls": 14,
+        "search": {
+          "seconds": 0.4872053329600021,
+          "candidates": 76932
+        }
+      },
+      {
+        "phase": "adaptive_geometry",
+        "stage": 1,
+        "seconds": 2.145599209005013,
+        "cuts": 4094,
+        "calls": 9,
+        "search": {
+          "seconds": 0.7849973329575732,
+          "candidates": 52789
+        }
+      },
+      {
+        "energy": -7932.0,
+        "lower_bound": -9580.0,
+        "verified_bound": -9580.0,
+        "extra_edges": 0,
+        "sparse_factor_entries": 1057723,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 9.590658708941191,
+            "lower_bound": -9580.0,
+            "energy": -7932.0,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 11.663086249958724,
+            "lower_bound": -9580.0,
+            "energy": -7932.0,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "G55",
+        "method": "auto",
+        "seconds": 11.664196291007102,
+        "budget": 10.0,
+        "nodes": 5000,
+        "edges": 12498
+      }
+    ],
+    "two-pass-G55-diagnostic": [
+      {
+        "phase": "adaptive_geometry",
+        "stage": 0,
+        "seconds": 2.3700243330094963,
+        "cuts": 2048,
+        "calls": 15,
+        "search": {
+          "seconds": 0.4806920000119135,
+          "candidates": 76932
+        }
+      },
+      {
+        "phase": "adaptive_geometry",
+        "stage": 1,
+        "seconds": 2.171003708965145,
+        "cuts": 4095,
+        "calls": 9,
+        "search": {
+          "seconds": 0.7676218749256805,
+          "candidates": 52685
+        }
+      },
+      {
+        "phase": "candidate_bound",
+        "bound": -9574.0,
+        "base": -9580.0,
+        "factor_entries": 1727461
+      },
+      {
+        "energy": -7932.0,
+        "lower_bound": -9574.0,
+        "verified_bound": -9574.0,
+        "extra_edges": 8461,
+        "sparse_factor_entries": 1727461,
+        "status": "TIME_LIMIT",
+        "progress": [
+          {
+            "time": 12.57151745900046,
+            "lower_bound": -9574.0,
+            "energy": -7932.0,
+            "cuts": 0,
+            "round": 1
+          },
+          {
+            "time": 15.878678292036057,
+            "lower_bound": -9574.0,
+            "energy": -7932.0,
+            "cuts": 0,
+            "round": 1
+          }
+        ],
+        "case": "G55",
+        "method": "auto",
+        "seconds": 15.879865750088356,
+        "budget": 10.0,
+        "nodes": 5000,
+        "edges": 12498
+      }
+    ]
+  },
+  "archival_note": "The checked-in runner consolidates the temporary scripts used for these observations. Timed runs were not repeated after consolidation. The diagnostic run adds logging and is retained, not substituted for the original G55 run.",
+  "environment": {
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "python": "3.13.5",
+    "numpy": "2.5.3",
+    "scipy": "1.18.1"
+  },
+  "archival_runner_sha256": "7af63657be5092e578463f1f5ecff22b43c326fb13f5125b5414b21631174717",
+  "timed_script_sha256": {
+    "/tmp/libhighs-turbo-pair-parity.py": "4dd1ccc8facb0acd91bbcaa819d9fa4c41ec7e26176ac30e8ea2ed996586cdaf",
+    "/tmp/libhighs-turbo-pair-parity-suite.py": "9d9cf3a14cdb860a145bf0aa1d7b734d049bd85e8d5ec80fb78af2da14a4f59b",
+    "/tmp/libhighs-turbo-two-pass-geometry.py": "54096a0810eb1b0e2b6ef5271e7af74b881a9ff680c0d586d8e7f7b066ad2f59",
+    "/tmp/libhighs-turbo-two-pass-worker.py": "37cb9acd6e48e307a2f2bc3811ef251af37b86a24872b1368cefdf1795ec4f06",
+    "/tmp/libhighs-turbo-two-pass-diagnostic.py": "db1923a8803ffb819980154c2885a0414bd26339463535cf1dd16063eb875c21",
+    "/tmp/libhighs-turbo-two-pass-diagnostic-worker.py": "a9dc3b729e8445d0ba53383046c9712cb05837234585023b8897a57d53593646"
+  },
+  "small_control": {
+    "vertices": 5,
+    "all_triangles_satisfied": true,
+    "pentagonal_rule_found": true,
+    "verified_bound": "-17/8",
+    "enumerated_optimum": "-17/8"
+  }
+}
