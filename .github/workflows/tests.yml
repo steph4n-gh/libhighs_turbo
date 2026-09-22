@@ -19,7 +19,14 @@ jobs:
       - run: brew install gmp
       - run: python -m pip install '.[test]' build
       - run: python setup.py build_ext --inplace
-      - run: python -m pytest tests -q
+      - run: python -m pytest tests -q --junitxml=test-results/native.xml -o junit_family=legacy
+      - name: Preserve test results and every benchmark trial
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-native
+          path: test-results/native.xml
+          if-no-files-found: warn
       - run: python examples/01_quickstart_3_lines.py
       - name: Build wheel from source distribution
         run: python -m build
