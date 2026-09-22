@@ -166,6 +166,32 @@ def test_invalid_solver_controls(options):
         certify({"type": "ising", "fields": []}, [], **options)
 
 
+@pytest.mark.parametrize("model,answer", [
+    ({"type": "ising", "fields": [1 << 1024]}, [-1]),
+    ({"type": "ising", "fields": [], "offset": 1 << 1024}, []),
+    ({"type": "qubo", "num_variables": 1, "coefficients": [[0, 0, 1 << 1024]]}, [0]),
+    ({"type": "maxcut", "num_nodes": 2, "edges": [[0, 1, 1 << 1024]]}, [0, 1]),
+    ({"type": "ising", "fields": [1e308, -1e308]}, [-1, 1]),
+])
+def test_generation_rejects_binary64_objective_overflow_before_solving(model, answer, monkeypatch):
+    monkeypatch.setattr(certification, "solve_ising", lambda *a, **k: pytest.fail("Oversized model reached solver"))
+    with pytest.raises(ValueError, match="objective envelope.*finite binary64"):
+        certify(model, answer, time_limit=0)
+
+
+def test_verification_keeps_exact_range_beyond_binary64(monkeypatch):
+    from highs_turbo.ising_cuts import make_certificate
+
+    weight = Fraction(1 << 1024)
+    witness = make_certificate([], [], [(0, 1)], {(0, 1): weight}, Fraction())
+    bundle = {"version": 1, "model": {"type": "ising", "fields": [str(weight)]},
+              "answer": [-1], "certificate": witness.to_dict()}
+    monkeypatch.setattr(certification, "solve_ising", lambda *a, **k: pytest.fail("Verification must not solve"))
+    report = verify(bundle)
+    assert report["candidate_objective"] == report["bound"] == str(-weight)
+    assert report["bound_verified"] and report["optimality_proven"]
+
+
 @pytest.mark.parametrize("model", MODELS)
 def test_cli_creates_and_replays_bundle_in_separate_processes(tmp_path, model):
     source, proof = tmp_path / "input.json", tmp_path / "proof.json"

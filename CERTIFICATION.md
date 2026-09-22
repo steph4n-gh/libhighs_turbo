@@ -89,7 +89,10 @@ constraint. These models have binary-domain constraints only; check original
 business constraints and any penalty encoding separately.
 
 The JSON interface limits inputs to 100,000 variables, 1,000,000 terms and
-4,096-bit coefficient numerators/denominators. Individual proof strategies have
+4,096-bit coefficient numerators/denominators. Generation also requires the
+transformed Ising absolute objective envelope (absolute offset plus absolute
+field and coupling coefficients) to fit finite binary64 arithmetic; exact
+verification retains the wider rational parsing limits. Individual proof strategies have
 smaller limits; see [the API contract](API_CONTRACT.md). Accepted size does not
 promise fast solution or low memory use.
 

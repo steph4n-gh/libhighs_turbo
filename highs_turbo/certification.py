@@ -180,6 +180,16 @@ def certify(model, answer, *, time_limit=2.0, seed=0):
     normalized, n = _normalize_model(model)
     answer = _answer(answer, n, normalized["type"])
     fields, couplings, offset = _ising_model(normalized, n)
+    field_values = fields.values() if isinstance(fields, dict) else fields
+    magnitude = (abs(offset) + sum((abs(v) for v in field_values), Fraction())
+                 + sum((abs(v) for v in couplings.values()), Fraction()))
+    try:
+        finite_magnitude = math.isfinite(float(magnitude))
+    except OverflowError:
+        finite_magnitude = False
+    if not finite_magnitude:
+        raise ValueError("Certificate generation requires the absolute Ising objective envelope "
+                         "to fit finite binary64 arithmetic")
     result = solve_ising(fields, couplings, offset=offset,
                          time_limit=max(0., time_limit - (time.perf_counter() - began)),
                          seed=seed, threads=1)
