@@ -1,6 +1,6 @@
 # Public solver and certificate contract
 
-This contract applies to highs_turbo 0.2.1. Existing tuple unpacking, result
+This contract applies to highs_turbo 0.3.0. Existing tuple unpacking, result
 fields and legacy certification flags retain their meanings.
 
 ## Results and proof
@@ -24,7 +24,22 @@ binary64 values, not as intended decimal fractions. Ising also accepts
 mathematical model; they do not validate whether that model describes the
 application correctly.
 
+All three discrete solver results expose `exact_objective`, `exact_gap`,
+`bound_verified` and `optimality_proven`. The last flag requires a verified zero
+exact gap. QUBO/Max-Cut also retain the original `solver_status`, `message` and
+`certificate_fallbacks`; the legacy `status` mapping and tuple remain unchanged.
+Use these explicit fields instead of inferring exact optimality from `OPTIMAL`
+or the older certification flag.
+
 ## Serialization and verification
+
+The supported `certify(model, answer, time_limit=...)` and `verify(bundle)`
+interface produces a complete versioned JSON bundle for an external Ising, QUBO
+or Max-Cut answer. It also ships as `python -m highs_turbo` and `highs-turbo`.
+See [formats, commands and limits](CERTIFICATION.md). Verification needs no
+solver execution. Producer metadata is not authenticated; another feasible
+answer may reuse the bound with a recomputed gap.
+
 
 Use `result.certificate.to_dict()` for an Ising witness. Save the dictionary as
 JSON, then call `verify_ising_certificate(h, J, witness, offset=offset)` against

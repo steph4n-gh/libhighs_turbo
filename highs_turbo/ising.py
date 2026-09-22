@@ -28,6 +28,8 @@ class IsingResult:
 
     OPTIMAL is HiGHS' numerical conclusion. Exact rational certification is
     reported separately, only when a verified cut bound equals the spin energy.
+    ``bound_verified`` records the final certificate check; ``optimality_proven``
+    requires equality with the independently evaluated exact objective.
     certificate_fallbacks records failed factor proposals or interrupted final
     refits; those stages retain the strongest available checked witness.
     """
@@ -53,6 +55,16 @@ class IsingResult:
     subgraph_cuts: int = 0
     progress: tuple = ()
     certificate_fallbacks: tuple = ()
+    bound_verified: bool = False
+
+    @property
+    def exact_objective(self):
+        return self.exact_energy
+
+    @property
+    def optimality_proven(self):
+        return (self.bound_verified and self.exact_gap == 0
+                and self.exact_energy == self.exact_cut_lower_bound)
 
     @property
     def success(self):
@@ -632,6 +644,7 @@ def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
         certificate=proof, exact_gap=energy-proof.lower_bound, root_rounds=root_rounds,
         subgraph_cuts=subgraph_count, progress=progress,
         certificate_fallbacks=tuple(certificate_fallbacks),
+        bound_verified=True,
     )
 
 

@@ -1,0 +1,4 @@
+{
+  "model": {"type": "ising", "fields": [1, -1], "couplings": [[0, 1, -1]], "offset": "1/3"},
+  "answer": [-1, 1]
+}

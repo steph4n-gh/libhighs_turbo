@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "name": "three-case-synthetic-demo",
+  "evidence_type": "synthetic_demo",
+  "description": "Demonstrates the runner only. These are synthetic fixtures, not customer or application evidence.",
+  "repetitions": 3,
+  "defaults": {
+    "gap_target": "0",
+    "solver_seconds": 2.0,
+    "deadline_seconds": 30.0,
+    "max_observed_rss_mib": 512,
+    "seed": 0
+  },
+  "application_constraints": {
+    "status": "not_applicable",
+    "notes": "Tiny mathematical examples only; no application constraints or business usefulness are asserted."
+  },
+  "cases": [
+    {"id": "ising-optimal", "input": "demo_inputs/ising.json"},
+    {"id": "qubo-optimal", "input": "demo_inputs/qubo.json"},
+    {"id": "maxcut-target-miss", "input": "demo_inputs/maxcut.json"}
+  ]
+}

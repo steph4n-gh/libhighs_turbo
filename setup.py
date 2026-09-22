@@ -59,7 +59,7 @@ ext_modules = [
 
 setup(
     name="highs-turbo",
-    version="0.2.1",
+    version="0.3.0",
     description="LP acceleration and checkable Ising, QUBO, and Max-Cut bounds with HiGHS",
     long_description=open(os.path.join(BASE_DIR, "README.md"), encoding="utf-8").read() if os.path.exists(os.path.join(BASE_DIR, "README.md")) else "",
     long_description_content_type="text/markdown",
@@ -89,8 +89,9 @@ setup(
     packages=find_packages(include=["highs_turbo", "highs_turbo.*"]),
     ext_modules=ext_modules,
     package_data={"highs_turbo": ["default_weights.pt", "ising_policy.json"]},
+    entry_points={"console_scripts": ["highs-turbo=highs_turbo.__main__:main"]},
     python_requires=">=3.10",
-    install_requires=["numpy>=2.0", "scipy>=1.13", "networkx>=3.2", "highspy>=1.11", "dwave-graphs>=1.0"],
-    extras_require={"ml": ["torch>=2.4.1"], "ising": ["dwave-samplers>=1.8"],
-                    "test": ["pytest>=7", "torch>=2.4.1", "dwave-samplers>=1.8"]},
+    install_requires=["numpy>=2.0", "scipy>=1.13", "networkx>=3.2", "highspy>=1.11"],
+    extras_require={"ml": ["torch>=2.4.1"], "ising": ["dwave-samplers>=1.8", "dwave-graphs>=1.0"],
+                    "test": ["pytest>=7", "torch>=2.4.1", "dwave-samplers>=1.8", "dwave-graphs>=1.0"]},
 )

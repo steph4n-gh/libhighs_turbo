@@ -95,3 +95,27 @@ def normalize_maxcut(model):
             if u < v:
                 add(int(u), int(v), value)
     return labels, {edge: value for edge, value in sorted(weights.items()) if value}
+
+
+def qubo_to_ising(num_variables, coefficients, offset=Fraction()):
+    """Convert validated exact ``(i, j, value)`` terms using x=(1+s)/2.
+
+    Every stored term contributes, including duplicates and opposite orientations.
+    Callers validate dimensions and convert coefficients to Fraction first.
+    """
+    fields = dict.fromkeys(range(num_variables), Fraction())
+    constant = offset
+    couplings = {}
+    for i, j, value in coefficients:
+        if i == j:
+            fields[i] += value / 2
+            constant += value / 2
+        elif value:
+            pair = (min(i, j), max(i, j))
+            couplings[pair] = couplings.get(pair, Fraction()) + value / 4
+    couplings = {pair: value for pair, value in sorted(couplings.items()) if value}
+    for (i, j), value in couplings.items():
+        fields[i] += value
+        fields[j] += value
+        constant += value
+    return fields, couplings, constant

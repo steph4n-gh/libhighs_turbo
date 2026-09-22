@@ -45,6 +45,8 @@ class MaxCutResult:
     """Result unpackable as (cut_value, partition, certificate).
 
     The legacy certification flag describes the bound, not exact optimality.
+    ``bound_verified`` records a checked bound; ``optimality_proven`` additionally
+    requires ``exact_gap == 0`` for the original cut objective.
     ``certificate`` is a receipt digest; ``bound_certificate`` is the witness.
     ``to_dict()`` preserves the legacy summary format, without the full witness.
     """
@@ -60,6 +62,21 @@ class MaxCutResult:
     exact_rational_bound: Optional[Fraction] = None
     num_active_supports: int = 0
     bound_certificate: Any = None
+    exact_objective: Optional[Fraction] = None
+    bound_verified: bool = False
+    solver_status: Optional[str] = None
+    message: str = ""
+    certificate_fallbacks: tuple = ()
+
+    @property
+    def exact_gap(self):
+        if self.exact_objective is None or self.exact_rational_bound is None:
+            return None
+        return self.exact_rational_bound - self.exact_objective
+
+    @property
+    def optimality_proven(self):
+        return self.bound_verified and self.exact_gap == 0
 
     def __iter__(self):
         """Enables 3-element tuple unpacking: cut_val, partition, cert = solve_maxcut(G)."""
@@ -98,6 +115,8 @@ class QuboResult:
     """Result unpackable as (energy, solution, certificate).
 
     The legacy certification flag describes the bound, not exact optimality.
+    ``bound_verified`` records a checked bound; ``optimality_proven`` additionally
+    requires ``exact_gap == 0`` for the original QUBO objective.
     ``certificate`` is a receipt digest; ``bound_certificate`` is the witness.
     ``to_dict()`` preserves the legacy summary format, without the full witness.
     """
@@ -113,6 +132,21 @@ class QuboResult:
     exact_rational_bound: Optional[Fraction] = None
     num_active_supports: int = 0
     bound_certificate: Any = None
+    exact_objective: Optional[Fraction] = None
+    bound_verified: bool = False
+    solver_status: Optional[str] = None
+    message: str = ""
+    certificate_fallbacks: tuple = ()
+
+    @property
+    def exact_gap(self):
+        if self.exact_objective is None or self.exact_rational_bound is None:
+            return None
+        return self.exact_objective - self.exact_rational_bound
+
+    @property
+    def optimality_proven(self):
+        return self.bound_verified and self.exact_gap == 0
 
     def __iter__(self):
         """Enables 3-element tuple unpacking: energy, solution, cert = solve_qubo(Q)."""
@@ -301,6 +335,8 @@ class TurboSolver:
                 is_rationally_certified=True,
                 upper_bound=0.0,
                 exact_rational_bound=Fraction(),
+                exact_objective=Fraction(), bound_verified=True,
+                solver_status="OPTIMAL", message="Every partition has zero cut value",
                 simplex_iterations=0,
                 solve_time_ms=(time.perf_counter() - t0) * 1000.0,
             )
@@ -327,6 +363,9 @@ class TurboSolver:
             exact_rational_bound=upper, num_active_supports=len(result.certificate.cuts),
             status="OPTIMAL" if result.status == "OPTIMAL" else "HEURISTIC",
             bound_certificate=result.certificate,
+            exact_objective=cut_value, bound_verified=result.bound_verified,
+            solver_status=result.status, message=result.message,
+            certificate_fallbacks=result.certificate_fallbacks,
         )
 
     def solve_qubo(self, Q: Any, **kwargs: Any) -> QuboResult:
@@ -371,32 +410,21 @@ class TurboSolver:
         from hashlib import sha256
         import json
         from highs_turbo.ising import solve_ising, _downward
+        from highs_turbo._models import qubo_to_ising
 
-        fields = dict.fromkeys(range(n), Fraction())
-        constant = Fraction()
-        couplings = {}
-        for i, j, coefficient in coefficients:
-            if np.iscomplexobj(coefficient):
-                raise ValueError("Q must contain only finite real values")
-            try:
-                value = float(coefficient)
-            except (TypeError, ValueError, OverflowError) as exc:
-                raise ValueError("Q must contain only finite real values") from exc
-            if not np.isfinite(value):
-                raise ValueError("Q must contain only finite real values")
-            value = Fraction(value)
-            i, j = int(i), int(j)
-            if i == j:
-                fields[i] += value/2
-                constant += value/2
-            elif value:
-                pair = (min(i, j), max(i, j))
-                couplings[pair] = couplings.get(pair, Fraction()) + value/4
-        couplings = {pair: value for pair, value in sorted(couplings.items()) if value}
-        for (i, j), value in couplings.items():
-            fields[i] += value
-            fields[j] += value
-            constant += value
+        def exact_coefficients():
+            for i, j, coefficient in coefficients:
+                if np.iscomplexobj(coefficient):
+                    raise ValueError("Q must contain only finite real values")
+                try:
+                    value = float(coefficient)
+                except (TypeError, ValueError, OverflowError) as exc:
+                    raise ValueError("Q must contain only finite real values") from exc
+                if not np.isfinite(value):
+                    raise ValueError("Q must contain only finite real values")
+                yield int(i), int(j), Fraction(value)
+
+        fields, couplings, constant = qubo_to_ising(n, exact_coefficients())
         options = dict(kwargs)
         options.setdefault("time_limit", None if n <= 18 else 5.)
         if options["time_limit"] is not None and options["time_limit"] >= 0:
@@ -413,6 +441,9 @@ class TurboSolver:
             num_active_supports=len(result.certificate.cuts),
             status="OPTIMAL" if result.status == "OPTIMAL" else "HEURISTIC",
             bound_certificate=result.certificate,
+            exact_objective=result.exact_energy, bound_verified=result.bound_verified,
+            solver_status=result.status, message=result.message,
+            certificate_fallbacks=result.certificate_fallbacks,
         )
 
     def solve_ising(self, h, J, **kwargs):

@@ -221,7 +221,10 @@ def generate_pegasus_instance(
     GraphInstance indices are contiguous; metadata["node_labels"] maps them
     back to the original labels. No couplers are invented to meet an edge count.
     """
-    from dwave.graphs import pegasus_graph
+    try:
+        from dwave.graphs import pegasus_graph
+    except ImportError as error:
+        raise ImportError("Pegasus generation requires the highs-turbo[ising] extra (dwave-graphs)") from error
 
     if isinstance(m, bool) or not isinstance(m, (int, np.integer)) or m < 1:
         raise ValueError("m must be a positive integer")
