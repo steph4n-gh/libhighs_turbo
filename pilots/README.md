@@ -12,7 +12,7 @@ the manifest; the runner records the declaration without treating it as a proof.
 
 ## Run the synthetic demonstration
 
-From an installed checkout, using the same Python environment as `highs_turbo`:
+The scripts and fixtures ship in the [source distribution](https://github.com/steph4n-gh/libhighs_turbo/releases/download/v0.3.0/highs_turbo-0.3.0.tar.gz), not the wheel. Extract it or use a source checkout. From that directory, run these commands with the Python environment where you installed `highs_turbo`:
 
 ```bash
 python pilots/run_pilot.py freeze pilots/example_manifest.json --output /tmp/highs-pilot-demo
