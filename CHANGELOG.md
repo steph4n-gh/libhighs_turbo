@@ -17,6 +17,9 @@ public solvers and stabilizes their input, fallback and distribution contracts.
   with the stage and reason for caught proof failures.
 - Binary-product preparation and ordinary SciPy fallback retain only the
   remaining caller time budget. Deadline enforcement remains cooperative.
+- Binary-product results are checked against the complete original model,
+  including native solver candidates. Final native Ising failures preserve the
+  prior feasible answer and checked bound instead of losing the partial result.
 - Public documentation distinguishes numerical optimality, exact optimality,
   valid positive-gap bounds and receipt digests. Legacy tuple unpacking and
   certification-flag semantics are preserved.
@@ -26,6 +29,8 @@ public solvers and stabilizes their input, fallback and distribution contracts.
 - Dependency minimums are NumPy 2.0, SciPy 1.13, NetworkX 3.2, highspy 1.11 and
   dwave-graphs 1.0, with Python 3.10 or newer. The earlier SciPy 1.9 claim was
   incompatible with the NumPy requirement of the mandatory graph dependency.
+  Optional ML/test extras require PyTorch 2.4.1 or newer for NumPy 2
+  interoperability; the minimum CPU configuration is exercised in CI.
 
 See [the API contract](API_CONTRACT.md) for result and resource semantics and
 [stabilization evidence](STABILIZATION_RESULTS.md) for exact environments,

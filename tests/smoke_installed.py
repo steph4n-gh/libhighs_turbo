@@ -10,7 +10,6 @@ import numpy as np
 import highs_turbo
 from highs_turbo.api import _DEFAULT_SOLVER
 from highs_turbo.compiled_engine import COMPILED_ENGINE_AVAILABLE
-from highs_turbo.large_scale_benchmarks import generate_chimera_instance
 
 
 source_package = Path(__file__).resolve().parents[1] / "highs_turbo"
@@ -22,7 +21,6 @@ assert files("highs_turbo").joinpath("ising_policy.json").is_file()
 from highs_turbo.ising_policy import FEATURE_NAMES, rank_clusters
 
 assert rank_clusters(np.zeros((1, len(FEATURE_NAMES))), "learned").tolist() == [0]
-assert generate_chimera_instance(1).num_nodes == 8
 assert highs_turbo.linprog([-1.0], bounds=(0, 1)).fun == -1.0
 # Exercise both acceleration paths from the installed package, including when
 # the optional C++ cut engine is absent.
@@ -91,6 +89,12 @@ assert highs_turbo.verify_linprog_certificate(
     bounds=(0, 1), integrality=np.r_[np.ones(32), 0])
 
 assert "torch" not in sys.modules, "Ordinary solver calls must not load PyTorch"
+
+# Research helpers may load optional neural modules; check them only after the
+# ordinary solver import contract above has been verified.
+from highs_turbo.large_scale_benchmarks import generate_chimera_instance
+
+assert generate_chimera_instance(1).num_nodes == 8
 
 if "--require-native" in sys.argv:
     assert COMPILED_ENGINE_AVAILABLE

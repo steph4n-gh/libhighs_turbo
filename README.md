@@ -110,6 +110,8 @@ To use the bundled neural weights or train models, install the optional extra:
 python -m pip install '.[ml]'
 ```
 
+This extra requires PyTorch 2.4.1 or newer for NumPy 2 interoperability.
+
 The weights are shipped inside the installed package for the optional neural
 components. Ordinary `linprog`, `solve_maxcut`, `solve_qubo`, and `solve_ising`
 calls do not load PyTorch or require a trained model.

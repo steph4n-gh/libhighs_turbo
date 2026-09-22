@@ -69,6 +69,6 @@ setup(
     package_data={"highs_turbo": ["default_weights.pt", "ising_policy.json"]},
     python_requires=">=3.10",
     install_requires=["numpy>=2.0", "scipy>=1.13", "networkx>=3.2", "highspy>=1.11", "dwave-graphs>=1.0"],
-    extras_require={"ml": ["torch>=2.0"], "ising": ["dwave-samplers>=1.8"],
-                    "test": ["pytest>=7", "torch>=2.0", "dwave-samplers>=1.8"]},
+    extras_require={"ml": ["torch>=2.4.1"], "ising": ["dwave-samplers>=1.8"],
+                    "test": ["pytest>=7", "torch>=2.4.1", "dwave-samplers>=1.8"]},
 )

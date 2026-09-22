@@ -54,10 +54,11 @@ Within-solve reuse never replaces a fresh standalone verification.
 ## Termination and fallback
 
 Ising statuses `TIME_LIMIT`, `INTERRUPTED` and `GAP_LIMIT` retain the best
-available feasible spins and a checked bound. `SOLVER_ERROR` retains a
-feasible candidate and conservative checked bound when native solving fails.
-Invalid inputs raise an exception. A failed final certificate check raises
-rather than returning an unverified claim.
+available feasible spins and a checked bound. If the final native solve fails
+and no exact optimum has already been established, `SOLVER_ERROR` retains the
+prior feasible candidate and checked bound. Invalid inputs, model-setup errors
+and preliminary relaxation failures can raise an exception. A failed final
+certificate check raises rather than returning an unverified claim.
 
 The QUBO/Max-Cut wrappers map unfinished Ising results to `HEURISTIC`; consult
 the objective and bound to assess their quality. A valid positive gap is useful
