@@ -1,0 +1,4 @@
+{
+  "model": {"type": "qubo", "num_variables": 2, "coefficients": [[0, 0, -1], [1, 1, 2], [0, 1, 1]], "offset": "1/7"},
+  "answer": [1, 0]
+}

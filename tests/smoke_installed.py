@@ -4,6 +4,7 @@ import json
 import shutil
 import subprocess
 import sys
+import sysconfig
 from tempfile import TemporaryDirectory
 from importlib.util import find_spec
 from importlib.metadata import version
@@ -146,7 +147,7 @@ with TemporaryDirectory(prefix="highs-turbo-installed-cli-") as directory:
         cwd=work, capture_output=True, text=True, timeout=30)
     assert rejected.returncode != 0
     assert "Certificate does not verify" in json.loads(rejected.stderr)["error"]
-    executable = shutil.which("highs-turbo", path=str(Path(sys.executable).parent))
+    executable = shutil.which("highs-turbo", path=sysconfig.get_path("scripts"))
     assert executable is not None, "The highs-turbo console entry point must be installed"
     help_result = subprocess.run([executable, "--help"], cwd=work, capture_output=True,
                                  text=True, timeout=30)
