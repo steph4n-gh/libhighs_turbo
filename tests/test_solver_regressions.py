@@ -358,3 +358,148 @@ def test_empty_maxcut_has_exact_zero_bound():
     assert result.exact_rational_bound == Fraction()
     assert result.status == "OPTIMAL" and result.cut_value == 0
     assert len(tuple(result)) == 3
+
+
+@pytest.mark.parametrize("representation", ["csr", "csc", "coo"])
+def test_maxcut_duplicate_sparse_entries_are_added_exactly(representation):
+    if representation == "coo":
+        adjacency = sparse.coo_matrix(([2., 3., 2., 3.],
+                                       ([0, 0, 1, 1], [1, 1, 0, 0])), shape=(2, 2))
+    else:
+        adjacency = getattr(sparse, f"{representation}_matrix")(
+            ([2., 3., 2., 3.], [1, 1, 0, 0], [0, 2, 4]), shape=(2, 2))
+    result = highs_turbo.solve_maxcut(adjacency)
+    assert result.cut_value == result.upper_bound == result.exact_rational_bound == 5
+    assert result.partition[0] != result.partition[1]
+    assert result.status == "OPTIMAL"
+    assert highs_turbo.verify_ising_certificate(
+        {0: 0, 1: 0}, {(0, 1): 5}, result.bound_certificate.to_dict())
+    reference = highs_turbo.solve_maxcut(adjacency.toarray())
+    assert result.bound_certificate.to_dict() == reference.bound_certificate.to_dict()
+
+
+@pytest.mark.parametrize("representation", ["csr", "coo", "multigraph"])
+def test_maxcut_cancellation_preserves_small_duplicate_weight(representation):
+    # Reducing these binary64 coefficients in floating point loses the unit edge.
+    data = [float(2**54), 1., -float(2**54)]
+    if representation == "csr":
+        model = sparse.csr_matrix((data, [1, 1, 1], [0, 3, 3]), shape=(2, 2))
+    elif representation == "coo":
+        model = sparse.coo_matrix((data, ([0, 0, 0], [1, 1, 1])), shape=(2, 2))
+    else:
+        model = nx.MultiGraph()
+        model.add_weighted_edges_from((0, 1, value) for value in data)
+    result = highs_turbo.solve_maxcut(model)
+    assert result.cut_value == result.upper_bound == result.exact_rational_bound == 1
+    assert result.partition[0] != result.partition[1]
+    assert highs_turbo.verify_ising_certificate(
+        {0: 0, 1: 0}, {(0, 1): 1}, result.bound_certificate.to_dict())
+
+
+@pytest.mark.parametrize("values, expected", [
+    ((2, 3), Fraction(5)),
+    ((Fraction(1, 3), Fraction(1, 6)), Fraction(1, 2)),
+    ((2**54, 1), Fraction(2**54 + 1)),
+])
+def test_maxcut_parallel_edges_preserve_labels_and_rationals(values, expected):
+    from highs_turbo._models import normalize_maxcut
+
+    labels = ("later", 10, ("isolated",))
+    model = nx.MultiGraph()
+    model.add_nodes_from(labels)
+    model.add_edge(labels[0], labels[1], weight=values[0])
+    model.add_edge(labels[1], labels[0], weight=values[1])
+    model.add_edge(labels[0], labels[0], weight=17)
+    assert normalize_maxcut(model) == (labels, {(0, 1): expected})
+    result = highs_turbo.solve_maxcut(model)
+    assert result.cut_value == float(expected)
+    assert result.exact_rational_bound == expected
+    assert len(result.partition) == 3 and result.partition[0] != result.partition[1]
+
+
+@pytest.mark.parametrize("representation", ["dense", "csr", "graph", "instance"])
+def test_maxcut_representations_match_original_exact_objective(representation):
+    weights = {(0, 1): 2, (0, 2): -3, (0, 3): 4, (1, 2): 5, (2, 3): -1}
+    graph = nx.Graph()
+    graph.add_nodes_from(range(4))
+    graph.add_weighted_edges_from((u, v, w) for (u, v), w in weights.items())
+    if representation in ("dense", "csr"):
+        model = nx.to_numpy_array(graph)
+        if representation == "csr":
+            model = sparse.csr_matrix(model)
+    elif representation == "instance":
+        model = GraphInstance("weighted", 4, list(weights), weights)
+    else:
+        model = graph
+    result = highs_turbo.solve_maxcut(model)
+    objective = lambda state: sum(w for (u, v), w in weights.items() if state[u] != state[v])
+    optimum = max(objective(state) for state in itertools.product((0, 1), repeat=4))
+    assert objective(result.partition) == result.cut_value == optimum
+    assert result.exact_rational_bound >= optimum
+    assert highs_turbo.verify_ising_certificate(
+        dict.fromkeys(range(4), 0), weights, result.bound_certificate.to_dict())
+
+
+@pytest.mark.parametrize("as_sparse", [False, True])
+def test_maxcut_matrix_uses_strict_upper_triangle(as_sparse):
+    # Mirrored/lower entries and diagonal entries do not add to the graph.
+    adjacency = np.array([[100., 2.], [9., -100.]])
+    result = highs_turbo.solve_maxcut(sparse.csr_matrix(adjacency) if as_sparse else adjacency)
+    assert result.cut_value == result.exact_rational_bound == 2
+
+
+@pytest.mark.parametrize("representation", ["dense", "csr", "graph"])
+@pytest.mark.parametrize("n", [0, 3])
+def test_maxcut_empty_representations_retain_partition_size(representation, n):
+    model = (np.zeros((n, n)) if representation == "dense" else
+             sparse.csr_matrix((n, n)) if representation == "csr" else nx.empty_graph(n))
+    result = highs_turbo.solve_maxcut(model)
+    assert result.cut_value == result.upper_bound == result.exact_rational_bound == 0
+    assert result.status == "OPTIMAL"
+    np.testing.assert_array_equal(result.partition, np.zeros(n, dtype=int))
+
+
+def test_maxcut_exactly_cancelled_parallel_edges_are_empty():
+    from highs_turbo._models import normalize_maxcut
+
+    graph = nx.MultiGraph()
+    graph.add_weighted_edges_from([(0, 1, 3), (0, 1, -3)])
+    assert normalize_maxcut(graph) == ((0, 1), {})
+    result = highs_turbo.solve_maxcut(graph)
+    assert result.cut_value == result.exact_rational_bound == 0
+    assert result.status == "OPTIMAL" and len(result.partition) == 2
+
+
+def test_maxcut_sparse_input_does_not_allocate_a_dense_matrix(monkeypatch):
+    n = 4096
+    adjacency = sparse.csr_matrix(([3.], ([0], [n - 1])), shape=(n, n))
+    original_zeros = np.zeros
+
+    def no_square(shape, *args, **kwargs):
+        assert shape != (n, n), "Max-Cut input was densified"
+        return original_zeros(shape, *args, **kwargs)
+
+    def no_toarray(*args, **kwargs):
+        raise AssertionError("Max-Cut input was densified")
+
+    monkeypatch.setattr(np, "zeros", no_square)
+    monkeypatch.setattr(sparse.csr_matrix, "toarray", no_toarray)
+    result = highs_turbo.solve_maxcut(adjacency, time_limit=0)
+    assert len(result.partition) == n
+    assert result.upper_bound == result.exact_rational_bound == 3
+
+
+@pytest.mark.parametrize("model", [
+    1., [1., 2.], np.zeros((2, 3)), sparse.csr_matrix((2, 3)),
+    [[0., 1.], [np.nan, 0.]], [[np.inf, 1.], [1., 0.]],
+    [[0., 1.], [1j, 0.]], np.array([[None]], dtype=object),
+    sparse.csr_matrix([[0., 1.], [np.inf, 0.]]),
+    sparse.coo_matrix([[0., 1j], [0., 0.]]),
+    nx.DiGraph([(0, 1)]), nx.MultiDiGraph([(0, 1)]),
+    nx.Graph([(0, 1, {"weight": np.nan})]),
+    nx.MultiGraph([(0, 0, {"weight": np.inf})]),
+    GraphInstance("bad_size", -1, []), GraphInstance("bad_edge", 2, [(0, 2)]),
+])
+def test_maxcut_invalid_inputs_raise_value_error(model):
+    with pytest.raises(ValueError):
+        highs_turbo.solve_maxcut(model)

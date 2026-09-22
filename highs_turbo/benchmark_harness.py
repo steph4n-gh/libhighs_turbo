@@ -9,10 +9,10 @@ Compares:
 
 Evaluates:
 - Integrality gap closed (%)
-- Wall-clock solve time (ms) and speedup ratio (>= 10x target)
+- Measured wall-clock solve time (ms) and speedup ratio
 - Simplex iteration counts
 - A/B Isomorphic relabeling invariance (variance = 0.0)
-- 100% Zero-hallucination verification rate (SHA-256 audit hashes)
+- Rational cut verification outcomes (SHA-256 hashes are receipts, not proofs)
 """
 
 from __future__ import annotations

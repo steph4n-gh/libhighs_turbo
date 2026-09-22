@@ -1,10 +1,7 @@
-"""Example 01: 3-Line Drop-in Quickstart Demo for highs_turbo.
+"""Quickstart for linprog, Max-Cut and QUBO.
 
-Demonstrates:
-1. Drop-in replacement for scipy.optimize.linprog with zero code changes.
-2. High-level 1-line Max-Cut solver.
-3. High-level 1-line QUBO solver.
-Execution time: < 5 seconds.
+Results distinguish feasible candidates, checked bounds and numerical status.
+A receipt digest alone is not a mathematical proof.
 """
 
 from __future__ import annotations
@@ -13,17 +10,17 @@ import os
 import sys
 import numpy as np
 
-# Ensure researchSept10 is on path
+# Allow running this example from a source checkout
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import highs_turbo as opt  # Drop-in replacement for scipy.optimize
+import highs_turbo as opt  # Compatible linprog entry point
 from highs_turbo.graph_generator import generate_k5_cluster_graph
 from highs_turbo.exact_solver import ExactMaxCutSolver
 
 
 def run_quickstart():
     print("=" * 70)
-    print("highs_turbo: 3-Line Drop-In Quickstart Demo")
+    print("highs_turbo: LP, Max-Cut and QUBO Quickstart")
     print("=" * 70)
 
     # -------------------------------------------------------------------------
@@ -35,11 +32,11 @@ def run_quickstart():
     solver = ExactMaxCutSolver()
     c, A_ub, b_ub, _, _ = solver.build_relaxation_matrices(g, include_k5=False)
 
-    # EXACT 3-LINE DROP-IN:
-    res = opt.linprog(c, A_ub=A_ub, b_ub=b_ub, bounds=(0, 1), graph=g)
+    # Preserve the supplied LP:
+    res = opt.linprog(c, A_ub=A_ub, b_ub=b_ub, bounds=(0, 1))
 
-    print(f"  Optimal Relaxation Bound: {res.fun:.4f}")
-    print(f"  Simplex Pivots Required:  {res.nit}")
+    print(f"  Numerical LP Objective:  {res.fun:.4f}")
+    print(f"  Reported Iterations:      {res.nit}")
     print(f"  Turbo Accelerated:        {getattr(res, 'turbo_accelerated', False)}")
     print(f"  Solve Strategy:           {getattr(res, 'turbo_strategy', 'scipy')}")
 
@@ -57,10 +54,14 @@ def run_quickstart():
         [0.0, 0.0, 0.0, 1.0, 1.0, 0.0],
     ])
 
-    cut_val, partition, cert = opt.solve_maxcut(adj)
-    print(f"  Maximum Cut Value:        {cut_val:.1f}")
-    print(f"  Optimal Node Partition:   {partition}")
-    print(f"  Cryptographic Proof:      {cert[:24]}...")
+    cut = opt.solve_maxcut(adj)
+    cut_val, partition, cert = cut
+    print(f"  Candidate Cut Value:        {cut_val:.1f}")
+    print(f"  Candidate Partition:      {partition}")
+    print(f"  Receipt Digest:           {cert[:24]}...")
+
+    print(f"  Checked Upper Bound:      {cut.exact_rational_bound}")
+    print(f"  Numerical Status:         {cut.status}")
 
     # -------------------------------------------------------------------------
     # 3. High-Level 1-Line QUBO / Ising Solver
@@ -74,13 +75,17 @@ def run_quickstart():
         [ 1.0,  0.0, -1.0,  2.0],
     ])
 
-    energy, solution, cert_q = opt.solve_qubo(Q)
-    print(f"  Ground-State Energy:      {energy:.4f}")
-    print(f"  Optimal Binary State:     {solution}")
-    print(f"  Cryptographic Proof:      {cert_q[:24]}...")
+    qubo = opt.solve_qubo(Q)
+    energy, solution, cert_q = qubo
+    print(f"  Candidate Energy:         {energy:.4f}")
+    print(f"  Candidate Binary State:     {solution}")
+    print(f"  Receipt Digest:           {cert_q[:24]}...")
+
+    print(f"  Checked Lower Bound:      {qubo.exact_rational_bound}")
+    print(f"  Numerical Status:         {qubo.status}")
 
     print("\n" + "=" * 70)
-    print("QUICKSTART COMPLETE: ALL CHECKS PASSED IN < 5 SECONDS")
+    print("QUICKSTART COMPLETE; serialize bound_certificate for standalone proof verification")
     print("=" * 70)
 
 
