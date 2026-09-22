@@ -26,6 +26,9 @@ public solvers and stabilizes their input, fallback and distribution contracts.
 - Source distributions contain documented examples, certificate fixtures and
   installed-package smoke checks. CI checks native macOS, Linux minimum
   dependencies, Windows fallback and macOS optional-compilation failure.
+- CI retains every native benchmark trial as a test-report artifact. The older
+  host-dependent 2x timing target is recorded rather than asserted; soundness,
+  objective agreement and fixture iteration reduction are checked on every trial.
 - Dependency minimums are NumPy 2.0, SciPy 1.13, NetworkX 3.2, highspy 1.11 and
   dwave-graphs 1.0, with Python 3.10 or newer. The earlier SciPy 1.9 claim was
   incompatible with the NumPy requirement of the mandatory graph dependency.

@@ -19,6 +19,17 @@ source revision; the GitHub release notes link that run and its exact artifacts.
   macOS/Python 3.13 environment. The first native CI run also passed all 542 tests
   in 90.88 seconds. Its installed smoke check caught the test-order issue below.
 
+The first merged-main run (workflow `35744625680`) passed 541 tests but failed
+the older planted-K5 wall-clock assertion: 1.94x measured speedup versus a 2.0x
+target. Soundness, objective agreement and 100% iteration reduction passed.
+The identical source tree had passed both preceding native PR runs. The test
+now records every timing trial and whether the historical target was met in
+the retained JUnit artifact, while requiring soundness, objective agreement and
+the fixture's iteration reduction on every trial instead of only the selected
+median trials. No solver code or frozen benchmark result changed. Wall-clock
+performance is evaluated by the recorded regression experiment below, rather
+than a fixed speedup promise on a shared CI host.
+
 ## Compatibility and distributions
 
 A clean CPython 3.10.17 environment successfully installed NumPy 2.0.0,
