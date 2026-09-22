@@ -74,7 +74,7 @@ comparisons](GEOMETRIC_ISING_RESULTS.md).
 
 ## Installation
 
-Python 3.10 or newer is required. NumPy, SciPy (1.9 or newer, for `milp`),
+Python 3.10 or newer is required. NumPy (2.0 or newer), SciPy (1.13 or newer),
 NetworkX, and the official HiGHS Python package (`highspy`) are installed
 automatically. LP acceleration runs on Linux, macOS, and Windows without
 compiling this project's C++ extension.
@@ -156,7 +156,7 @@ the supplied LP. The LP conic check uses floating-point tolerances; it is not an
 exact rational certificate of the LP optimum.
 
 Compatible binary-product integer models use the checked Ising engine. All
-variables must have bounds `[0, 1]`, with 32–2,047 binary base variables and
+variables must have bounds `[0, 1]`, with 32–8,191 binary base variables and
 complete, exact rows `y-xu <= 0`, `y-xv <= 0`, `xu+xv-y <= 1` for each product.
 Products may be continuous or binary. If these are all the constraints, the
 model is converted exactly, solved, and its solution checked against every
@@ -360,6 +360,22 @@ earlier static implementation. The adaptive comparison and training recipe are
 in [ADAPTIVE_ISING_RESULTS.md](ADAPTIVE_ISING_RESULTS.md).
 
 ## Certificates and performance
+
+The [public API contract](API_CONTRACT.md) distinguishes numerical solver
+termination, exact optimality, checked positive-gap bounds, and receipt digests.
+It also documents serialization, cooperative time limits and fallback behavior.
+
+To check an external heuristic's Ising answer against a portable bound witness:
+
+```bash
+python examples/certify_external_answer.py --output /tmp/answer-proof.json
+python examples/certify_external_answer.py --verify /tmp/answer-proof.json
+```
+
+The first command writes the original model, candidate spins and full proof,
+then checks them in a separate process. The second verifies that artifact
+without solving again. Use `--input` with your own model and candidate; see
+the [example's input format](examples/certify_external_answer.py).
 
 A valid cut-combination receipt certifies that combination's coefficients and
 right-hand side. It does not, on its own, certify that a returned partition is

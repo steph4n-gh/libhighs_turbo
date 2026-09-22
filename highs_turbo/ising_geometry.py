@@ -101,7 +101,8 @@ def triangle_rows(triangles, edges):
     return expanded, cuts
 
 
-def strengthen_geometry(proof, edges, weights, constant, vectors, *, deadline, seed=0):
+def strengthen_geometry(proof, edges, weights, constant, vectors, *, deadline, seed=0,
+                        certificate_fallbacks=None):
     """Fit a batch of nonlocal cuts, retaining the stronger exact certificate."""
     sparse = len(vectors) > MAX_GRAM_VERTICES
     # Loose nearest-neighbor approximation keeps full 32-dimensional vectors
@@ -207,12 +208,22 @@ def strengthen_geometry(proof, edges, weights, constant, vectors, *, deadline, s
     except StopIteration:
         pass
     source = make_certificate(cuts, -chosen * magnitude, expanded, weights, constant)
+    source = replace(source, problem_digest=proof.problem_digest,
+                     extra_edges=tuple(expanded[len(edges) :]))
+    if (source.lower_bound > proof.lower_bound
+            and check_certificate(source, edges, original_weights, constant)):
+        proof = source
     exact = {
         cut: float(Fraction(a, source.denominator)) / magnitude
         for cut, a in zip(source.cuts, source.multipliers)
     }
     phase_deadline = deadline
-    fit(np.asarray([exact.get(c, 0.0) for c in cuts]), 150)
+    try:
+        fit(np.asarray([exact.get(c, 0.0) for c in cuts]), 150)
+    except StopIteration:
+        if certificate_fallbacks is not None:
+            certificate_fallbacks.append({"stage": "geometry_refit", "reason": "Time limit reached"})
+        return proof
     V = latest.reshape(n, -1)
     V = V / np.maximum(np.linalg.norm(V, axis=1)[:, None], 1e-100)
     try:
@@ -248,5 +259,7 @@ def strengthen_geometry(proof, edges, weights, constant, vectors, *, deadline, s
         if not sparse and not check_certificate(candidate, edges, original_weights, constant):
             raise RuntimeError("Geometric certificate failed independent verification")
         return candidate
-    except (ValueError, OverflowError, np.linalg.LinAlgError, RuntimeError):
+    except (ValueError, OverflowError, np.linalg.LinAlgError, RuntimeError) as error:
+        if certificate_fallbacks is not None:
+            certificate_fallbacks.append({"stage": "geometry_factor", "reason": str(error)})
         return proof

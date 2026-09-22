@@ -80,7 +80,8 @@ def factor_witness(matrix, vectors, magnitude=1.):
     return tuple(tuple(map(int, integers[i, :i+1])) for i in range(n)), denominator
 
 
-def strengthen_certificate(proof, edges, weights, constant, *, deadline, seed=0, cuts=(), geometry=False):
+def strengthen_certificate(proof, edges, weights, constant, *, deadline, seed=0, cuts=(),
+                           geometry=False, certificate_fallbacks=None):
     """Try a low-rank vector relaxation, retaining the stronger valid witness.
 
     Dense factors are limited to 2048 vertices. Larger problems use sparse
@@ -201,6 +202,9 @@ def strengthen_certificate(proof, edges, weights, constant, *, deadline, seed=0,
         source = combined
     else:
         source = proof
+    # A useful cut-only witness survives a failed numerical factor proposal.
+    if source.lower_bound > proof.lower_bound and check_certificate(source, edges, weights, constant):
+        proof = source
     fit(original, 700 if sparse else 150)
     vectors = latest.reshape(n, -1)
     vectors /= np.maximum(np.linalg.norm(vectors, axis=1)[:, None], 1e-100)
@@ -221,10 +225,13 @@ def strengthen_certificate(proof, edges, weights, constant, *, deadline, seed=0,
             raise RuntimeError("Sum-of-squares certificate failed exact verification")
         if lower > proof.lower_bound:
             proof = candidate
-    except (ValueError, OverflowError, np.linalg.LinAlgError, RuntimeError):
+    except (ValueError, OverflowError, np.linalg.LinAlgError, RuntimeError) as error:
+        if certificate_fallbacks is not None:
+            certificate_fallbacks.append({"stage": "sdp_factor", "reason": str(error)})
         return proof
     if geometry and n >= 32 and time.perf_counter()+.75 < geometry_deadline:
         from highs_turbo.ising_geometry import strengthen_geometry
         proof = strengthen_geometry(proof, edges, weights, constant, vectors,
-                                    deadline=geometry_deadline, seed=seed)
+                                    deadline=geometry_deadline, seed=seed,
+                                    certificate_fallbacks=certificate_fallbacks)
     return proof

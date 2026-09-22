@@ -28,6 +28,8 @@ class IsingResult:
 
     OPTIMAL is HiGHS' numerical conclusion. Exact rational certification is
     reported separately, only when a verified cut bound equals the spin energy.
+    certificate_fallbacks records failed factor proposals or interrupted final
+    refits; those stages retain the strongest available checked witness.
     """
 
     spins: dict
@@ -50,6 +52,7 @@ class IsingResult:
     root_rounds: int = 0
     subgraph_cuts: int = 0
     progress: tuple = ()
+    certificate_fallbacks: tuple = ()
 
     @property
     def success(self):
@@ -232,7 +235,7 @@ def _sample_spins(n, edges, weights, seed, deadline):
 
 def _adaptive_relaxation(graph, edges, weights, constant, energy, *, deadline, started,
                          seed, policy, threads, certified_gap=None, training_samples=None,
-                         use_sdp=False):
+                         use_sdp=False, certificate_fallbacks=None):
     """Keep one LP and its basis while adding verified, solution-dependent cuts."""
     m = len(edges)
     edge_index = {e: i for i, e in enumerate(edges)}
@@ -330,7 +333,8 @@ def _adaptive_relaxation(graph, edges, weights, constant, energy, *, deadline, s
             source = make_certificate([], [], edges, weights, constant)
             proof = strengthen_certificate(source, edges, weights, constant,
                                            deadline=deadline, seed=seed, cuts=additional,
-                                           geometry=bool(additional))
+                                           geometry=bool(additional),
+                                           certificate_fallbacks=certificate_fallbacks)
             if proof.lower_bound > best.lower_bound:
                 best = proof
         record_progress()
@@ -491,6 +495,7 @@ def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
     exact_lower, certificate = trivial, None
     proof = make_certificate([], [], edges, weights, constant)
     root_rounds, subgraph_count, progress = 0, 0, ()
+    certificate_fallbacks = []
     matrix = sp.csr_matrix((0, len(edges)))
     rhs = np.empty(0)
     prep_deadline = min(deadline, started + (0.1 * time_limit if time_limit else 1.0))
@@ -518,21 +523,28 @@ def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
     if edges and accelerate and relaxation == "sdp" and time.perf_counter() < deadline:
         from highs_turbo.ising_sdp import strengthen_certificate
         proof = strengthen_certificate(proof, edges, weights, constant,
-                                       deadline=deadline, seed=seed, geometry=geometric_direct)
+                                       deadline=deadline, seed=seed, geometry=geometric_direct,
+                                       certificate_fallbacks=certificate_fallbacks)
         exact_lower = proof.lower_bound
         root_rounds = 1
         progress = ({"time": time.perf_counter()-started, "lower_bound": _downward(exact_lower),
                      "energy": float(energy), "cuts": len(rhs), "round": root_rounds},)
     if (edges and accelerate and cut_policy != "static" and time.perf_counter() < deadline
             and (relaxation != "sdp" or (vertices > 2048 and not proof.sparse_gram_factor))):
+        retained_lower = _downward(proof.lower_bound)
         root_deadline = deadline if certified_gap is not None else min(
             deadline, started + ((0.9 if relaxation == "hybrid" else 0.7)*time_limit if time_limit else 3.0))
-        cuts, proof, root_rounds, progress = _adaptive_relaxation(
+        cuts, candidate_proof, root_rounds, adaptive_progress = _adaptive_relaxation(
             graph, edges, weights, constant, energy, deadline=root_deadline, started=started,
             seed=seed, policy=cut_policy, threads=int(threads),
             certified_gap=None if certified_gap is None else Fraction(float(certified_gap)),
             use_sdp=relaxation == "hybrid",
+            certificate_fallbacks=certificate_fallbacks,
         )
+        if candidate_proof.lower_bound > proof.lower_bound:
+            proof = candidate_proof
+        progress = (*progress, *({**point, "lower_bound": max(retained_lower, point["lower_bound"])}
+                                for point in adaptive_progress))
         exact_lower = proof.lower_bound
         matrix = cut_matrix(cuts, len(edges))
         rhs = np.asarray([cut.rhs for cut in cuts], dtype=float)
@@ -578,22 +590,26 @@ def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
             values = np.r_[(spins[u] != spins[v]).astype(float), (1 - spins) / 2]
             _check_status(session.setSolution(len(values), np.arange(len(values)), values))
         _check_status(session.setOptionValue("time_limit", max(0.0, deadline - time.perf_counter())))
-        _check_status(session.run())
-        info, solution = session.getInfo(), session.getSolution()
-        if solution.value_valid:
-            candidate = 1 - 2 * np.rint(solution.col_value[m:]).astype(int)
-            if np.isin(candidate, [-1, 1]).all():
-                candidate_energy = exact_energy(candidate)
-                if candidate_energy < energy:
-                    spins, energy = candidate, candidate_energy
-        if info.valid and math.isfinite(info.mip_dual_bound):
-            numerical_lower = max(numerical_lower, min(float(energy), info.mip_dual_bound))
-        model_status = session.getModelStatus()
-        status = {highspy.HighsModelStatus.kOptimal: "OPTIMAL",
-                  highspy.HighsModelStatus.kTimeLimit: "TIME_LIMIT",
-                  highspy.HighsModelStatus.kInterrupt: "INTERRUPTED"}.get(model_status, "SOLVER_ERROR")
-        message = session.modelStatusToString(model_status)
-        nodes = max(0, info.mip_node_count)
+        try:
+            _check_status(session.run())
+        except RuntimeError as error:
+            status, message = "SOLVER_ERROR", f"HiGHS solve failed: {error}"
+        else:
+            info, solution = session.getInfo(), session.getSolution()
+            if solution.value_valid:
+                candidate = 1 - 2 * np.rint(solution.col_value[m:]).astype(int)
+                if np.isin(candidate, [-1, 1]).all():
+                    candidate_energy = exact_energy(candidate)
+                    if candidate_energy < energy:
+                        spins, energy = candidate, candidate_energy
+            if info.valid and math.isfinite(info.mip_dual_bound):
+                numerical_lower = max(numerical_lower, min(float(energy), info.mip_dual_bound))
+            model_status = session.getModelStatus()
+            status = {highspy.HighsModelStatus.kOptimal: "OPTIMAL",
+                      highspy.HighsModelStatus.kTimeLimit: "TIME_LIMIT",
+                      highspy.HighsModelStatus.kInterrupt: "INTERRUPTED"}.get(model_status, "SOLVER_ERROR")
+            message = session.modelStatusToString(model_status)
+            nodes = max(0, info.mip_node_count)
     exact_optimal = energy == exact_lower
     if exact_optimal:
         status, message = "OPTIMAL", "Spin energy equals the exact rational cut bound"
@@ -615,6 +631,7 @@ def solve_ising(h, J, *, offset=0.0, time_limit=None, relative_gap=0.0,
         is_rationally_certified=exact_optimal, cut_certificate=certificate,
         certificate=proof, exact_gap=energy-proof.lower_bound, root_rounds=root_rounds,
         subgraph_cuts=subgraph_count, progress=progress,
+        certificate_fallbacks=tuple(certificate_fallbacks),
     )
 
 

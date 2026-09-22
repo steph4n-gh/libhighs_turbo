@@ -253,3 +253,108 @@ def test_maxcut_preserves_small_nonzero_adjacency_weights(as_sparse):
     assert result.exact_rational_bound == Fraction(1e-9)
     assert result.cut_value == 1e-9
     assert result.partition[0] != result.partition[1]
+
+
+@pytest.mark.parametrize("representation", ["dense", "csr", "coo", "dict"])
+def test_qubo_representations_preserve_exact_objective(representation):
+    Q = np.array([[.1, -.7, 1.], [-.2, .2, -.3], [0., .5, -.1]])
+    if representation == "dense":
+        source = Q
+    elif representation == "dict":
+        source = {(i, j): Q[i, j] for i, j in zip(*np.nonzero(Q))}
+    else:
+        source = getattr(sparse, f"{representation}_matrix")(Q)
+    result = highs_turbo.solve_qubo(source)
+    exact = lambda x: sum((Fraction(float(Q[i, j])) * x[i] * x[j]
+                          for i in range(3) for j in range(3)), Fraction())
+    optimum = min(exact(x) for x in itertools.product((0, 1), repeat=3))
+    assert exact(result.solution) == optimum == result.exact_rational_bound
+    reference = highs_turbo.solve_qubo(Q)
+    assert result.bound_certificate.to_dict() == reference.bound_certificate.to_dict()
+
+
+@pytest.mark.parametrize("representation", ["coo", "csr"])
+def test_qubo_duplicate_sparse_coefficients_are_added_exactly(representation):
+    # Floating-point duplicate reduction loses the -1 pair coefficient here.
+    data = [float(2**54), -1., -float(2**54), -2.]
+    if representation == "coo":
+        Q = sparse.coo_matrix((data, ([0, 0, 0, 1], [1, 1, 1, 1])), shape=(2, 2))
+    else:
+        Q = sparse.csr_matrix((data, [1, 1, 1, 1], [0, 3, 4]), shape=(2, 2))
+    result = highs_turbo.solve_qubo(Q)
+    assert result.energy == result.exact_rational_bound == -3
+    np.testing.assert_array_equal(result.solution, [1, 1])
+    assert highs_turbo.verify_ising_certificate(
+        {0: Fraction(-1, 4), 1: Fraction(-5, 4)}, {(0, 1): Fraction(-1, 4)},
+        result.bound_certificate.to_dict(), offset=Fraction(-5, 4))
+
+
+@pytest.mark.parametrize("representation", ["csr", "dict"])
+def test_sparse_qubo_does_not_allocate_a_dense_matrix(representation, monkeypatch):
+    import highs_turbo.api as api
+
+    n = 4096
+    Q = (sparse.csr_matrix(([-1., -2.], ([0, n-1], [0, n-1])), shape=(n, n))
+         if representation == "csr" else {(0, 0): -1., (n-1, n-1): -2.})
+    original_zeros = api.np.zeros
+
+    def no_square(shape, *args, **kwargs):
+        assert shape != (n, n), "QUBO input was densified"
+        return original_zeros(shape, *args, **kwargs)
+
+    def no_toarray(*args, **kwargs):
+        raise AssertionError("QUBO input was densified")
+
+    monkeypatch.setattr(api.np, "zeros", no_square)
+    monkeypatch.setattr(sparse.csr_matrix, "toarray", no_toarray)
+    result = highs_turbo.solve_qubo(Q, time_limit=0)
+    assert len(result.solution) == n
+    assert result.lower_bound <= result.energy
+    assert result.bound_certificate is not None
+
+
+@pytest.mark.parametrize("Q", [
+    {(-1, 0): 1.}, {(0.5, 0): 1.}, {(True, 0): 1.}, {(0,): 1.},
+    {"ab": 1.}, {(0, 0): np.nan}, {(0, 0): 1j}, [[1j]],
+    sparse.csr_matrix([[np.inf]]), sparse.coo_matrix((2, 3)),
+])
+def test_invalid_sparse_and_dictionary_qubo_inputs(Q):
+    with pytest.raises(ValueError):
+        highs_turbo.solve_qubo(Q)
+
+
+@pytest.mark.parametrize("failed", [False, True])
+@pytest.mark.parametrize("limit_type", [float, np.float32, np.int64])
+def test_acceleration_fallback_preserves_remaining_budget(monkeypatch, failed, limit_type):
+    import highs_turbo.api as api
+    from scipy.optimize import OptimizeResult
+
+    def fail(*args, **kwargs):
+        if failed:
+            raise RuntimeError("injected preparation failure")
+        return None
+
+    recorded = {}
+
+    def fallback(*args, **kwargs):
+        recorded.update(kwargs)
+        return OptimizeResult(status=1, success=False, x=None)
+
+    ticks = iter([10., 13.])
+    monkeypatch.setattr(api.time, "perf_counter", lambda: next(ticks))
+    monkeypatch.setattr("highs_turbo.lp_accelerator.solve_reduced_lp", fail)
+    monkeypatch.setattr(api, "scipy_linprog", fallback)
+    options = {"time_limit": limit_type(5)}
+    result = api.TurboSolver().linprog([-1.], bounds=(0, 1), options=options)
+    assert recorded["options"]["time_limit"] == 2.
+    assert options == {"time_limit": 5.}
+    assert result.status == 1 and not result.success
+    if failed:
+        assert result.fallback_reason == "injected preparation failure"
+
+
+def test_empty_maxcut_has_exact_zero_bound():
+    result = highs_turbo.solve_maxcut(nx.empty_graph(3))
+    assert result.exact_rational_bound == Fraction()
+    assert result.status == "OPTIMAL" and result.cut_value == 0
+    assert len(tuple(result)) == 3

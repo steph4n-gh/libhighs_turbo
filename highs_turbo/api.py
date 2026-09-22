@@ -14,6 +14,7 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass
 from fractions import Fraction
+from numbers import Real
 from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
 import numpy as np
@@ -41,7 +42,12 @@ from highs_turbo.rational_verifier import VerificationCertificate
 
 @dataclass
 class MaxCutResult:
-    """Result of solve_maxcut, unpackable as (cut_value, partition, certificate)."""
+    """Result unpackable as (cut_value, partition, certificate).
+
+    The legacy certification flag describes the bound, not exact optimality.
+    ``certificate`` is a receipt digest; ``bound_certificate`` is the witness.
+    ``to_dict()`` preserves the legacy summary format, without the full witness.
+    """
 
     cut_value: float
     partition: np.ndarray
@@ -89,7 +95,12 @@ class MaxCutResult:
 
 @dataclass
 class QuboResult:
-    """Result of solve_qubo, unpackable as (energy, solution, certificate)."""
+    """Result unpackable as (energy, solution, certificate).
+
+    The legacy certification flag describes the bound, not exact optimality.
+    ``certificate`` is a receipt digest; ``bound_certificate`` is the witness.
+    ``to_dict()`` preserves the legacy summary format, without the full witness.
+    """
 
     energy: float
     solution: np.ndarray
@@ -252,13 +263,13 @@ class TurboSolver:
                 if not self.fallback_on_error:
                     raise
                 fallback_reason = str(exc)
-                # A failed accelerated attempt must not restart an explicit
-                # caller budget when ordinary SciPy takes over.
-                limit = (options or {}).get("time_limit")
-                if isinstance(limit, (int, float)) and np.isfinite(limit) and limit >= 0:
-                    options = {**options, "time_limit": max(0., limit-(time.perf_counter()-attempt_started))}
                 if self.verbose:
                     print(f"[highs_turbo] Fallback to SciPy: {exc}")
+            # Both a declined model and a failed attempt consume preparation
+            # time. Ordinary SciPy receives only the remaining caller budget.
+            limit = (options or {}).get("time_limit")
+            if isinstance(limit, Real) and np.isfinite(limit) and limit >= 0:
+                options = {**options, "time_limit": max(0., limit-(time.perf_counter()-attempt_started))}
         result = scipy_linprog(
             c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=bounds,
             method=scipy_method, callback=callback, options=options, x0=x0,
@@ -288,6 +299,7 @@ class TurboSolver:
                 certificate="0" * 64,
                 is_rationally_certified=True,
                 upper_bound=0.0,
+                exact_rational_bound=Fraction(),
                 simplex_iterations=0,
                 solve_time_ms=(time.perf_counter() - t0) * 1000.0,
             )
@@ -326,42 +338,65 @@ class TurboSolver:
         """
         t0 = time.perf_counter()
 
-        # Parse and symmetrize Q
+        # Iterate stored coefficients without densifying sparse inputs. Sparse
+        # duplicates and opposite orientations are added as exact fractions;
+        # floating-point sparse canonicalization can change the objective.
         if isinstance(Q, dict):
-            max_idx = max((max(i, j) for i, j in Q.keys()), default=-1)
-            n = max_idx + 1
-            Q_mat = np.zeros((n, n), dtype=np.float64)
-            for (i, j), v in Q.items():
-                Q_mat[i, j] += float(v)
+            for key in Q:
+                if (not isinstance(key, tuple) or len(key) != 2
+                        or any(isinstance(i, (bool, np.bool_))
+                               or not isinstance(i, (int, np.integer)) or i < 0
+                               for i in key)):
+                    raise ValueError("Q dictionary keys must be pairs of nonnegative integer indices")
+            n = 1 + max((int(i) for key in Q for i in key), default=-1)
+            coefficients = ((int(i), int(j), value) for (i, j), value in Q.items())
         elif sp is not None and sp.issparse(Q):
-            Q_mat = Q.toarray()
-            n = Q_mat.shape[0]
+            if Q.ndim != 2 or Q.shape[0] != Q.shape[1]:
+                raise ValueError("Q must be a square matrix")
+            n = Q.shape[0]
+            stored = Q.tocoo(copy=False)
+            if np.iscomplexobj(stored.data):
+                raise ValueError("Q must contain only finite real values")
+            coefficients = zip(stored.row, stored.col, stored.data)
         else:
+            if np.iscomplexobj(Q):
+                raise ValueError("Q must contain only finite real values")
             Q_mat = np.asarray(Q, dtype=np.float64)
-            n = Q_mat.shape[0] if Q_mat.ndim > 0 else 0
-
-        if Q_mat.ndim != 2 or Q_mat.shape[0] != Q_mat.shape[1]:
-            raise ValueError("Q must be a square matrix")
-        if not np.isfinite(Q_mat).all():
-            raise ValueError("Q must contain only finite values")
+            if Q_mat.ndim != 2 or Q_mat.shape[0] != Q_mat.shape[1]:
+                raise ValueError("Q must be a square matrix")
+            n = Q_mat.shape[0]
+            rows, columns = np.nonzero(Q_mat)
+            coefficients = zip(rows, columns, Q_mat[rows, columns])
 
         from hashlib import sha256
         import json
         from highs_turbo.ising import solve_ising, _downward
 
-        # Keep the exact sum Q_ij+Q_ji; symmetrizing in floating point can
-        # change the binary objective before its certificate is constructed.
-        fields = {i: Fraction(float(Q_mat[i, i]))/2 for i in range(n)}
-        constant = sum(fields.values(), Fraction())
-        pairs = {tuple(sorted((int(i), int(j)))) for i, j in zip(*np.nonzero(Q_mat)) if i != j}
+        fields = dict.fromkeys(range(n), Fraction())
+        constant = Fraction()
         couplings = {}
-        for i, j in sorted(pairs):
-            value = (Fraction(float(Q_mat[i, j]))+Fraction(float(Q_mat[j, i])))/4
-            if value:
-                couplings[i, j] = value
-                fields[i] += value
-                fields[j] += value
-                constant += value
+        for i, j, coefficient in coefficients:
+            if np.iscomplexobj(coefficient):
+                raise ValueError("Q must contain only finite real values")
+            try:
+                value = float(coefficient)
+            except (TypeError, ValueError, OverflowError) as exc:
+                raise ValueError("Q must contain only finite real values") from exc
+            if not np.isfinite(value):
+                raise ValueError("Q must contain only finite real values")
+            value = Fraction(value)
+            i, j = int(i), int(j)
+            if i == j:
+                fields[i] += value/2
+                constant += value/2
+            elif value:
+                pair = (min(i, j), max(i, j))
+                couplings[pair] = couplings.get(pair, Fraction()) + value/4
+        couplings = {pair: value for pair, value in sorted(couplings.items()) if value}
+        for (i, j), value in couplings.items():
+            fields[i] += value
+            fields[j] += value
+            constant += value
         options = dict(kwargs)
         options.setdefault("time_limit", None if n <= 18 else 5.)
         if options["time_limit"] is not None and options["time_limit"] >= 0:

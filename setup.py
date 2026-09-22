@@ -59,7 +59,7 @@ ext_modules = [
 
 setup(
     name="highs-turbo",
-    version="0.1.0",
+    version="0.2.0",
     description="Transparent linear programming acceleration for SciPy and HiGHS",
     long_description=open(os.path.join(BASE_DIR, "README.md"), encoding="utf-8").read() if os.path.exists(os.path.join(BASE_DIR, "README.md")) else "",
     long_description_content_type="text/markdown",
@@ -68,7 +68,7 @@ setup(
     ext_modules=ext_modules,
     package_data={"highs_turbo": ["default_weights.pt", "ising_policy.json"]},
     python_requires=">=3.10",
-    install_requires=["numpy", "scipy>=1.9", "networkx", "highspy>=1.11", "dwave-graphs>=1.0"],
+    install_requires=["numpy>=2.0", "scipy>=1.13", "networkx>=3.2", "highspy>=1.11", "dwave-graphs>=1.0"],
     extras_require={"ml": ["torch>=2.0"], "ising": ["dwave-samplers>=1.8"],
                     "test": ["pytest>=7", "torch>=2.0", "dwave-samplers>=1.8"]},
 )

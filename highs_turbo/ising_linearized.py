@@ -180,14 +180,11 @@ def solve_linearized_binary(c, A_ub, b_ub, A_eq, b_eq, bounds, integrality, opti
     ):
         return None
     fields, couplings, constant = ising_objective(c, nodes, products)
+    remaining = max(0.0, seconds - (time.perf_counter() - began))
     preparation = (
-        (
-            None
-            if math.isinf(seconds)
-            else max(0.0, seconds - (time.perf_counter() - began))
-        )
+        (None if math.isinf(remaining) else remaining)
         if only_products
-        else min(5.0, 0.4 * seconds)
+        else min(5.0, 0.4 * seconds, remaining)
     )
     result = solve_ising(
         fields,
@@ -218,7 +215,7 @@ def solve_linearized_binary(c, A_ub, b_ub, A_eq, b_eq, bounds, integrality, opti
             0
             if result.status in ("OPTIMAL", "GAP_LIMIT")
             else 1
-            if result.status in ("TIME_LIMIT", "GAP_LIMIT")
+            if result.status == "TIME_LIMIT"
             else 4
         )
         model_status = (
@@ -276,8 +273,28 @@ def solve_linearized_binary(c, A_ub, b_ub, A_eq, b_eq, bounds, integrality, opti
         node_count = max(0, info.mip_node_count)
         gap_value = info.mip_gap
         description = session.modelStatusToString(model_status)
+    # Native statuses do not substitute for checking the returned values
+    # against the complete caller model. Invalid proposals use API fallback.
+    tolerance = 1e-6  # HiGHS' default MIP feasibility tolerance.
+    if x is not None and (
+        x.shape != (count,)
+        or not np.isfinite(x).all()
+        or np.any(x < -tolerance)
+        or np.any(x > 1 + tolerance)
+        or np.any(abs(x[types == 1] - np.rint(x[types == 1])) > tolerance)
+    ):
+        raise RuntimeError("Binary-product solve returned an invalid primal solution")
+    if status == 0 and x is None:
+        raise RuntimeError("Binary-product solve reported success without a primal solution")
     slack = None if x is None else rhs - matrix @ x
     con = None if x is None else eq_rhs - equality @ x
+    if x is not None and (
+        not np.isfinite(slack).all()
+        or not np.isfinite(con).all()
+        or np.any(slack < -tolerance)
+        or np.any(abs(con) > tolerance)
+    ):
+        raise RuntimeError("Binary-product solve returned a solution violating the original rows")
     objective = None if x is None else float(c @ x)
     if objective is not None:
         dual_bound = min(dual_bound, objective)
