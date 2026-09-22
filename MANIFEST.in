@@ -10,3 +10,5 @@ include CUBIC_SCHUR_RESULTS.md
 include API_CONTRACT.md CHANGELOG.md STABILIZATION_PLAN.md STABILIZATION_RESULTS.md
 include CONTRIBUTING.md
 include .github/SECURITY.md
+include CERTIFICATION.md
+recursive-include pilots *.py *.json *.md

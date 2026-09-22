@@ -1,6 +1,11 @@
 """Run with `python -I tests/smoke_installed.py` after installing a built wheel."""
 
+import json
+import shutil
+import subprocess
 import sys
+from tempfile import TemporaryDirectory
+from importlib.util import find_spec
 from importlib.metadata import version
 from importlib.resources import files
 from pathlib import Path
@@ -15,6 +20,13 @@ from highs_turbo.compiled_engine import COMPILED_ENGINE_AVAILABLE
 source_package = Path(__file__).resolve().parents[1] / "highs_turbo"
 assert Path(highs_turbo.__file__).resolve().parent != source_package
 assert highs_turbo.__version__ == version("highs-turbo")
+if "--require-base-only" in sys.argv:
+    assert find_spec("torch") is None, "Base-only smoke must run without PyTorch installed"
+    try:
+        graphs_spec = find_spec("dwave.graphs")
+    except ModuleNotFoundError:
+        graphs_spec = None
+    assert graphs_spec is None, "Base-only smoke must run without dwave-graphs installed"
 assert files("highs_turbo").joinpath("default_weights.pt").is_file()
 assert files("highs_turbo").joinpath("ising_policy.json").is_file()
 # Load the ranking resource directly: a solved instance may never need it.
@@ -90,11 +102,56 @@ assert highs_turbo.verify_linprog_certificate(
 
 assert "torch" not in sys.modules, "Ordinary solver calls must not load PyTorch"
 
-# Research helpers may load optional neural modules; check them only after the
-# ordinary solver import contract above has been verified.
+# Topology helpers must not import a neural runtime merely to generate a graph.
 from highs_turbo.large_scale_benchmarks import generate_chimera_instance
 
 assert generate_chimera_instance(1).num_nodes == 8
+assert "torch" not in sys.modules, "Topology helpers must not load PyTorch"
+
+# Run both installed entry points in fresh processes outside the checkout. These
+# zero-budget fixtures have exact elementary bounds, so this checks installation
+# and proof replay without depending on how quickly optimization finishes.
+with TemporaryDirectory(prefix="highs-turbo-installed-cli-") as directory:
+    work = Path(directory)
+    source, proof = work / "input.json", work / "proof.json"
+    scenarios = [
+        ({"type": "ising", "fields": ["1/3"], "offset": "1/7"}, [1],
+         "minimize", "10/21", "-4/21", "2/3", False),
+        ({"type": "qubo", "num_variables": 1, "coefficients": [[0, 0, "-1/3"]],
+          "offset": "1/7"}, [1], "minimize", "-4/21", "-4/21", "0", True),
+        ({"type": "maxcut", "num_nodes": 2, "edges": [[0, 1, "1/3"]]}, [0, 1],
+         "maximize", "1/3", "1/3", "0", True),
+    ]
+    for model, answer, sense, candidate, bound, gap, optimal in scenarios:
+        source.write_text(json.dumps({"model": model, "answer": answer}))
+        produced = subprocess.run(
+            [sys.executable, "-I", "-m", "highs_turbo", "certify", "--input", str(source),
+             "--output", str(proof), "--seconds", "0"],
+            cwd=work, capture_output=True, text=True, timeout=30)
+        assert produced.returncode == 0, produced.stderr
+        checked = subprocess.run(
+            [sys.executable, "-I", "-m", "highs_turbo", "verify", str(proof)],
+            cwd=work, capture_output=True, text=True, timeout=30)
+        assert checked.returncode == 0, checked.stderr
+        report = json.loads(checked.stdout)
+        assert report == json.loads(produced.stdout)
+        assert report == {"model_type": model["type"], "objective_sense": sense,
+                          "candidate_objective": candidate, "bound": bound, "gap": gap,
+                          "bound_verified": True, "optimality_proven": optimal}
+    bundle = json.loads(proof.read_text())
+    bundle["certificate"]["lower_bound"] = [999, 1]
+    proof.write_text(json.dumps(bundle))
+    rejected = subprocess.run(
+        [sys.executable, "-I", "-m", "highs_turbo", "verify", str(proof)],
+        cwd=work, capture_output=True, text=True, timeout=30)
+    assert rejected.returncode != 0
+    assert "Certificate does not verify" in json.loads(rejected.stderr)["error"]
+    executable = shutil.which("highs-turbo", path=str(Path(sys.executable).parent))
+    assert executable is not None, "The highs-turbo console entry point must be installed"
+    help_result = subprocess.run([executable, "--help"], cwd=work, capture_output=True,
+                                 text=True, timeout=30)
+    assert help_result.returncode == 0, help_result.stderr
+    assert "certify" in help_result.stdout and "verify" in help_result.stdout
 
 if "--require-native" in sys.argv:
     assert COMPILED_ENGINE_AVAILABLE

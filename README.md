@@ -1,7 +1,9 @@
 # highs_turbo
 
-SciPy-compatible LP acceleration and independently checkable Ising, QUBO,
-and Max-Cut bounds with HiGHS.
+Keep your optimizer. Independently check how close its answer is to best possible.
+
+Checkable Ising, QUBO and Max-Cut bounds, plus SciPy-compatible LP acceleration
+with HiGHS.
 
 [![Tests](https://github.com/steph4n-gh/libhighs_turbo/actions/workflows/tests.yml/badge.svg)](https://github.com/steph4n-gh/libhighs_turbo/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -22,21 +24,25 @@ engine. Performance depends on the workload; see the recorded validation results
 
 ## When to use it
 
-- **Check an answer you already have.** Bound how far an external heuristic's
-  Ising, QUBO, or Max-Cut answer could be from optimal. The
-  [external-answer example](examples/certify_external_answer.py) demonstrates
-  the Ising workflow with a separate verification process; QUBO and Max-Cut
-  witnesses use the equivalent Ising objective described in the
-  [API contract](API_CONTRACT.md).
-- **Solve a binary problem with a checkable quality bound.** Obtain a feasible
-  answer and a rational bound, then inspect the checked gap even when the search
-  stops before optimality is established.
-- **Evaluate an existing SciPy LP workload.** Change the optimizer import and
-  [benchmark the same models](examples/benchmark_linprog.py). Speedups depend on
-  the input and are not guaranteed.
+The strongest initial use is **checking answers from another optimizer**. Export
+an Ising, QUBO or Max-Cut model and candidate, then get a portable proof of its
+quality gap. The optimizer can be your existing heuristic or annealer.
+[Try the installed certification interface](CERTIFICATION.md).
 
-[Current validation](STABILIZATION_RESULTS.md) covers mathematical and public
-benchmarks. A customer-specific application has not yet been demonstrated.
+| Use | Where it fits | What to evaluate |
+| --- | --- | --- |
+| External answer certification | After an existing QUBO/Ising heuristic or annealer; export a model and answer. | Useful checked gap within your total time and memory budget. |
+| SciPy LP workloads | Switch `from scipy.optimize import linprog` to `from highs_turbo import linprog`. | Complete runtime on your own identical LPs, including slower cases. |
+| Weighted graph partitioning | Pass an undirected graph or upper-triangle adjacency to `solve_maxcut`. | Feasible partition and independently checked upper bound. |
+| Binary-product integer LPs | Existing `linprog` models that match the documented exact product formulation. | Checked bounds while retaining all application constraints. |
+| Ising/annealing research | Compare supplied spin states and reproducible bound witnesses. | Replayed proof validity and gap at equal resource budgets. |
+
+Only the supported `linprog` interface is a drop-in import change. Certification
+needs a small export adapter; QUBO/Max-Cut solving uses explicit calls. Benefits
+depend on the model. [Current validation](STABILIZATION_RESULTS.md) covers
+mathematical and public benchmarks; customer-specific value remains unmeasured.
+The [pilot kit](pilots/README.md) freezes inputs and acceptance criteria, then
+records every trial, missed target and failure. Its included data is synthetic.
 
 ## Plain English: what this does and why it is useful
 
@@ -107,6 +113,14 @@ NetworkX, and the official HiGHS Python package (`highspy`) are installed
 automatically. LP acceleration runs on Linux, macOS, and Windows without
 compiling this project's C++ extension.
 
+Install the portable release wheel directly (no source checkout or compiler):
+
+```bash
+python -m pip install https://github.com/steph4n-gh/libhighs_turbo/releases/download/v0.3.0/highs_turbo-0.3.0-py3-none-any.whl
+```
+
+For development or the optional native engine, use a source checkout:
+
 ```bash
 git clone https://github.com/steph4n-gh/libhighs_turbo.git
 cd libhighs_turbo
@@ -132,7 +146,14 @@ Check the optional extension with:
 python -c 'from highs_turbo.compiled_engine import COMPILED_ENGINE_AVAILABLE; print(COMPILED_ENGINE_AVAILABLE)'
 ```
 
-To use the bundled neural weights or train models, install the optional extra:
+The core install does not require PyTorch or D-Wave graph packages. To generate
+Pegasus graphs or use optional annealing samplers, install the `ising` extra:
+
+```bash
+python -m pip install 'highs-turbo[ising] @ https://github.com/steph4n-gh/libhighs_turbo/releases/download/v0.3.0/highs_turbo-0.3.0-py3-none-any.whl'
+```
+
+To use the bundled neural weights or train models from a source checkout:
 
 ```bash
 python -m pip install '.[ml]'
@@ -145,6 +166,21 @@ components. Ordinary `linprog`, `solve_maxcut`, `solve_qubo`, and `solve_ising`
 calls do not load PyTorch or require a trained model.
 
 ## Quickstart
+
+### Certify an external answer
+
+Save the [two-variable JSON example](CERTIFICATION.md#five-minute-installed-example)
+as `answer.json`, then run:
+
+```bash
+python -m highs_turbo certify --input answer.json --output proof.json --seconds 2
+python -m highs_turbo verify proof.json
+```
+
+The separate verifier reports `candidate_objective`, `bound`, `gap`,
+`bound_verified` and `optimality_proven`. Keep the complete `proof.json` to replay
+its check. [All model formats and exact-arithmetic semantics](CERTIFICATION.md).
+
 
 ### Linear programming
 
@@ -435,8 +471,8 @@ equally for all solvers. Infeasible and unbounded statuses are compared too.
 models, including slower cases and the additional CPU use of competing methods.
 
 The generated G-set-style inputs are synthetic graphs; they are not downloaded
-Stanford G-set benchmark files. `mock_benchmark.py` is only a simulated demo and
-must not be used as performance evidence.
+Stanford G-set benchmark files. Run the examples to collect measurements on
+your own machine; historical reports describe their original environments.
 
 ## Development and testing
 

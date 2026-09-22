@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.3.0 — 2026-09-22
+
+- Add installed `certify`/`verify` Python and command-line interfaces for external
+  Ising, QUBO and Max-Cut answers. Bundles include the normalized original model,
+  candidate and full witness; replay reports the exact objective, bound and gap.
+- Expose consistent exact result fields and preserve wrapper solver termination
+  and fallback diagnostics without changing legacy tuples or flags. Share the
+  exact QUBO conversion between solving and certification.
+- Add a pilot kit that freezes input hashes and acceptance criteria before
+  repeated fresh-process trials. Record export/verification time, resource
+  observations, failures and missed targets. Demo data is explicitly synthetic.
+- Move D-Wave graph generation to the optional `ising`/`test` extras. Exercise
+  installed CLI replay and dependency-light core installation across platforms.
+
+
+## 0.2.1 — 2026-09-22
+
+- Fix Max-Cut silently dropping duplicate sparse entries and parallel NetworkX
+  edges. These weights now sum exactly, including cancellation that would lose
+  information in binary64 arithmetic. Validate input shapes, endpoints and
+  finite real weights before solving. Preserve the upper-triangle convention.
+- Correct generated graph descriptions: G-set-shaped graphs are synthetic,
+  not the published Stanford datasets. Examples report candidate objectives,
+  checked bounds and measured time without guaranteed speedup claims.
+- Remove the unused simulated benchmark and eager optional neural import from
+  the large-scale graph helpers. Add a direct portable-wheel installation path.
+- Exercise Max-Cut input regressions and external-proof replay on all supported
+  fallback CI platforms.
+
 ## 0.2.0 — 2026-09-22
 
 This release integrates the checked geometric and sparse Ising bounds into the

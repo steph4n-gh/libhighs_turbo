@@ -15,9 +15,13 @@ from highs_turbo.ising import IsingResult, solve_ising, verify_ising_certificate
 from highs_turbo.ising_cuts import IsingCertificate
 from highs_turbo.ising_linearized import verify_linprog_certificate
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
+
+from highs_turbo.certification import certify, verify
 
 __all__ = [
+    "certify",
+    "verify",
     "linprog",
     "solve_maxcut",
     "solve_qubo",

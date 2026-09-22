@@ -70,12 +70,15 @@ jobs:
         run: python -m build
       - name: Install with minimum supported dependencies
         if: matrix.dependencies == 'minimum'
-        run: python -m pip install dist/*.whl pytest 'numpy==2.0.0' 'scipy==1.13.0' 'networkx==3.2' 'highspy==1.11.0' 'dwave-graphs==1.0.0'
+        run: python -m pip install dist/*.whl pytest 'numpy==2.0.0' 'scipy==1.13.0' 'networkx==3.2' 'highspy==1.11.0'
       - name: Install with current dependencies
         if: matrix.dependencies != 'minimum'
         run: python -m pip install dist/*.whl pytest
-      - run: python -m pytest tests/test_solver_regressions.py tests/test_ising.py tests/test_ising_linearized.py tests/test_ising_sparse.py -q
-      - run: python -I tests/smoke_installed.py --require-fallback
+      - name: Verify installed core without optional ML or graph dependencies
+        run: python -I tests/smoke_installed.py --require-fallback --require-base-only
+      - name: Add topology dependency for graph tests
+        run: python -m pip install 'dwave-graphs==1.0.0'
+      - run: python -m pytest tests/test_solver_regressions.py tests/test_ising.py tests/test_ising_linearized.py tests/test_ising_sparse.py tests/test_external_certificate_example.py tests/test_rational_verifier.py tests/test_certification.py tests/test_result_contract.py tests/test_pilot.py -q
       - name: Check minimum PyTorch extra with NumPy 2
         if: matrix.dependencies == 'minimum'
         run: |
