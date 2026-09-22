@@ -1,6 +1,6 @@
 # Public solver and certificate contract
 
-This contract applies to highs_turbo 0.2.0. Existing tuple unpacking, result
+This contract applies to highs_turbo 0.2.1. Existing tuple unpacking, result
 fields and legacy certification flags retain their meanings.
 
 ## Results and proof
@@ -95,6 +95,14 @@ canonicalization. Dictionary keys must be pairs of nonnegative integer indices;
 the largest index plus one determines the number of variables. Memory still
 scales with the variable count, nonzero coefficients and the solver's working
 model. Dense input naturally requires quadratic storage.
+
+Max-Cut adjacency matrices use the strict upper triangle; lower entries and
+self-loops contribute nothing. Stored upper-triangle duplicates are summed
+exactly. Undirected NetworkX multigraphs sum parallel edge weights exactly and
+return partitions in node insertion order; directed graphs are rejected.
+GraphInstance describes a simple graph. All supplied matrix entries and graph
+edge weights must be finite and real, including ignored diagonal/lower entries.
+Fraction weights retain their exact values.
 
 LP method competition may use two model copies and two CPU cores. Optional
 native graph operations require macOS and GMP; the Python/HiGHS fallback is

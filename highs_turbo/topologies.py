@@ -246,7 +246,9 @@ def generate_gset_instance(
     name: str = "G11",
     seed: int = 42,
 ) -> GraphInstance:
-    """Generates canonical G-set benchmark instances:
+    """Generate seeded synthetic graphs with sizes inspired by G-set.
+
+    These are not the published Stanford G-set datasets.
 
     - G11: n=800, m=1600 (Erdos-Renyi random graph, avg degree 4)
     - G43: n=1,000, m=9,990 (dense random graph, avg degree ~20)
@@ -290,7 +292,9 @@ def generate_gset_instance(
         edges=sorted_edges,
         weights=weights,
         metadata={
-            "family": "G_set_benchmark",
+            "family": "G_set_benchmark",  # Retained for compatibility.
+            "synthetic": True,
+            "source": "seeded random connected graph; not Stanford G-set data",
             "instance": uname,
             "target_nodes": n,
             "target_edges": m,

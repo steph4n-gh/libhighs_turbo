@@ -108,17 +108,17 @@ class ProblemSolutionReport:
         md.append(f"- **Cut-combination rational verification:** {'CERTIFIED' if self.is_rationally_certified else 'REJECTED'} (SHA-256: `{self.certificate_sha256}`)")
         md.append("")
         md.append("### 1. Comparative Performance Breakdown")
-        md.append("| Metric | Classical Multi-Row Separation | 1-Row Neural-Surrogate Engine | Improvement / Speedup |")
+        md.append("| Metric | Classical Multi-Row Separation | 1-Row Surrogate Cut Engine | Improvement / Speedup |")
         md.append("|---|---|---|---|")
         md.append(f"| **Wall-Clock Solve Time** | {self.std_multi_row_time_ms:.2f} ms | {self.surrogate_time_ms:.2f} ms | **{self.wall_clock_speedup:.2f}x speedup** |")
         md.append(f"| **Simplex Iterations** | {self.std_multi_row_simplex_iters} pivots | {self.surrogate_simplex_iters} pivot | **{self.simplex_iter_reduction_pct:.1f}% reduction** |")
         md.append(f"| **Constraint Nonzeros (NNZ)** | {self.std_multi_row_constraint_nonzeros:,} entries | {self.surrogate_constraint_nonzeros:,} entries | **{self.nonzero_reduction_pct:.1f}% reduction** |")
         bound_desc = (
-            "Exact match (|Delta| <= 1e-6)"
+            "Numerical agreement (|Delta| <= 1e-6)"
             if abs(self.std_multi_row_objective - self.surrogate_objective) <= 1e-6
-            else f"Tight dual bound (gap: {abs(self.surrogate_objective - self.std_multi_row_objective):.4f})"
+            else f"Objective difference ({abs(self.surrogate_objective - self.std_multi_row_objective):.4f})"
         )
-        md.append(f"| **Certified Dual Bound** | {self.std_multi_row_objective:.4f} | {self.surrogate_objective:.4f} | {bound_desc} |")
+        md.append(f"| **Numerical LP Bound** | {self.std_multi_row_objective:.4f} | {self.surrogate_objective:.4f} | {bound_desc} |")
         md.append("")
         if self.ising_ground_state_surrogate_bound is not None:
             md.append("### 2. Frustrated Ising Spin Glass Ground State Energy")
@@ -170,7 +170,7 @@ class KnownProblemSolver:
 
     @staticmethod
     def load_gset_instance(name: str = "G43", seed: int = 42) -> GraphInstance:
-        """Builds standard Stanford G-set Max-Cut instance (G11, G43, G22, etc.)."""
+        """Build synthetic G-set-shaped graphs, not the published Stanford data."""
         return generate_gset_instance(name=name, seed=seed)
 
     @staticmethod
@@ -501,13 +501,13 @@ def solve_known_problem(
     elif problem.lower() in ("gset", "g43", "g22", "g11"):
         inst_name = problem.upper() if problem.upper() in ("G43", "G22", "G11") else "G43"
         graph = solver.load_gset_instance(name=inst_name, seed=42)
-        category = f"Standard Combinatorial Optimization Benchmark (Stanford G-set {inst_name})"
+        category = f"Synthetic G-set-shaped graph ({inst_name})"
     elif problem.lower() in ("biological", "ecoli", "regulatory"):
         graph = solver.load_biological_regulatory_network(num_genes=500, seed=42)
-        category = "Biological Interaction Regulatory Network (E. coli Sign-Inversion Motifs)"
+        category = "Synthetic biological-style regulatory network"
     elif problem.lower() in ("senate", "polarization", "voting"):
         graph = solver.load_senate_polarization_network(num_senators=100, seed=42)
-        category = "Senate Voting Polarization Network (Cross-Aisle Bipartisan Cuts)"
+        category = "Synthetic senate-style polarization network"
     elif problem.lower() in ("planted", "cluster"):
         graph = generate_planted_1000_node_instance(num_k5=200, num_bridges=199, seed=1000)
         category = "Planted Combinatorial Benchmark (1,000-Node K5 Clique Cluster)"
@@ -524,7 +524,7 @@ def solve_known_problem(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Solve known prominent problems with Neural-Surrogate Cutting Plane Engine.")
+    parser = argparse.ArgumentParser(description="Compare research LP relaxations on generated graph families.")
     parser.add_argument(
         "--problem",
         type=str,

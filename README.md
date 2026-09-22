@@ -107,6 +107,14 @@ NetworkX, and the official HiGHS Python package (`highspy`) are installed
 automatically. LP acceleration runs on Linux, macOS, and Windows without
 compiling this project's C++ extension.
 
+Install the portable release wheel directly (no source checkout or compiler):
+
+```bash
+python -m pip install https://github.com/steph4n-gh/libhighs_turbo/releases/download/v0.2.1/highs_turbo-0.2.1-py3-none-any.whl
+```
+
+For development or the optional native engine, use a source checkout:
+
 ```bash
 git clone https://github.com/steph4n-gh/libhighs_turbo.git
 cd libhighs_turbo
@@ -435,8 +443,8 @@ equally for all solvers. Infeasible and unbounded statuses are compared too.
 models, including slower cases and the additional CPU use of competing methods.
 
 The generated G-set-style inputs are synthetic graphs; they are not downloaded
-Stanford G-set benchmark files. `mock_benchmark.py` is only a simulated demo and
-must not be used as performance evidence.
+Stanford G-set benchmark files. Run the examples to collect measurements on
+your own machine; historical reports describe their original environments.
 
 ## Development and testing
 

@@ -1,59 +1,45 @@
-"""Example 03: Stanford G-set G43 Benchmark Certification.
+"""Bound Max-Cut on a synthetic G43-shaped graph.
 
-Demonstrates:
-1. Loading canonical Stanford G-set Max-Cut instance G43 (1,000 nodes, 9,990 edges).
-2. 10x wall-clock speedup over classical multi-row cutting-plane separation.
-3. 99.8% simplex pivot reduction: solving the surrogate LP in 0-1 pivots.
-4. Cryptographic SHA-256 certificate proving the certified dual bound.
+This is a seeded random graph, not Stanford's published G43 dataset. The
+example measures its own runtime and independently checks a complete rational
+witness. It makes no fixed speedup or optimality claim.
 """
-
 from __future__ import annotations
 
-import os
+import argparse
+from fractions import Fraction
+from pathlib import Path
 import sys
 import time
 
-# Ensure researchSept10 is on path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from highs_turbo.applications.solve_known_problem import KnownProblemSolver
-from highs_turbo.large_scale_benchmarks import generate_gset_instance
+from highs_turbo import solve_maxcut, verify_ising_certificate
+from highs_turbo.topologies import generate_gset_instance
 
 
-def run_gset_demo():
-    print("=" * 80)
-    print("highs_turbo: Stanford G-set G43 Max-Cut Benchmark Certification")
-    print("=" * 80)
-
-    print("\n[Stage 1] Loading Stanford G-set G43 Benchmark...")
-    t0 = time.perf_counter()
+def run_gset_demo(seconds=5.0):
     graph = generate_gset_instance(name="G43", seed=42)
-    load_time_ms = (time.perf_counter() - t0) * 1000.0
-    print(f"  Topology: Stanford G-set G43 ({graph.num_nodes:,} nodes, {graph.num_edges:,} edges)")
-    print(f"  Density:  {graph.num_edges / (graph.num_nodes * (graph.num_nodes - 1) / 2):.4f}")
-    print(f"  Graph generation time: {load_time_ms:.1f} ms")
-
-    print("\n[Stage 2] Executing Neural-Surrogate Cutting Plane Engine vs Classical HiGHS...")
-    solver = KnownProblemSolver()
-    report = solver.solve(graph, problem_category="Stanford G-set Max-Cut Benchmark")
-
-    print("\n" + report.summary_markdown())
-
-    # Verification assertions
-    print("\n[Stage 3] Verification & Benchmark Verification:")
-    print(f"  Speedup:                     {report.wall_clock_speedup:.2f}x (Target: >= 5.0x)")
-    print(f"  Simplex Iteration Reduction: {report.simplex_iter_reduction_pct:.1f}% (Target: >= 90.0%)")
-    print(f"  Certified Soundness:         {report.is_rationally_certified}")
-    print(f"  Cryptographic Proof Receipt: {report.certificate_sha256}")
-
-    assert report.is_rationally_certified, "G43 certificate verification failed!"
-    assert len(report.certificate_sha256) == 64, "Invalid SHA-256 hash length!"
-    assert report.surrogate_simplex_iters <= 1, f"Surrogate solve took {report.surrogate_simplex_iters} pivots > 1!"
-
-    print("\n" + "=" * 80)
-    print("G-SET G43 CERTIFICATION COMPLETE: 10X SPEEDUP & 1 PIVOT CERTIFIED")
-    print("=" * 80)
+    print(f"Synthetic G43-shaped graph: {graph.num_nodes:,} nodes, {graph.num_edges:,} edges")
+    started = time.perf_counter()
+    result = solve_maxcut(graph, time_limit=seconds, seed=42)
+    elapsed = time.perf_counter() - started
+    weights = {edge: Fraction(weight) for edge, weight in graph.weights.items()}
+    if not verify_ising_certificate([0] * graph.num_nodes, weights, result.bound_certificate):
+        raise RuntimeError("Original-model witness verification failed")
+    candidate = sum((weight for (u, v), weight in weights.items()
+                     if result.partition[u] != result.partition[v]), Fraction())
+    upper = result.exact_rational_bound
+    gap = upper - candidate
+    if gap < 0:
+        raise RuntimeError("The bound is below the feasible cut")
+    print(f"Candidate cut: {candidate}; checked upper bound: {upper}; exact gap: {gap}")
+    print(f"Optimality proven: {gap == 0}; numerical status: {result.status}")
+    print(f"Solve elapsed: {elapsed:.3f}s; requested cooperative budget: {seconds:g}s")
+    print("Full witness verified against the original generated objective.")
 
 
 if __name__ == "__main__":
-    run_gset_demo()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--seconds", type=float, default=5.0)
+    run_gset_demo(parser.parse_args().seconds)

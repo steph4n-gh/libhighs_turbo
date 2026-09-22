@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.1 — 2026-09-22
+
+- Fix Max-Cut silently dropping duplicate sparse entries and parallel NetworkX
+  edges. These weights now sum exactly, including cancellation that would lose
+  information in binary64 arithmetic. Validate input shapes, endpoints and
+  finite real weights before solving. Preserve the upper-triangle convention.
+- Correct generated graph descriptions: G-set-shaped graphs are synthetic,
+  not the published Stanford datasets. Examples report candidate objectives,
+  checked bounds and measured time without guaranteed speedup claims.
+- Remove the unused simulated benchmark and eager optional neural import from
+  the large-scale graph helpers. Add a direct portable-wheel installation path.
+- Exercise Max-Cut input regressions and external-proof replay on all supported
+  fallback CI platforms.
+
 ## 0.2.0 — 2026-09-22
 
 This release integrates the checked geometric and sparse Ising bounds into the
