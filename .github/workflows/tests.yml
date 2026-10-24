@@ -17,7 +17,8 @@ jobs:
         with:
           python-version: '3.13'
       - run: brew install gmp
-      - run: python -m pip install '.[test]' build
+      - run: python -m pip install -c requirements-ci-current.txt '.[test]' build
+      - run: python -m pip check
       - run: python setup.py build_ext --inplace
       - run: python -m pytest tests -q --junitxml=test-results/native.xml -o junit_family=legacy
       - name: Preserve test results and every benchmark trial
@@ -73,7 +74,10 @@ jobs:
         run: python -m pip install dist/*.whl pytest 'numpy==2.0.0' 'scipy==1.13.0' 'networkx==3.2' 'highspy==1.11.0'
       - name: Install with current dependencies
         if: matrix.dependencies != 'minimum'
-        run: python -m pip install dist/*.whl pytest
+        run: python -m pip install -c requirements-ci-current.txt dist/*.whl pytest
+      - name: Check current dependency installation
+        if: matrix.dependencies != 'minimum'
+        run: python -m pip check
       - name: Verify installed core without optional ML or graph dependencies
         run: python -I tests/smoke_installed.py --require-fallback --require-base-only
       - name: Add topology dependency for graph tests
