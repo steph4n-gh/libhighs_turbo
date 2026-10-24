@@ -1,0 +1,15 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "enabledManagers": ["pip_requirements", "github-actions"],
+  "includePaths": ["requirements-ci-current.txt", ".github/workflows/tests.yml"],
+  "pip_requirements": {
+    "managerFilePatterns": ["/^requirements-ci-current\\.txt$/"]
+  },
+  "automerge": false,
+  "prConcurrentLimit": 1,
+  "prHourlyLimit": 1,
+  "major": { "enabled": false },
+  "pinDigests": false,
+  "vulnerabilityAlerts": { "automerge": false }
+}

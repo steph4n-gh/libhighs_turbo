@@ -1,0 +1,6 @@
+# CI-tested current core dependencies. These are not downstream runtime pins.
+# Keep setup.py minimum requirements and the minimum-version CI lane unchanged.
+numpy==2.5.4
+scipy==1.18.1
+networkx==3.7
+highspy==1.15.1
