@@ -9,7 +9,7 @@
   "automerge": false,
   "prConcurrentLimit": 1,
   "prHourlyLimit": 1,
-  "major": { "enabled": false },
+  "major": { "dependencyDashboardApproval": true },
   "pinDigests": false,
   "vulnerabilityAlerts": { "automerge": false }
 }
