@@ -32,6 +32,13 @@ macOS native suite, optional test dependencies, source distributions, and
 installed-wheel checks. Run checks relevant to the change; documentation-only
 changes do not need new solver tests.
 
+Renovate updates the current core constraints and GitHub Actions, but does not
+propose Python versions in the workflow. Those versions also select the native
+and minimum-dependency test lanes. Before changing one, confirm that PyTorch
+from the `test` extra has a wheel for that Python and runner architecture, then
+run the native build, installed-wheel smoke, and all fallback jobs. Keep the
+Python 3.10 minimum lane until the supported floor changes deliberately.
+
 Correctness fixes should include a small regression case. Preserve the caller's
 original optimization model and the distinction between numerical success,
 exact optimality, a valid bound, and a receipt digest. Proof generation must not
