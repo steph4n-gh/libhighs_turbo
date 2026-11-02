@@ -10,6 +10,14 @@
   "prConcurrentLimit": 1,
   "prHourlyLimit": 1,
   "major": { "dependencyDashboardApproval": true },
+  "packageRules": [
+    {
+      "description": "Python CI versions need coordinated PyTorch and native-engine validation",
+      "matchManagers": ["github-actions"],
+      "matchDepNames": ["python"],
+      "enabled": false
+    }
+  ],
   "pinDigests": false,
   "vulnerabilityAlerts": { "automerge": false }
 }
