@@ -3,4 +3,4 @@
 numpy==2.5.4
 scipy==1.18.1
 networkx==3.7
-highspy==1.15.1
+highspy==1.16.0
